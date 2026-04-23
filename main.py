@@ -1,0 +1,649 @@
+"""
+main.py
+-------
+Servidor FastAPI del MVP de Lucas.
+
+Endpoints:
+    GET  /                     → sirve static/index.html (demo)
+    POST /api/session/new      → crea sesión y devuelve saludo inicial
+    POST /api/chat             → recibe mensaje del cliente, devuelve respuesta de Lucas
+    GET  /api/health           → health-check
+    GET  /api/leads            → lista leads capturados (solo backup local)
+
+Correr:
+    uvicorn main:app --reload --port 8000
+"""
+
+from __future__ import annotations
+
+import asyncio
+import json
+import logging
+import random
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+
+from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+
+import config
+from ai_provider import generate_response
+from lead_capture import dispatch_lead, extract_contact
+from excel_leads import append_lead, count_leads, excel_path_str
+from agenda import next_available_slots, book_slot, upcoming_bookings
+from notifications import notify_new_booking, reminder_loop, is_configured as notif_configured
+from system_prompt import LUCAS_SYSTEM_PROMPT  # noqa: F401 (referenciado en logs)
+
+# ---- Logging ----
+logging.basicConfig(
+    level=config.LOG_LEVEL,
+    format="%(asctime)s | %(levelname)-7s | %(name)s | %(message)s",
+    handlers=[
+        logging.FileHandler(config.LOGS_DIR / "lucas.log", encoding="utf-8"),
+        logging.StreamHandler(),
+    ],
+)
+logger = logging.getLogger("lucas.main")
+
+app = FastAPI(title="Lucas — PMD Sales Agent", version="1.0.0")
+
+# CORS abierto para que el widget funcione desde cualquier dominio donde lo embebas
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Servir estáticos (widget HTML)
+if config.STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(config.STATIC_DIR)), name="static")
+
+
+# ---- Almacenamiento de sesiones EN MEMORIA (para MVP) ----
+# En producción esto iría a Redis o una DB. Para el MVP alcanza con un dict.
+SESSIONS: dict[str, dict] = {}
+
+
+# ---- Saludo inicial dinámico (hora del día) ----
+# El saludo se calcula cuando se crea la sesión. Así Lucas dice "buen día",
+# "buenas tardes" o "buenas noches" según corresponda en hora de Argentina.
+# Además es corto y abierto — no pregunta cosas que el cliente quizás
+# ya respondió en el presupuestador. Si el cliente llega con contexto
+# (ej: "armé un presupuesto"), el bot lee ese mensaje y responde en
+# consecuencia sin saludar dos veces.
+
+def _saludo_hora_argentina() -> str:
+    """Devuelve 'Buen día', 'Buenas tardes' o 'Buenas noches' según
+    la hora local de Argentina (UTC-3)."""
+    from datetime import datetime, timedelta, timezone as _tz
+    ar = datetime.now(_tz(timedelta(hours=-3)))
+    h = ar.hour
+    if 5 <= h < 13:  return "Buen día"
+    if 13 <= h < 20: return "Buenas tardes"
+    return "Buenas noches"
+
+
+def get_initial_greeting() -> str:
+    """Saludo inicial que se muestra al abrir el chat, con hora del día."""
+    saludo = _saludo_hora_argentina()
+    return (
+        f"{saludo}. Soy **Lucas**, del equipo de PMD Servicios "
+        "Arquitectónicos e Integrales. ¿En qué puedo ayudarle hoy?"
+    )
+
+
+# Mantenemos la constante por compatibilidad con imports existentes,
+# pero el valor se recalcula cada vez que se crea una sesión (ver new_session).
+INITIAL_GREETING = get_initial_greeting()
+
+
+# ==== MODELOS ====
+
+class ChatMessage(BaseModel):
+    session_id: str = Field(..., description="ID de sesión devuelto por /session/new")
+    message: str = Field(..., min_length=1, max_length=4000)
+
+
+class SessionResponse(BaseModel):
+    session_id: str
+    greeting: str
+
+
+class ChatResponse(BaseModel):
+    # `reply` queda por compatibilidad con clientes viejos (es el primer mensaje).
+    reply: str
+    # `replies` es la lista completa de mensajes a renderizar como burbujas
+    # separadas. Lucas puede usar el delimitador [[SPLIT]] en su respuesta para
+    # que el frontend la muestre como múltiples mensajes consecutivos.
+    replies: list[str]
+    provider: str
+    lead_captured: bool = False
+    lead_channels: dict | None = None
+
+
+SPLIT_TOKEN = "[[SPLIT]]"
+
+
+def split_reply(text: str) -> list[str]:
+    """Divide la respuesta del LLM en una lista de mensajes usando [[SPLIT]].
+
+    Tolera variaciones (espacios alrededor, salto de línea pegado).
+    Filtra strings vacías. Como mucho devuelve 3 partes (límite de seguridad).
+    """
+    if not text:
+        return [""]
+    parts = [p.strip() for p in text.split(SPLIT_TOKEN)]
+    parts = [p for p in parts if p][:3]
+    return parts or [text.strip()]
+
+
+# ==== HELPERS ====
+
+def _get_session(session_id: str) -> dict:
+    if session_id not in SESSIONS:
+        raise HTTPException(status_code=404, detail="Sesión no encontrada o expirada")
+    return SESSIONS[session_id]
+
+
+async def _simulate_typing_delay() -> None:
+    """Espera un tiempo aleatorio para simular que Lucas está escribiendo."""
+    delay = random.uniform(config.TYPING_DELAY_MIN, config.TYPING_DELAY_MAX)
+    await asyncio.sleep(delay)
+
+
+def _full_conversation_text(history: list[dict]) -> str:
+    return "\n".join(f"{m['role']}: {m['content']}" for m in history)
+
+
+# ==== ENDPOINTS ====
+
+@app.get("/", include_in_schema=False)
+async def root():
+    """Sirve la landing principal con cache-busting agresivo — importante
+    durante desarrollo porque editamos el HTML seguido."""
+    index = config.STATIC_DIR / "index.html"
+    if index.exists():
+        return FileResponse(
+            index,
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                "Pragma": "no-cache",
+                "Expires": "0",
+            },
+        )
+    return JSONResponse({"status": "ok", "message": "static/index.html no encontrado"})
+
+
+@app.get("/admin", include_in_schema=False)
+async def admin_panel():
+    """Sirve el dashboard admin para ver leads y reuniones."""
+    panel = config.STATIC_DIR / "admin.html"
+    if panel.exists():
+        return FileResponse(
+            panel,
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate",
+                "Pragma": "no-cache",
+            },
+        )
+    return JSONResponse({"error": "admin.html no encontrado"}, status_code=404)
+
+
+@app.get("/api/health")
+async def health():
+    return {
+        "status": "ok",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "lead_channels": config.lead_channels_enabled(),
+        "sessions_active": len(SESSIONS),
+        "leads_excel": {
+            "path": excel_path_str(),
+            "count": count_leads(),
+        },
+    }
+
+
+# ==== NUEVOS ENDPOINTS DE LEADS (presupuestador + form contacto) ====
+#
+# Estos endpoints escriben al Excel acumulativo (leads_pmd.xlsx).
+# El bot de chat sigue usando dispatch_lead (email + sheets + webhook)
+# Y además también va al Excel a través de la función append_lead
+# (se enchufa en el flujo de chat en /api/chat).
+
+@app.post("/api/lead/presupuesto")
+async def lead_presupuesto(payload: dict):
+    """Recibe el lead generado al completar el wizard del presupuestador."""
+    payload.setdefault("origen", "presupuestador")
+    ok = await asyncio.to_thread(append_lead, payload)
+    logger.info(
+        "Lead presupuestador: nombre=%s email=%s wsp=%s total=%s-%s USD",
+        payload.get("nombre"), payload.get("email"), payload.get("whatsapp"),
+        payload.get("total_min_usd"), payload.get("total_max_usd"),
+    )
+    return {"ok": ok, "total_leads": count_leads()}
+
+
+@app.post("/api/lead/contacto")
+async def lead_contacto(payload: dict):
+    """Recibe el lead del formulario de contacto de la landing.
+
+    El payload trae 'motivo_consulta' que puede ser:
+      - Casa nueva / Reforma / Edificio  → origen=contacto-construccion
+      - Inversión — ...                  → origen=contacto-inversion
+      - Automatización — ...             → origen=contacto-automatizacion
+    Así el dashboard los clasifica correctamente.
+    """
+    motivo = (payload.get("motivo_consulta") or "").lower()
+
+    if "inversi" in motivo:
+        payload.setdefault("origen", "contacto-inversion")
+    elif "automat" in motivo:
+        payload.setdefault("origen", "contacto-automatizacion")
+    elif any(w in motivo for w in ("casa", "reforma", "edificio", "ampliaci")):
+        payload.setdefault("origen", "contacto-construccion")
+    else:
+        payload.setdefault("origen", "contacto")
+
+    # Mapeamos motivo_consulta a tipo_proyecto para que el dashboard lo muestre
+    if not payload.get("tipo_proyecto") and payload.get("motivo_consulta"):
+        payload["tipo_proyecto"] = payload["motivo_consulta"]
+
+    ok = await asyncio.to_thread(append_lead, payload)
+    logger.info(
+        "Lead contacto: nombre=%s email=%s motivo=%s origen=%s",
+        payload.get("nombre"), payload.get("email"),
+        payload.get("motivo_consulta"), payload.get("origen"),
+    )
+    return {"ok": ok, "total_leads": count_leads()}
+
+
+# ==== AGENDA DE REUNIONES ====
+@app.get("/api/slots")
+async def api_slots(n: int = 3):
+    """Devuelve los próximos N slots disponibles (default 3).
+    El bot Lucas usa esto cuando el cliente quiere agendar."""
+    slots = await asyncio.to_thread(next_available_slots, n)
+    return {"slots": slots, "timezone": "America/Argentina/Buenos_Aires"}
+
+
+@app.post("/api/book")
+async def api_book(payload: dict):
+    """Reserva un slot. payload={slot_key, nombre, email, whatsapp, canal?, notas?, session_id?}.
+    Dispara notificación inmediata por Telegram/webhook si están configurados."""
+    result = await asyncio.to_thread(book_slot, payload)
+    if not result.get("ok"):
+        return result
+    logger.info(
+        "BOOKING: id=%s slot=%s por %s (%s, %s)",
+        result.get("booking_id"), result.get("slot_key"),
+        payload.get("nombre"), payload.get("email"), payload.get("whatsapp"),
+    )
+    # Notificación inmediata (en background, no bloquea la respuesta)
+    booking_snapshot = {**payload, **result}
+    asyncio.create_task(notify_new_booking(booking_snapshot))
+    return result
+
+
+# ==== ARRANQUE DEL REMINDER LOOP ====
+# Al bootear la app, prendemos el loop que avisa 15 min antes de cada reunión.
+@app.on_event("startup")
+async def _startup_reminder():
+    asyncio.create_task(reminder_loop())
+    logger.info("Reminder loop arrancado. Canales notif: %s", notif_configured())
+
+
+@app.get("/api/bookings")
+async def api_bookings():
+    """Lista las reservas futuras (dashboard del equipo PMD)."""
+    return {"bookings": await asyncio.to_thread(upcoming_bookings)}
+
+
+@app.get("/api/telegram/detect")
+async def telegram_detect():
+    """Helper ONE-SHOT para detectar el chat_id del bot de Telegram.
+
+    Uso: después de mandarle cualquier mensaje al bot desde Telegram,
+    abrís http://127.0.0.1:8000/api/telegram/detect  y te devuelve los
+    chat_ids encontrados. Pegás el número en TELEGRAM_CHAT_ID del .env.
+    """
+    import os
+    import httpx as _httpx
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+    if not token:
+        return {
+            "ok": False,
+            "error": "Falta TELEGRAM_BOT_TOKEN en .env. Pegá el token del bot primero."
+        }
+    try:
+        async with _httpx.AsyncClient(timeout=10) as cl:
+            r = await cl.get(f"https://api.telegram.org/bot{token}/getUpdates")
+            data = r.json()
+        chats = {}
+        for upd in data.get("result", []):
+            msg = upd.get("message") or upd.get("edited_message") or {}
+            chat = msg.get("chat") or {}
+            if chat.get("id"):
+                cid = str(chat["id"])
+                chats[cid] = {
+                    "chat_id": chat["id"],
+                    "type": chat.get("type"),
+                    "first_name": chat.get("first_name"),
+                    "username": chat.get("username"),
+                }
+        if not chats:
+            return {
+                "ok": False,
+                "hint": "No hay mensajes todavía. Abrí el bot en Telegram y mandale /start o cualquier mensaje. Después recargá esta URL.",
+                "updates_count": 0,
+            }
+        return {
+            "ok": True,
+            "chats": list(chats.values()),
+            "instrucciones": "Copiá el chat_id que queres usar y pegalo en TELEGRAM_CHAT_ID del archivo .env. Después reiniciá el bot.",
+        }
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
+@app.post("/api/session/new", response_model=SessionResponse)
+async def new_session():
+    """Crea una sesión nueva y devuelve el saludo inicial de Lucas.
+    El saludo se calcula en el momento (hora del día de Argentina)."""
+    session_id = uuid.uuid4().hex
+    greeting = get_initial_greeting()
+    SESSIONS[session_id] = {
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "history": [
+            {"role": "assistant", "content": greeting},
+        ],
+        "lead_captured": False,
+    }
+    logger.info("Nueva sesión creada: %s", session_id)
+    return SessionResponse(session_id=session_id, greeting=greeting)
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat(payload: ChatMessage):
+    """Recibe un mensaje del cliente y devuelve la respuesta de Lucas."""
+    session = _get_session(payload.session_id)
+    history: list[dict] = session["history"]
+
+    # Agregar mensaje del usuario
+    history.append({"role": "user", "content": payload.message})
+
+    # Detectar contacto antes de llamar al LLM (por si hay que capturar lead)
+    contact = extract_contact(payload.message)
+    should_dispatch_lead = False
+
+    if (contact["email"] or contact["phone"]) and not session["lead_captured"]:
+        session["lead_captured"] = True
+        should_dispatch_lead = True
+        logger.info(
+            "Contacto detectado en sesión %s — email=%s phone=%s",
+            payload.session_id, contact["email"], contact["phone"],
+        )
+
+    # Arrancamos la llamada al LLM EN PARALELO al delay de "escribiendo".
+    # Antes era secuencial: delay(1.5-4s) + claude(1-3s) = 2.5-7s total.
+    # Ahora corren juntos: total = max(delay, claude_time) ≈ 1-3s.
+    llm_task = asyncio.create_task(asyncio.to_thread(generate_response, history))
+
+    # Esperar el delay humano en paralelo con el LLM
+    await _simulate_typing_delay()
+
+    # Si el LLM todavía no terminó, esperamos lo que falte.
+    # Si ya terminó, esto es instantáneo.
+    raw_reply, provider = await llm_task
+
+    # Dividir en múltiples mensajes si Lucas usó [[SPLIT]]
+    replies = split_reply(raw_reply)
+
+    # Guardamos en el historial el texto unido (sin el delimitador) para que
+    # el LLM tenga contexto coherente de lo que ya dijo en próximas turnos.
+    clean_reply = "\n\n".join(replies)
+    history.append({"role": "assistant", "content": clean_reply})
+
+    # Disparar lead EN BACKGROUND — no bloquea la respuesta al cliente.
+    # El usuario ve la respuesta de Lucas al instante mientras los
+    # canales (email, Sheets, webhook) corren en paralelo.
+    if should_dispatch_lead:
+        convo_text = _full_conversation_text(history)
+        history_snapshot = list(history)
+
+        # Escribir al Excel acumulativo (rápido, no bloquea)
+        excel_payload = {
+            "origen": "chat",
+            "nombre": contact.get("name", ""),
+            "email": contact.get("email", ""),
+            "whatsapp": contact.get("phone", ""),
+            "mensaje": convo_text[-800:],  # últimos 800 chars de la conversación
+            "session_id": payload.session_id,
+        }
+        asyncio.create_task(asyncio.to_thread(append_lead, excel_payload))
+
+        async def _dispatch_bg():
+            try:
+                channels = await asyncio.to_thread(
+                    dispatch_lead,
+                    session_id=payload.session_id,
+                    contact=contact,
+                    conversation_text=convo_text,
+                    full_history=history_snapshot,
+                )
+                logger.info("Lead disparado en background: %s", channels)
+            except Exception as exc:  # pylint: disable=broad-except
+                logger.exception("Error en dispatch de lead: %s", exc)
+        asyncio.create_task(_dispatch_bg())
+
+    return ChatResponse(
+        reply=replies[0],          # compat con clientes viejos
+        replies=replies,           # lista completa para el widget actual
+        provider=provider,
+        lead_captured=should_dispatch_lead,
+        lead_channels=None,        # el dispatch corre en background, el cliente no espera ese dato
+    )
+
+
+@app.get("/api/leads")
+async def list_leads():
+    """Lista los leads capturados (desde el backup local en logs/leads/)."""
+    leads_dir = config.LOGS_DIR / "leads"
+    if not leads_dir.exists():
+        return {"total": 0, "leads": []}
+
+    leads = []
+    for path in sorted(leads_dir.glob("*.json"), reverse=True)[:100]:
+        try:
+            leads.append(json.loads(path.read_text(encoding="utf-8")))
+        except Exception:  # pylint: disable=broad-except
+            continue
+    return {"total": len(leads), "leads": leads}
+
+
+# ==== UPLOADER DE IMAGEN HERO ====
+#
+# Pagina /upload con drag-drop para subir la imagen del hero sin tocar
+# Explorador de archivos. Guarda como static/hero.jpg directamente.
+
+UPLOAD_PAGE_HTML = """<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Upload · PMD</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  body{background:#F4F2EE;color:#1C1C1A;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{max-width:560px;width:100%;background:#fff;border:1px solid rgba(28,28,26,.09);border-radius:4px;padding:40px;box-shadow:0 30px 60px rgba(28,51,86,.12)}
+  h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:500;margin-bottom:8px;color:#1C3356}
+  p.sub{color:#52524F;font-size:14.5px;margin-bottom:20px;line-height:1.6}
+  .target-picker{display:flex;gap:10px;margin-bottom:20px}
+  .target-picker label{flex:1;padding:14px 16px;border:1.5px solid rgba(28,28,26,.15);border-radius:4px;cursor:pointer;text-align:center;transition:all .2s;background:#F4F2EE}
+  .target-picker label strong{display:block;font-size:14px;color:#1C3356;margin-bottom:4px}
+  .target-picker label small{display:block;font-size:11.5px;color:#52524F}
+  .target-picker input{display:none}
+  .target-picker input:checked+*{background:#fff;border-color:#1C3356;box-shadow:0 0 0 3px rgba(91,163,201,.18)}
+  .target-picker label:has(input:checked){background:#fff;border-color:#1C3356;box-shadow:0 0 0 3px rgba(91,163,201,.18)}
+  .drop{border:2px dashed #3B6EA5;border-radius:4px;padding:48px 24px;text-align:center;cursor:pointer;transition:all .2s ease;background:#F4F2EE}
+  .drop:hover,.drop.drag{background:#ECEAE5;border-color:#1C3356}
+  .drop svg{width:44px;height:44px;stroke:#3B6EA5;margin-bottom:12px}
+  .drop strong{display:block;font-size:15px;color:#1C3356;margin-bottom:4px}
+  .drop span{color:#52524F;font-size:13px}
+  input[type=file]{display:none}
+  .status{margin-top:20px;padding:14px;border-radius:4px;font-size:14px;display:none}
+  .status.ok{background:#E6F4EC;color:#1a6b3e;display:block}
+  .status.err{background:#FDE8E8;color:#8a1e1e;display:block}
+  .preview{margin-top:20px;display:none}
+  .preview img{width:100%;border-radius:4px;max-height:240px;object-fit:cover}
+  .back{margin-top:24px;text-align:center}
+  .back a{color:#3B6EA5;text-decoration:none;font-size:13px;letter-spacing:.05em}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Subir imagen</h1>
+  <p class="sub">Elegi a donde va esta imagen, despues arrastrala o haz click para seleccionarla. Se guarda al toque.</p>
+
+  <div class="target-picker">
+    <label>
+      <input type="radio" name="target" value="hero" checked>
+      <div>
+        <strong>Hero (exterior)</strong>
+        <small>La foto de la casa afuera</small>
+      </div>
+    </label>
+    <label>
+      <input type="radio" name="target" value="interior">
+      <div>
+        <strong>Interior</strong>
+        <small>Lo que se ve cuando se abren las puertas</small>
+      </div>
+    </label>
+  </div>
+
+  <label class="drop" id="drop">
+    <svg fill="none" stroke-width="1.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+      <polyline points="17 8 12 3 7 8"/>
+      <line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>
+    <strong>Soltar imagen aqui</strong>
+    <span>o hacer click para elegir archivo (JPG o PNG)</span>
+    <input type="file" id="file" accept="image/*">
+  </label>
+
+  <div class="status" id="status"></div>
+  <div class="preview" id="preview"><img id="img" alt=""></div>
+
+  <div class="back">
+    <a href="/">← Volver a la landing</a>
+  </div>
+</div>
+
+<script>
+const drop = document.getElementById('drop');
+const file = document.getElementById('file');
+const status = document.getElementById('status');
+const preview = document.getElementById('preview');
+const img = document.getElementById('img');
+
+function currentTarget(){
+  const checked = document.querySelector('input[name=target]:checked');
+  return checked ? checked.value : 'hero';
+}
+
+['dragover','dragenter'].forEach(e => drop.addEventListener(e, ev => {
+  ev.preventDefault(); drop.classList.add('drag');
+}));
+['dragleave','drop'].forEach(e => drop.addEventListener(e, ev => {
+  ev.preventDefault(); drop.classList.remove('drag');
+}));
+drop.addEventListener('drop', ev => {
+  if (ev.dataTransfer.files.length) upload(ev.dataTransfer.files[0]);
+});
+file.addEventListener('change', () => {
+  if (file.files.length) upload(file.files[0]);
+});
+
+async function upload(f){
+  if (!f.type.startsWith('image/')){
+    status.textContent = 'Ese archivo no parece una imagen.';
+    status.className = 'status err';
+    return;
+  }
+  status.textContent = 'Subiendo...';
+  status.className = 'status';
+  const target = currentTarget();
+  const fd = new FormData();
+  fd.append('file', f);
+  try{
+    const r = await fetch('/api/upload-' + target, { method:'POST', body: fd });
+    const data = await r.json();
+    if (!r.ok || !data.ok) throw new Error(data.detail || 'upload failed');
+    status.textContent = 'OK: ' + data.path;
+    status.className = 'status ok';
+    img.src = data.path + '?t=' + Date.now();
+    preview.style.display = 'block';
+  }catch(err){
+    status.textContent = 'Error: ' + err.message;
+    status.className = 'status err';
+  }
+}
+</script>
+</body>
+</html>"""
+
+
+@app.get("/upload", include_in_schema=False)
+async def upload_page():
+    """Página con drag-drop para subir imágenes del hero / interior."""
+    return HTMLResponse(UPLOAD_PAGE_HTML)
+
+
+async def _save_upload(file: UploadFile, dest_name: str) -> dict:
+    """Helper: guarda el archivo subido como static/<dest_name>."""
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Archivo no es una imagen")
+    dest = config.STATIC_DIR / dest_name
+    try:
+        content = await file.read()
+        dest.write_bytes(content)
+        logger.info("Imagen subida: %s (%d bytes)", dest, len(content))
+        return {"ok": True, "path": f"/static/{dest_name}", "bytes": len(content)}
+    except Exception as exc:
+        logger.exception("Error guardando imagen: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.post("/api/upload-hero")
+async def upload_hero(file: UploadFile = File(...)):
+    """Sube la imagen del hero (exterior de la casa) → static/hero.jpg"""
+    return await _save_upload(file, "hero.jpg")
+
+
+@app.post("/api/upload-interior")
+async def upload_interior(file: UploadFile = File(...)):
+    """Sube la imagen del interior → static/interior.jpg"""
+    return await _save_upload(file, "interior.jpg")
+
+
+# Alias legacy — algún frontend viejo puede llamar a /api/upload-image
+@app.post("/api/upload-image")
+async def upload_image(file: UploadFile = File(...)):
+    return await _save_upload(file, "hero.jpg")
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host=config.HOST,
+        port=config.PORT,
+        reload=config.DEBUG,
+    )

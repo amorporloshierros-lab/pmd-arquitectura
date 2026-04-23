@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="PMD Arquitectura — Especialistas en steel framing en Nordelta, Tigre, San Isidro y Escobar. Construcción, ampliación y proyectos llave en mano desde 2014.">
+<title>PMD Arquitectura — Construcción y Diseño · GBA Norte</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='10' width='7' height='12' fill='%235BA3C9'/%3E%3Crect x='13' y='10' width='7' height='12' fill='%233B6EA5'/%3E%3Crect x='22' y='10' width='7' height='12' fill='%232B4E7A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --b1:#5BA3C9;--b2:#3B6EA5;--b3:#2B4E7A;--b4:#1C3356;
+  --ink:#1C1C1A;--ink2:#52524F;--ink3:#909090;--ink4:#C8C8C5;
+  --bg:#F4F2EE;--bg2:#ECEAE5;--white:#FFFFFF;
+  --border:rgba(28,28,26,.09);--border2:rgba(28,28,26,.05);
+  --r:2px;--r2:4px;
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--bg);overflow-x:hidden}
+img{display:block;max-width:100%}
+button{cursor:pointer;font-family:inherit}
+a{text-decoration:none;color:inherit}
+
+.serif{font-family:'Cormorant Garamond',serif}
+.container{max-width:1180px;margin:0 auto;padding:0 2rem}
+
+/* ── REVEAL ANIMATIONS ──
+   .reveal            — fade-up estándar (default)
+   .reveal-image      — blur-in + scale para fotos grandes
+   .reveal-left       — entra desde la izquierda
+   .reveal-right      — entra desde la derecha
+   .reveal-scale      — zoom-in sutil para cards
+   Todas usan IntersectionObserver bidireccional (entran y salen). */
+.reveal{opacity:0;transform:translateY(60px);transition:opacity 1.4s cubic-bezier(.22,.61,.36,1),transform 1.4s cubic-bezier(.22,.61,.36,1);will-change:opacity,transform}
+.reveal.in-view{opacity:1;transform:translateY(0)}
+
+.reveal-image{opacity:0;transform:scale(1.06);filter:blur(14px);transition:opacity 1.8s cubic-bezier(.22,.61,.36,1),transform 1.8s cubic-bezier(.22,.61,.36,1),filter 1.5s cubic-bezier(.22,.61,.36,1);will-change:opacity,transform,filter}
+.reveal-image.in-view{opacity:1;transform:scale(1);filter:blur(0)}
+
+.reveal-left{opacity:0;transform:translateX(-60px);transition:opacity 1.2s cubic-bezier(.22,.61,.36,1),transform 1.2s cubic-bezier(.22,.61,.36,1);will-change:opacity,transform}
+.reveal-left.in-view{opacity:1;transform:translateX(0)}
+
+.reveal-right{opacity:0;transform:translateX(60px);transition:opacity 1.2s cubic-bezier(.22,.61,.36,1),transform 1.2s cubic-bezier(.22,.61,.36,1);will-change:opacity,transform}
+.reveal-right.in-view{opacity:1;transform:translateX(0)}
+
+.reveal-scale{opacity:0;transform:scale(.94);transition:opacity 1.2s cubic-bezier(.22,.61,.36,1),transform 1.2s cubic-bezier(.22,.61,.36,1);will-change:opacity,transform}
+.reveal-scale.in-view{opacity:1;transform:scale(1)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  .reveal,.reveal-image,.reveal-left,.reveal-right,.reveal-scale{opacity:1;transform:none;filter:none}
+}
+
+/* ── LOGO 3 CUADRADOS ── */
+.sqs{display:flex;gap:4px;align-items:center;transform-style:preserve-3d;will-change:transform}
+.sq{width:9px;height:9px;border-radius:1px;animation:sqWave 2.4s cubic-bezier(.4,0,.2,1) infinite,sqShimmer 2.4s cubic-bezier(.4,0,.2,1) infinite}
+.s1{background:var(--b1);animation-delay:0s,0s}
+.s2{background:var(--b2);animation-delay:.18s,.18s}
+.s3{background:var(--b3);animation-delay:.36s,.36s}
+@keyframes sqWave{0%,65%,100%{transform:translateY(0)}20%{transform:translateY(-5px)}35%{transform:translateY(0)}}
+@keyframes sqShimmer{0%,60%,100%{filter:brightness(1);box-shadow:none}15%{filter:brightness(1.5) saturate(1.2);box-shadow:0 0 10px 2px rgba(91,163,201,.7)}30%{filter:brightness(1.2);box-shadow:0 0 4px 1px rgba(91,163,201,.3)}}
+
+/* ── NAV ──
+   Estructura: logo pegado a la izquierda | links centro | botones derecha */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:78px;display:flex;align-items:center;background:rgba(244,242,238,.92);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:all .3s}
+nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,86,.08);height:64px;background:rgba(244,242,238,.96)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:none;margin:0;padding:0 2.5rem;gap:2rem}
+.brand{display:flex;align-items:center;gap:16px;perspective:600px;flex-shrink:0}
+.brand .sqs{gap:6px}
+.brand .sq{width:15px;height:15px;border-radius:2px}
+.brand-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;letter-spacing:.02em;color:var(--ink);white-space:nowrap;line-height:1}
+.nav.scrolled .brand-name{font-size:22px}
+.nav-links{display:flex;align-items:center;gap:2rem;margin-left:auto;margin-right:1.5rem}
+.nav-links a{font-size:13.5px;color:var(--ink2);transition:color .2s;position:relative}
+.nav-links a::after{content:'';position:absolute;left:0;right:0;bottom:-6px;height:1px;background:var(--b3);transform:scaleX(0);transform-origin:center;transition:transform .25s var(--ease)}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-actions{display:flex;align-items:center;gap:.7rem;flex-shrink:0}
+.nav-btn-hogar{
+  display:inline-flex;align-items:center;gap:8px;
+  height:38px;padding:0 16px;
+  background:transparent;color:var(--ink);
+  border:1px solid var(--border);border-radius:var(--r);
+  font-size:13px;font-weight:500;letter-spacing:.01em;
+  transition:all .2s var(--ease);
+  cursor:pointer;font-family:inherit;
+}
+.nav-btn-hogar .dot{
+  width:7px;height:7px;border-radius:50%;background:var(--b1);
+  box-shadow:0 0 0 3px rgba(91,163,201,.25);
+  animation:navDot 2s ease-in-out infinite;
+}
+@keyframes navDot{50%{box-shadow:0 0 0 6px rgba(91,163,201,0)}}
+.nav-btn-hogar:hover{border-color:var(--b3);background:rgba(43,78,122,.05)}
+.nav-cta{
+  height:38px;padding:0 20px;
+  background:var(--b3);color:#fff;border:none;border-radius:var(--r);
+  font-size:13px;font-weight:500;letter-spacing:.01em;
+  transition:all .2s var(--ease);cursor:pointer;font-family:inherit;
+}
+.nav-cta:hover{background:var(--b4);transform:translateY(-1px);box-shadow:0 8px 20px -8px rgba(28,51,86,.45)}
+@media(max-width:900px){
+  .nav-links{display:none}
+  .nav-actions{gap:.4rem}
+  .nav-btn-hogar{height:34px;padding:0 12px;font-size:12px}
+  .nav-btn-hogar span:not(.dot){display:none}
+  .nav-cta{height:34px;padding:0 14px;font-size:12px}
+  .brand-name{font-size:20px}
+  .brand .sq{width:12px;height:12px}
+}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:grid;grid-template-columns:1.05fr 1fr;padding-top:78px;align-items:center;gap:0}
+.hero-left{display:flex;flex-direction:column;justify-content:center;padding:4rem 3rem 4rem 2.5rem;max-width:none;margin:0}
+.hero-kicker{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--b2);margin-bottom:1.2rem;display:flex;align-items:center;gap:10px}
+.hero-kicker::before{content:'';width:22px;height:1px;background:var(--b2)}
+.hero-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3.8rem, 8.5vw, 8rem);
+  font-weight:500;line-height:.96;
+  color:var(--ink);margin-bottom:1.8rem;
+  letter-spacing:-.025em;
+}
+.hero-title em{font-style:italic;color:var(--b2)}
+.hero-sub{font-size:15px;color:var(--ink2);line-height:1.75;max-width:460px;margin-bottom:2.2rem}
+.hero-actions{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}
+.btn-primary{height:48px;padding:0 28px;background:var(--b3);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:500;transition:all .2s;display:flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--b4);transform:translateY(-1px)}
+.btn-ghost{height:48px;padding:0 24px;background:transparent;color:var(--ink);border:1px solid var(--border);border-radius:var(--r);font-size:14px;transition:all .2s}
+.btn-ghost:hover{background:var(--bg2);border-color:var(--ink4)}
+.hero-trust{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border);display:flex;gap:2.5rem}
+.ht-item{display:flex;flex-direction:column;gap:3px}
+.ht-num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:500;color:var(--ink);line-height:1}
+.ht-label{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em}
+.hero-right{position:relative;overflow:hidden;border-radius:var(--r2);box-shadow:0 30px 60px rgba(28,51,86,.2)}
+.hero-right img{width:100%;height:100%;object-fit:cover}
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;gap:40px;padding:60px 24px}
+  .hero-left{padding:0}
+  .hero-right{min-height:400px}
+}
+
+/* ── TESTIMONIOS ── */
+.testimonios{background:#1C1C1A;padding:5rem 0}
+.testimonios .container{padding:0}
+.testimonios-head{text-align:center;padding:0 2rem 2.5rem}
+.testimonios-head .eyebrow{color:var(--b1);justify-content:center}
+.testimonios-head .eyebrow::before{background:var(--b1)}
+.testimonios-head .section-title{color:#fff}
+.testimonios-head .section-title em{color:var(--b1)}
+.testimonios-head .section-sub{color:rgba(255,255,255,.55)}
+.test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.08)}
+.test-card{padding:2.5rem 2rem;background:#1C1C1A;transition:background .2s}
+.test-card:hover{background:#252523}
+.test-quote{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-style:italic;color:rgba(255,255,255,.85);line-height:1.6;margin-bottom:1.5rem}
+.test-quote::before{content:'"';font-size:3rem;color:var(--b1);line-height:.5;display:block;margin-bottom:.5rem}
+.test-author{display:flex;flex-direction:column;gap:3px}
+.test-name{font-size:13px;font-weight:500;color:#fff}
+.test-obra{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em}
+@media(max-width:900px){.test-grid{grid-template-columns:1fr}}
+
+/* ── DIFERENCIADORES ── */
+.dif-section{padding:6rem 0;background:var(--white)}
+.dif-header{text-align:center;margin-bottom:4rem}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3rem);font-weight:500;color:var(--ink);line-height:1.15;margin-bottom:.8rem}
+.section-sub{font-size:15px;color:var(--ink3);max-width:480px;margin:0 auto;line-height:1.7}
+.eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--b2);display:flex;align-items:center;gap:10px;margin-bottom:.8rem}
+.eyebrow::before{content:'';width:22px;height:1px;background:var(--b2)}
+.dif-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border)}
+.dif-item{padding:2.5rem 2rem;border-right:1px solid var(--border);transition:background .2s;position:relative;overflow:hidden}
+.dif-item:last-child{border:none}
+.dif-item::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--b2),var(--b1));transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease)}
+.dif-item:hover::before{transform:scaleX(1)}
+.dif-item:hover{background:var(--bg)}
+.dif-num{font-family:'Cormorant Garamond',serif;font-size:3.5rem;font-weight:400;color:var(--ink4);line-height:1;margin-bottom:1rem}
+.dif-title{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:.6rem}
+.dif-desc{font-size:13px;color:var(--ink3);line-height:1.7}
+@media(max-width:900px){
+  .dif-grid{grid-template-columns:1fr}
+  .dif-item{border-right:none;border-bottom:1px solid var(--border)}
+  .dif-item:last-child{border-bottom:none}
+}
+
+/* ── PORTFOLIO ── */
+.portfolio-section{padding:6rem 0;background:var(--bg)}
+.pf-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2.5rem}
+.pf-filters{display:flex;gap:.4rem}
+.pf-btn{height:30px;padding:0 14px;border:1px solid var(--border);border-radius:20px;background:transparent;font-size:11px;color:var(--ink3);transition:all .15s;letter-spacing:.04em}
+.pf-btn.active,.pf-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)}
+.pj-card{
+  background:var(--white);overflow:hidden;position:relative;cursor:pointer;
+  transition: transform .5s cubic-bezier(.2,.8,.2,1),
+              box-shadow .5s cubic-bezier(.2,.8,.2,1);
+  box-shadow: 0 2px 8px rgba(28,51,86,.04);
+}
+.pj-card:hover{
+  z-index:2;
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 24px 48px -20px rgba(28,51,86,.35), 0 12px 20px -12px rgba(28,51,86,.2);
+}
+.pj-card.hidden{display:none}
+.pj-img{height:240px;overflow:hidden;position:relative;background:linear-gradient(135deg,var(--bg2),var(--bg))}
+.pj-img img{
+  width:100%;height:100%;object-fit:cover;
+  transition: transform .9s cubic-bezier(.2,.8,.2,1),
+              filter .6s cubic-bezier(.2,.8,.2,1);
+  filter: saturate(.95) brightness(.97);
+}
+.pj-card:hover .pj-img img{
+  transform: scale(1.12);
+  filter: saturate(1.1) brightness(1.02);
+}
+/* Overlay sutil que aparece al hover — gradient negro desde abajo para que
+   el texto del body quede más legible si hay color claro en la foto */
+.pj-img::after{
+  content:'';
+  position:absolute; inset:0; pointer-events:none;
+  background: linear-gradient(180deg, transparent 40%, rgba(28,51,86,.35) 100%);
+  opacity: 0;
+  transition: opacity .4s cubic-bezier(.2,.8,.2,1);
+}
+.pj-card:hover .pj-img::after{ opacity: 1 }
+.pj-content{padding:1.5rem}
+.pj-tag{display:inline-block;font-size:9px;color:var(--b3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;font-weight:600}
+.pj-name{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--ink);margin-bottom:4px}
+.pj-desc{font-size:13px;color:var(--ink2);line-height:1.5}
+@media(max-width:900px){.pf-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ── GALERÍA ── */
+.galeria{background:#1C1C1A;padding:5rem 0}
+.galeria .container{padding:0}
+.galeria-head{text-align:center;padding:0 2rem 2.5rem}
+.galeria-head .eyebrow{color:var(--b1);justify-content:center}
+.galeria-head .eyebrow::before{background:var(--b1)}
+.galeria-head .section-title{color:#fff}
+.galeria-head .section-title em{color:var(--b1)}
+.galeria-head .section-sub{color:rgba(255,255,255,.55)}
+.galeria-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:1px;background:rgba(0,0,0,.5);padding:1px}
+.gal-item{background:#2a2a2a;overflow:hidden;height:300px}
+.gal-item:first-child{grid-row:span 2;height:auto;min-height:612px}
+.gal-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s var(--ease)}
+.gal-item:hover img{transform:scale(1.06)}
+@media(max-width:900px){
+  .galeria-grid{grid-template-columns:1fr}
+  .gal-item:first-child{grid-row:auto;height:300px}
+}
+
+/* ── PROCESO — TIMELINE CINEMÁTICA CON OLA ──
+   Los pasos se iluminan secuencialmente al entrar al viewport.
+   El número grande, la línea guía y el contenido cobran vida en cascada. */
+.proceso{background:var(--white);padding:7rem 0;position:relative}
+.proceso-head{text-align:center;margin-bottom:4rem}
+.timeline{
+  display:flex;flex-direction:column;gap:0;
+  max-width:880px;margin:0 auto;position:relative;padding:0 1rem;
+}
+/* Línea guía vertical que une todos los pasos */
+.timeline::before{
+  content:'';position:absolute;left:calc(60px + 1rem);top:2rem;bottom:2rem;
+  width:2px;background:var(--border);z-index:0;
+}
+.timeline-item{
+  display:grid;grid-template-columns:120px 1fr;gap:2.5rem;
+  align-items:flex-start;padding:2rem 0;position:relative;z-index:1;
+  transition:transform .6s cubic-bezier(.2,.8,.2,1);
+}
+.timeline-marker{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  position:relative;height:100%;
+}
+.tm-num{
+  font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:500;
+  color:var(--ink4);line-height:1;position:relative;z-index:2;
+  width:60px;height:60px;display:flex;align-items:center;justify-content:center;
+  background:var(--white);border-radius:50%;
+  border:2px solid var(--border);
+  transition:all .6s cubic-bezier(.2,.8,.2,1);
+}
+/* Círculo de brillo detrás del número (pulse al activarse) */
+.tm-num::before{
+  content:'';position:absolute;inset:-6px;border-radius:50%;
+  background:radial-gradient(circle,rgba(91,163,201,.3) 0%,transparent 70%);
+  opacity:0;transition:opacity .6s;
+}
+.tm-line{
+  flex:1;width:2px;min-height:60px;
+  background:linear-gradient(180deg,var(--b3) 0%,transparent 100%);
+  margin-top:12px;opacity:0;transform-origin:top;transform:scaleY(0);
+  transition:opacity .5s .2s,transform .8s cubic-bezier(.4,0,.2,1) .2s;
+}
+.timeline-item:last-child .tm-line{display:none}
+.timeline-content{
+  padding-top:12px;opacity:.4;filter:grayscale(.3);
+  transition:opacity .6s cubic-bezier(.2,.8,.2,1),filter .6s;
+}
+.ti-title{
+  font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:500;
+  color:var(--ink);margin-bottom:.6rem;line-height:1.2;
+}
+.ti-desc{font-size:14px;color:var(--ink2);line-height:1.7}
+
+/* ESTADO ACTIVO — cuando .active se aplica al item (desde JS),
+   se ilumina con los 3 colores del logo PMD cíclicamente:
+   paso 1 → b1 (celeste claro), 2 → b2 (azul medio), 3 → b3 (azul profundo),
+   4 → vuelve a b1, etc. */
+.timeline-item.active .tm-num{
+  color:#fff;transform:scale(1.1);
+}
+.timeline-item.active .tm-num::before{opacity:1}
+.timeline-item.active .tm-line{opacity:1;transform:scaleY(1)}
+.timeline-item.active .timeline-content{opacity:1;filter:none}
+
+/* Color del círculo según posición del paso (ciclo b1 → b2 → b3) */
+.timeline-item:nth-child(3n+1).active .tm-num{
+  background:var(--b1);border-color:var(--b1);
+  box-shadow:0 14px 34px -10px rgba(91,163,201,.65);
+}
+.timeline-item:nth-child(3n+2).active .tm-num{
+  background:var(--b2);border-color:var(--b2);
+  box-shadow:0 14px 34px -10px rgba(59,110,165,.65);
+}
+.timeline-item:nth-child(3n+3).active .tm-num{
+  background:var(--b3);border-color:var(--b3);
+  box-shadow:0 14px 34px -10px rgba(43,78,122,.65);
+}
+/* Línea conectora del mismo color que el paso */
+.timeline-item:nth-child(3n+1).active .tm-line{
+  background:linear-gradient(180deg,var(--b1) 0%,transparent 100%);
+}
+.timeline-item:nth-child(3n+2).active .tm-line{
+  background:linear-gradient(180deg,var(--b2) 0%,transparent 100%);
+}
+.timeline-item:nth-child(3n+3).active .tm-line{
+  background:linear-gradient(180deg,var(--b3) 0%,transparent 100%);
+}
+
+/* HOVER — resalta el paso al pasar el mouse */
+.timeline-item:hover{transform:translateX(6px)}
+.timeline-item:hover .tm-num{border-color:var(--b2)}
+
+@media(max-width:700px){
+  .timeline-item{grid-template-columns:60px 1fr;gap:1.2rem}
+  .timeline::before{left:calc(30px + 1rem)}
+  .tm-num{width:50px;height:50px;font-size:2.2rem}
+  .timeline-content{padding-top:6px}
+  .ti-title{font-size:1.2rem}
+}
+
+/* ── MÉTRICAS ── */
+.metricas{background:var(--b3);color:var(--white);padding:5rem 0}
+.metricas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem}
+.metrica{text-align:center}
+.m-num{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:500;line-height:1}
+.m-label{font-size:13px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.1em;margin-top:.5rem}
+@media(max-width:900px){.metricas-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ── PRESUPUESTADOR ── */
+.presupuestador-section{padding:6rem 0 3rem;background:var(--bg)}
+.presupuestador-section .container{max-width:1000px}
+.presupuestador-head{text-align:center;margin-bottom:2rem}
+#presuIframe{display:block;margin:0 auto;border-radius:var(--r2)}
+
+/* ── ZONAS ── */
+.zonas-sec{background:#1C1C1A;padding:5rem 0}
+.zonas-sec .container{padding:0}
+.zonas-head{text-align:center;padding:0 2rem 2.5rem}
+.zonas-head .eyebrow{color:var(--b1);justify-content:center}
+.zonas-head .eyebrow::before{background:var(--b1)}
+.zonas-head .section-title{color:#fff}
+.zonas-head .section-title em{color:var(--b1)}
+.zonas-head .section-sub{color:rgba(255,255,255,.55)}
+.zonas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.08)}
+.zona-card{padding:2.5rem 2rem;background:#1C1C1A;transition:background .2s}
+.zona-card:hover{background:#252523}
+.zona-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:#fff;margin-bottom:.5rem}
+.zona-subs{font-size:13px;color:rgba(255,255,255,.6);margin-bottom:1rem;line-height:1.5}
+.zona-tag{display:inline-block;font-size:10px;background:rgba(91,163,201,.15);color:var(--b1);padding:4px 12px;border-radius:12px;font-weight:600;letter-spacing:.08em}
+@media(max-width:900px){.zonas-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ── CONTACTO ── */
+.contacto-sec{padding:6rem 0;background:var(--white)}
+.contacto-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem}
+.contacto-info{display:flex;flex-direction:column;gap:1.5rem}
+.ci-item{display:flex;flex-direction:column;gap:4px}
+.ci-label{font-size:11px;text-transform:uppercase;color:var(--b3);font-weight:600;letter-spacing:.1em}
+.ci-val{font-size:14px;color:var(--ink);line-height:1.6}
+.wa-big{display:inline-flex;align-items:center;gap:12px;padding:16px 24px;background:var(--b1);color:var(--white);border:none;border-radius:var(--r);font-weight:500;text-decoration:none;transition:background .2s;margin-top:1rem}
+.wa-big:hover{background:var(--b2)}
+.cf-form{display:flex;flex-direction:column;gap:1.5rem;padding:2.5rem;background:var(--bg);border-radius:var(--r2);border:1px solid var(--border)}
+.cf-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--ink);margin-bottom:.5rem}
+.cf-field{display:flex;flex-direction:column;gap:.5rem}
+.cf-field label{font-size:12px;font-weight:500;color:var(--ink);letter-spacing:.02em}
+.cf-field input,.cf-field select,.cf-field textarea{
+  padding:11px 14px;border:1px solid var(--border);border-radius:var(--r);font-family:inherit;font-size:14px;
+  background:var(--white);color:var(--ink);transition:border-color .2s;
+}
+.cf-field input:focus,.cf-field select:focus,.cf-field textarea:focus{outline:none;border-color:var(--b3)}
+.cf-field textarea{resize:vertical;min-height:100px}
+.cf-submit{padding:14px 28px;background:var(--b3);color:#fff;border:none;border-radius:var(--r);font-weight:500;cursor:pointer;transition:background .2s;align-self:flex-start}
+.cf-submit:hover{background:var(--b4)}
+.cf-status{font-size:13px;color:var(--b2)}
+@media(max-width:900px){.contacto-grid{grid-template-columns:1fr}}
+
+/* ── FOOTER ── */
+/* ── BANNER INVERSIÓN (CTA sutil antes del footer) ── */
+.inv-cta{
+  padding:4rem 0;
+  background:linear-gradient(90deg, var(--bg) 0%, var(--bg2) 100%);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.inv-cta-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:3rem;padding:0 1rem;
+}
+.inv-cta-left{max-width:640px}
+.inv-cta-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:500;
+  color:var(--ink);margin:.5rem 0 .8rem;line-height:1.15;
+}
+.inv-cta-title em{color:var(--b2);font-style:italic}
+.inv-cta-desc{font-size:14px;color:var(--ink2);line-height:1.7;margin:0}
+.inv-cta-btn{
+  flex-shrink:0;display:inline-flex;align-items:center;gap:10px;
+  height:52px;padding:0 26px;
+  background:var(--b3);color:#fff;border:none;border-radius:var(--r);
+  font-family:inherit;font-size:13.5px;font-weight:500;letter-spacing:.01em;
+  cursor:pointer;transition:all .3s var(--ease);
+  box-shadow:0 12px 26px -14px rgba(43,78,122,.45);
+}
+.inv-cta-btn svg{transition:transform .3s var(--ease)}
+.inv-cta-btn:hover{background:var(--b4);transform:translateY(-2px);box-shadow:0 18px 36px -16px rgba(43,78,122,.6)}
+.inv-cta-btn:hover svg{transform:translateX(4px)}
+@media(max-width:900px){
+  .inv-cta-inner{flex-direction:column;align-items:flex-start;gap:1.5rem}
+  .inv-cta-btn{width:100%;justify-content:center}
+}
+
+.footer-big{background:var(--b4);color:rgba(255,255,255,.85);padding:5rem 2rem 2rem}
+.footer-big .container{max-width:1180px}
+.footer-grid{display:grid;grid-template-columns:1.5fr repeat(5,1fr);gap:2.5rem;margin-bottom:2rem}
+.footer-brand-col{display:flex;flex-direction:column;gap:14px}
+/* Footer brand: los 3 cuadraditos orbitan SOBRE el área que ocupa
+   "PMD Arquitectura" (trayectoria circular 360°), más rotación 3D.
+   Animación perpetua, sin depender del scroll. */
+.footer-brand{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:18px;
+  perspective:900px;
+}
+/* Zona reservada para que los cuadrados orbiten — mismo ancho que
+   "PMD Arquitectura" de abajo. Altura suficiente para que el orbital vertical
+   no se recorte. */
+.footer-brand .sqs-orbit{
+  position:relative;
+  width:230px;   /* ancho aprox de "PMD Arquitectura" 1.5rem serif */
+  height:44px;   /* alto para permitir vaivén vertical */
+  display:block;
+}
+.footer-brand .sqs{
+  position:absolute;
+  top:50%; left:0;
+  transform:translateY(-50%);
+  gap:6px;
+  will-change:transform;
+  transform-style:preserve-3d;
+  backface-visibility:visible;
+  animation: footerOrbit 8s linear infinite;
+}
+.footer-brand .sq{width:13px;height:13px}
+.footer-brand .brand-name{
+  color:#fff;font-weight:600;font-family:'Cormorant Garamond',serif;
+  font-size:1.5rem;letter-spacing:.03em;white-space:nowrap;
+}
+
+/* Órbita real: los cuadrados recorren una trayectoria elíptica
+   sobre el ancho de "PMD Arquitectura". Usamos 8 keyframes para
+   aproximar el círculo con interpolación suave.
+   Translación base: translateY(-50%) para mantener el centrado vertical. */
+@keyframes footerOrbit{
+  0%   { transform: translate(0,        -50%)                rotateY(0deg) }
+  12.5%{ transform: translate(25px,     calc(-50% - 12px))   rotateY(45deg) }
+  25%  { transform: translate(85px,     calc(-50% - 17px))   rotateY(90deg) }
+  37.5%{ transform: translate(145px,    calc(-50% - 12px))   rotateY(135deg) }
+  50%  { transform: translate(170px,    -50%)                rotateY(180deg) }
+  62.5%{ transform: translate(145px,    calc(-50% + 12px))   rotateY(225deg) }
+  75%  { transform: translate(85px,     calc(-50% + 17px))   rotateY(270deg) }
+  87.5%{ transform: translate(25px,     calc(-50% + 12px))   rotateY(315deg) }
+  100% { transform: translate(0,        -50%)                rotateY(360deg) }
+}
+.footer-brand-col p{font-size:13px;color:rgba(255,255,255,.7);line-height:1.6}
+.footer-col h5{font-size:12px;text-transform:uppercase;color:#fff;font-weight:600;letter-spacing:.1em;margin-bottom:1rem}
+.footer-col a{font-size:13px;color:rgba(255,255,255,.7);display:block;margin-bottom:.8rem;transition:color .2s}
+.footer-col a:hover{color:#fff}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:1.5rem;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:rgba(255,255,255,.5)}
+.made-with{color:var(--b1);font-weight:500}
+@media(max-width:900px){
+  .footer-grid{grid-template-columns:1fr;text-align:center}
+  .footer-bottom{flex-direction:column;gap:12px;text-align:center}
+}
+
+/* ── CHAT WIDGET ── */
+.chat-fab{
+  position:fixed;bottom:28px;right:28px;width:64px;height:64px;border-radius:50%;
+  background:var(--b4);color:var(--white);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 32px rgba(28,51,86,.35);
+  z-index:999;transform:scale(1);transition:all .25s var(--ease)
+}
+.chat-fab:hover{transform:scale(1.06);box-shadow:0 12px 40px rgba(28,51,86,.45)}
+.chat-fab svg{width:28px;height:28px}
+.chat-fab .pulse{
+  position:absolute;inset:-8px;border-radius:50%;border:2px solid var(--b1);
+  opacity:0;animation:pulse 2.4s var(--ease) infinite
+}
+@keyframes pulse{0%{opacity:.6;transform:scale(.88)}100%{opacity:0;transform:scale(1.22)}}
+
+.chat-window{
+  position:fixed;bottom:28px;right:28px;width:min(420px,calc(100vw - 40px));
+  height:min(640px,calc(100vh - 60px));background:var(--white);
+  border-radius:var(--r2);box-shadow:0 20px 60px rgba(28,51,86,.18);
+  display:none;flex-direction:column;overflow:hidden;z-index:1000;border:1px solid var(--border)
+}
+.chat-window.open{display:flex;animation:chatIn .3s var(--ease)}
+@keyframes chatIn{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+.chat-header{
+  background:var(--b4);color:var(--white);padding:20px 22px;
+  display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(255,255,255,.08)
+}
+.chat-header-logo{display:flex;align-items:center;gap:10px;flex:1;perspective:600px}
+.chat-header-logo .sqs .sq{width:10px;height:10px}
+.chat-header-text{display:flex;flex-direction:column;min-width:0}
+.chat-header-text .brand{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--white)}
+.chat-header-text .agent{font-size:11.5px;color:rgba(255,255,255,.7);margin-top:2px;display:flex;align-items:center;gap:8px}
+.chat-header-text .agent::before{content:'';width:6px;height:6px;border-radius:50%;background:#4ADE80;box-shadow:0 0 0 3px rgba(74,222,128,.22)}
+.chat-close{background:transparent;border:none;color:var(--white);opacity:.6;cursor:pointer;font-size:24px;padding:4px 8px;transition:opacity .2s}
+.chat-close:hover{opacity:1}
+
+.chat-messages{flex:1;padding:20px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;background:var(--bg);scroll-behavior:smooth}
+.chat-messages::-webkit-scrollbar{width:6px}
+.chat-messages::-webkit-scrollbar-track{background:transparent}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--ink4);border-radius:3px}
+
+.msg{max-width:85%;padding:12px 16px;border-radius:10px;font-size:14px;line-height:1.55;word-wrap:break-word;animation:fadeIn .3s var(--ease)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.msg.assistant{background:var(--white);border:1px solid var(--border);border-top-left-radius:3px;align-self:flex-start;white-space:pre-wrap;color:var(--ink)}
+.msg.assistant strong{color:var(--b4);font-weight:600}
+.msg.assistant a{color:var(--b2);font-weight:500;text-decoration:underline;text-decoration-color:rgba(59,110,165,.3)}
+.msg.user{background:var(--b4);color:var(--white);border-top-right-radius:3px;align-self:flex-end}
+
+.typing{align-self:flex-start;background:var(--white);border:1px solid var(--border);border-top-left-radius:3px;padding:14px 18px;border-radius:10px;display:flex;gap:5px}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--b2);animation:bounce 1.4s infinite var(--ease) both}
+.typing span:nth-child(1){animation-delay:-.32s}
+.typing span:nth-child(2){animation-delay:-.16s}
+@keyframes bounce{0%,80%,100%{transform:scale(.5);opacity:.5}40%{transform:scale(1);opacity:1}}
+
+.chat-input-wrap{padding:14px 16px 10px;border-top:1px solid var(--border);background:var(--white)}
+.chat-input{display:flex;gap:10px;align-items:flex-end}
+.chat-input textarea{
+  flex:1;border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;
+  font-family:inherit;font-size:14px;resize:none;min-height:42px;max-height:120px;
+  outline:none;line-height:1.45;background:var(--bg);color:var(--ink);transition:border-color .2s
+}
+.chat-input textarea:focus{border-color:var(--b3);background:var(--white)}
+.chat-send{
+  background:var(--b4);color:var(--white);border:none;width:42px;height:42px;
+  border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .2s var(--ease);flex-shrink:0
+}
+.chat-send:hover:not(:disabled){background:var(--b2);transform:scale(1.05)}
+.chat-send:disabled{opacity:.4;cursor:not-allowed}
+.chat-footer{text-align:center;font-size:10px;color:var(--ink3);padding:8px 0 6px;letter-spacing:.08em;text-transform:uppercase}
+.chat-footer span{color:var(--b3);font-weight:500}
+
+/* ── TRIGGER PILARES — botón para abrir la sección "Qué hacemos" ── */
+.pilares-trigger{
+  padding:5rem 0;background:var(--white);
+  display:flex;flex-direction:column;align-items:center;gap:1.2rem;
+  text-align:center;
+}
+.pilares-trigger .eyebrow{justify-content:center}
+.pilares-trigger h3{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.6rem,3vw,2.2rem);font-weight:500;
+  color:var(--ink);max-width:680px;line-height:1.2;
+}
+.pilares-trigger h3 em{color:var(--b2);font-style:italic}
+.pilares-trigger p{color:var(--ink3);font-size:14px;max-width:480px}
+.pilares-trigger-btn{
+  margin-top:1rem;display:inline-flex;align-items:center;gap:10px;
+  height:52px;padding:0 30px;
+  background:linear-gradient(135deg,var(--b2) 0%,var(--b3) 100%);
+  color:#fff;border:none;border-radius:var(--r);
+  font-family:inherit;font-size:14px;font-weight:500;letter-spacing:.02em;
+  cursor:pointer;transition:all .3s var(--ease);
+  box-shadow:0 14px 30px -14px rgba(43,78,122,.45);
+}
+.pilares-trigger-btn svg{width:18px;height:18px;transition:transform .3s var(--ease)}
+.pilares-trigger-btn:hover{transform:translateY(-2px);box-shadow:0 20px 40px -16px rgba(43,78,122,.55)}
+.pilares-trigger-btn:hover svg{transform:translate(3px,-3px)}
+
+/* El contenedor .pilares arranca OCULTO.
+   Cuando se le agrega .open desde JS (al clickear el botón),
+   se expande y se muestra con animación. */
+.pilares{
+  padding:0;background:linear-gradient(180deg,var(--white) 0%,var(--bg) 100%);
+  position:relative;overflow:hidden;
+  max-height:0;opacity:0;
+  transition:max-height .8s cubic-bezier(.4,0,.2,1),
+             opacity .6s .1s,padding .6s cubic-bezier(.4,0,.2,1);
+}
+.pilares.open{padding:7rem 0;max-height:3000px;opacity:1}
+.pilares::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 0%,var(--border) 40%,var(--border) 60%,transparent 100%);
+}
+.pilares-head{text-align:center;margin-bottom:3.5rem}
+.pilares-head .eyebrow{justify-content:center}
+.pilares-head .eyebrow::before{background:var(--b2)}
+.pilares-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:1180px;margin:0 auto;padding:0 2rem}
+.pilar{
+  position:relative;background:var(--white);border:1px solid var(--border);border-radius:var(--r2);
+  padding:2.2rem 2rem 2rem;overflow:hidden;
+  transition:transform .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s,border-color .3s;
+}
+.pilar::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--b1),var(--b2),var(--b3));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .5s cubic-bezier(.2,.8,.2,1);
+}
+.pilar:hover{transform:translateY(-6px);box-shadow:0 30px 60px -30px rgba(28,51,86,.28);border-color:var(--b1)}
+.pilar:hover::before{transform:scaleX(1)}
+.pilar-icon{
+  width:48px;height:48px;border-radius:10px;
+  background:linear-gradient(135deg,var(--b1) 0%,var(--b3) 100%);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;margin-bottom:1.4rem;
+  box-shadow:0 12px 24px -12px rgba(43,78,122,.5);
+}
+.pilar-icon svg{width:22px;height:22px;stroke:#fff;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.pilar-tag{
+  display:inline-block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--b2);font-weight:500;margin-bottom:.6rem;
+}
+.pilar-title{
+  font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:500;
+  color:var(--ink);line-height:1.15;margin-bottom:.8rem;
+}
+.pilar-title em{color:var(--b2);font-style:italic}
+.pilar-desc{font-size:13.5px;color:var(--ink2);line-height:1.7;margin-bottom:1.2rem}
+.pilar-points{list-style:none;padding:0;margin:0 0 1.4rem;display:flex;flex-direction:column;gap:.6rem}
+.pilar-points li{
+  font-size:12.5px;color:var(--ink2);padding-left:18px;position:relative;line-height:1.5;
+}
+.pilar-points li::before{
+  content:'';position:absolute;left:0;top:8px;width:8px;height:2px;background:var(--b2);
+}
+.pilar-cta{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--b3);font-weight:500;
+  border-bottom:1px solid transparent;padding-bottom:2px;
+  transition:color .2s,border-color .2s,gap .2s;
+}
+.pilar-cta:hover{color:var(--b4);border-color:var(--b3);gap:10px}
+.pilares-note{
+  max-width:520px;margin:3rem auto 0;text-align:center;
+  font-size:13px;color:var(--ink3);line-height:1.7;
+}
+.pilares-note strong{color:var(--ink);font-weight:500}
+@media(max-width:900px){
+  .pilares-grid{grid-template-columns:1fr;gap:1rem}
+  .pilares{padding:5rem 0}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <div class="sqs">
+        <div class="sq s1"></div><div class="sq s2"></div><div class="sq s3"></div>
+      </div>
+      <div class="brand-name">PMD Arquitectura</div>
+    </div>
+    <div class="nav-links">
+      <a href="#portfolio">Proyectos</a>
+      <a href="#proceso">Proceso</a>
+      <a href="#presupuestador">Presupuestador</a>
+      <a href="#contacto">Contacto</a>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-btn-hogar" onclick="openMiHogar()" aria-label="Abrir Mi Hogar · productos de inversión">
+        <span class="dot"></span>
+        <span>Mi Hogar</span>
+      </button>
+      <button class="nav-cta" onclick="openLucasChat()">Hablar con un asesor</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-kicker">Especialistas en steel framing · GBA Norte</div>
+    <h1 class="hero-title">La casa de<br>tus sueños,<br><em>hecha realidad.</em></h1>
+    <p class="hero-sub">Construimos en Nordelta, Tigre, San Isidro y Escobar desde 2014. Más de 50 obras entregadas. El precio que acordamos es el que se paga.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('presupuestador').scrollIntoView({behavior:'smooth'})">Calculá el costo →</button>
+      <button class="btn-ghost" onclick="openLucasChat()">Hablar con un asesor</button>
+    </div>
+    <div class="hero-trust">
+      <div class="ht-item">
+        <div class="ht-num">50+</div>
+        <div class="ht-label">Obras entregadas</div>
+      </div>
+      <div class="ht-item">
+        <div class="ht-num">2014</div>
+        <div class="ht-label">Desde el año</div>
+      </div>
+      <div class="ht-item">
+        <div class="ht-num">100%</div>
+        <div class="ht-label">Precio acordado</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right reveal-image">
+    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=80&auto=format&fit=crop" alt="Casa moderna" loading="lazy">
+  </div>
+</section>
+
+<!-- TESTIMONIOS -->
+<section class="testimonios reveal">
+  <div class="container">
+    <div class="testimonios-head">
+      <div class="eyebrow">Clientes satisfechos</div>
+      <h2 class="section-title">Historias que <em>hablan solas</em></h2>
+      <p class="section-sub">Más de 10 años ganando la confianza de familias que apostaron a PMD.</p>
+    </div>
+    <div class="test-grid">
+      <div class="test-card reveal">
+        <p class="test-quote">El presupuesto inicial fue el presupuesto final. Ni un peso de diferencia.</p>
+        <div class="test-author">
+          <div class="test-name">Familia Rodríguez</div>
+          <div class="test-obra">Casa Maschwitz · 302 m² · 2023</div>
+        </div>
+      </div>
+      <div class="test-card reveal">
+        <p class="test-quote">Nos mudamos en el plazo acordado. Todo como prometieron, sin vueltas.</p>
+        <div class="test-author">
+          <div class="test-name">Federico y Agustina</div>
+          <div class="test-obra">Naudir 309 · 205 m² · Escobar</div>
+        </div>
+      </div>
+      <div class="test-card reveal">
+        <p class="test-quote">La comunicación semanal con el director de obra fue lo que más nos tranquilizó.</p>
+        <div class="test-author">
+          <div class="test-name">Martín y Cecilia</div>
+          <div class="test-obra">Casa Talar · 493 m² · Tigre</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIFERENCIADORES -->
+<section class="dif-section reveal">
+  <div class="container">
+    <div class="dif-header">
+      <div class="eyebrow">Nuestro diferencial</div>
+      <h2 class="section-title">Por qué <em>elegir PMD</em></h2>
+      <p class="section-sub">Tres características que nos separan del mercado y te dan tranquilidad.</p>
+    </div>
+    <div class="dif-grid">
+      <div class="dif-item reveal">
+        <div class="dif-num">01</div>
+        <div class="dif-title">Precio cerrado desde el día uno</div>
+        <p class="dif-desc">Presupuestamos con costos reales de obras propias. Lo que se acuerda es lo que se paga. Sin sorpresas, sin ajustes por inflación.</p>
+      </div>
+      <div class="dif-item reveal">
+        <div class="dif-num">02</div>
+        <div class="dif-title">+50 obras en steel framing</div>
+        <p class="dif-desc">Somos referencia en el sistema en la zona. Vos podés visitar las obras antes de decidir. Conocemos cada detalle, cada particularidad.</p>
+      </div>
+      <div class="dif-item reveal">
+        <div class="dif-num">03</div>
+        <div class="dif-title">Entorno Mi Hogar</div>
+        <p class="dif-desc">Creamos la plataforma que nos diferencia: cada viernes subimos fotos, videos, métricas de avance y reportes de obra. Entrás, ves tu proyecto desde donde estés y no hay nada escondido. Nació del compromiso de que nunca más un cliente sienta que construye a ciegas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section class="portfolio-section reveal" id="portfolio">
+  <div class="container">
+    <div class="pf-header">
+      <div>
+        <div class="eyebrow">Proyectos realizados</div>
+        <h2 class="section-title">Nuestras <em>obras</em></h2>
+      </div>
+      <div class="pf-filters">
+        <button class="pf-btn active" onclick="filterPortfolio('all')">Todos</button>
+        <button class="pf-btn" onclick="filterPortfolio('casas')">Casas</button>
+        <button class="pf-btn" onclick="filterPortfolio('ampliaciones')">Ampliaciones</button>
+        <button class="pf-btn" onclick="filterPortfolio('industrial')">Industrial</button>
+      </div>
+    </div>
+    <div class="pf-grid">
+      <div class="pj-card reveal-scale" data-category="casas">
+        <div class="pj-img"><img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80&auto=format&fit=crop" alt="Casa moderna"></div>
+        <div class="pj-content">
+          <div class="pj-tag">Casa Nueva</div>
+          <h3 class="pj-name">Casa Nordelta</h3>
+          <p class="pj-desc">310 m² · Steel framing · 2023</p>
+        </div>
+      </div>
+      <div class="pj-card reveal-scale" data-category="casas">
+        <div class="pj-img"><img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80&auto=format&fit=crop" alt="Casa interior"></div>
+        <div class="pj-content">
+          <div class="pj-tag">Casa Nueva</div>
+          <h3 class="pj-name">Casa Tigre</h3>
+          <p class="pj-desc">280 m² · Steel framing · 2022</p>
+        </div>
+      </div>
+      <div class="pj-card reveal-scale" data-category="ampliaciones">
+        <div class="pj-img"><img src="https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=800&q=80&auto=format&fit=crop" alt="Ampliación"></div>
+        <div class="pj-content">
+          <div class="pj-tag">Ampliación</div>
+          <h3 class="pj-name">Ampliación San Isidro</h3>
+          <p class="pj-desc">150 m² · 2023</p>
+        </div>
+      </div>
+      <div class="pj-card reveal-scale" data-category="casas">
+        <div class="pj-img"><img src="https://images.unsplash.com/photo-1600047509358-9dc75507daeb?w=800&q=80&auto=format&fit=crop" alt="Casa Escobar"></div>
+        <div class="pj-content">
+          <div class="pj-tag">Casa Nueva</div>
+          <h3 class="pj-name">Casa Escobar</h3>
+          <p class="pj-desc">420 m² · Steel framing · 2021</p>
+        </div>
+      </div>
+      <div class="pj-card reveal-scale" data-category="industrial">
+        <div class="pj-img"><img src="https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800&q=80&auto=format&fit=crop" alt="Proyecto industrial"></div>
+        <div class="pj-content">
+          <div class="pj-tag">Industrial</div>
+          <h3 class="pj-name">Galpón Benavidez</h3>
+          <p class="pj-desc">1200 m² · 2023</p>
+        </div>
+      </div>
+      <div class="pj-card reveal-scale" data-category="ampliaciones">
+        <div class="pj-img"><img src="https://images.unsplash.com/photo-1601760562234-9814eea6663a?w=800&q=80&auto=format&fit=crop" alt="Reforma"></div>
+        <div class="pj-content">
+          <div class="pj-tag">Ampliación</div>
+          <h3 class="pj-name">Reforma Maschwitz</h3>
+          <p class="pj-desc">180 m² · 2022</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALERÍA -->
+<section class="galeria reveal">
+  <div class="container">
+    <div class="galeria-head">
+      <div class="eyebrow">Detalles y acabados</div>
+      <h2 class="section-title">Obras en <em>detalle</em></h2>
+      <p class="section-sub">Cada proyecto es único. Conocé cómo trabajamos en cada espacio.</p>
+    </div>
+  </div>
+  <div class="galeria-grid">
+    <div class="gal-item reveal-image" style="transition-delay:0s"><img src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=80&auto=format&fit=crop" alt="Living interior"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.12s"><img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80&auto=format&fit=crop" alt="Cocina moderna"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.24s"><img src="https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=800&q=80&auto=format&fit=crop" alt="Dormitorio"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.36s"><img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80&auto=format&fit=crop" alt="Baño diseño"></div>
+  </div>
+</section>
+
+<!-- PROCESO -->
+<section class="proceso reveal" id="proceso">
+  <div class="container">
+    <div class="proceso-head">
+      <div class="eyebrow">Cómo trabajamos</div>
+      <h2 class="section-title">El camino hacia tu <em>obra</em></h2>
+      <p class="section-sub">Desde el primer contacto hasta la entrega final, seguimos un proceso probado que minimiza sorpresas.</p>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item reveal">
+        <div class="timeline-marker">
+          <div class="tm-num">1</div>
+          <div class="tm-line"></div>
+        </div>
+        <div class="timeline-content">
+          <h3 class="ti-title">Consulta y presupuesto</h3>
+          <p class="ti-desc">Visitamos el terreno, medimos, relevamos. Te pasamos un presupuesto detallado con todos los costos discriminados.</p>
+        </div>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-marker">
+          <div class="tm-num">2</div>
+          <div class="tm-line"></div>
+        </div>
+        <div class="timeline-content">
+          <h3 class="ti-title">Trámites y permisos</h3>
+          <p class="ti-desc">PMD se encarga de todos los trámites municipales, planos, permisos y habilitaciones. Vos solo firmás.</p>
+        </div>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-marker">
+          <div class="tm-num">3</div>
+          <div class="tm-line"></div>
+        </div>
+        <div class="timeline-content">
+          <h3 class="ti-title">Ejecución de obra</h3>
+          <p class="ti-desc">Iniciamos con limpieza de terreno, fundaciones y estructura. Un director de obra presente 5 días a la semana.</p>
+        </div>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-marker">
+          <div class="tm-num">4</div>
+          <div class="tm-line"></div>
+        </div>
+        <div class="timeline-content">
+          <h3 class="ti-title">Terminaciones y entrega</h3>
+          <p class="ti-desc">Instalaciones, pintura, pisos y detalles finales. Inspección conjunta y entrega de llaves. Garantía de 5 años.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MÉTRICAS -->
+<section class="metricas reveal">
+  <div class="container">
+    <div class="metricas-grid">
+      <div class="metrica">
+        <div class="m-num">50+</div>
+        <div class="m-label">Obras completadas</div>
+      </div>
+      <div class="metrica">
+        <div class="m-num">12 años</div>
+        <div class="m-label">De trayectoria</div>
+      </div>
+      <div class="metrica">
+        <div class="m-num">98%</div>
+        <div class="m-label">Satisfacción cliente</div>
+      </div>
+      <div class="metrica">
+        <div class="m-num">4 zonas</div>
+        <div class="m-label">Cobertura GBA</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRESUPUESTADOR -->
+<!-- PRESUPUESTADOR — siempre visible, NUNCA ocultar con reveal porque
+     el iframe necesita renderizar sin transforms ni opacity 0. -->
+<section class="presupuestador-section" id="presupuestador">
+  <div class="container">
+    <div class="presupuestador-head reveal">
+      <div class="eyebrow">Herramienta interactiva</div>
+      <h2 class="section-title">Calculá tu <em>presupuesto</em></h2>
+      <p class="section-sub">Usá nuestro presupuestador y obtené un estimado en minutos. Opcional, sin compromiso.</p>
+    </div>
+    <iframe src="/static/presupuestador.html"
+            id="presuIframe"
+            style="width:100%;max-width:1000px;margin:2rem auto 0;display:block;border:none;height:380px;border-radius:4px;background:transparent;transition:height .5s cubic-bezier(.4,0,.2,1);opacity:1"
+            title="Presupuestador PMD"
+            loading="lazy"></iframe>
+  </div>
+</section>
+
+<!-- ZONAS -->
+<section class="zonas-sec reveal">
+  <div class="container">
+    <div class="zonas-head">
+      <div class="eyebrow">Dónde construimos</div>
+      <h2 class="section-title">Referentes en <em>GBA Norte</em></h2>
+      <p class="section-sub">Cobertura plena en los cuatro partidos donde se concentra el 80% de nuestra obra.</p>
+    </div>
+    <div class="zonas-grid">
+      <div class="zona-card reveal">
+        <div class="zona-name">Nordelta</div>
+        <div class="zona-subs">Isla · Bahía · Cabos · Las Glorietas</div>
+        <span class="zona-tag">Full cobertura</span>
+      </div>
+      <div class="zona-card reveal">
+        <div class="zona-name">Tigre</div>
+        <div class="zona-subs">El Talar · Rincón de Milberg · Benavidez</div>
+        <span class="zona-tag">Full cobertura</span>
+      </div>
+      <div class="zona-card reveal">
+        <div class="zona-name">San Isidro</div>
+        <div class="zona-subs">Bajo · Lomas · Martínez · Acassuso</div>
+        <span class="zona-tag">Full cobertura</span>
+      </div>
+      <div class="zona-card reveal">
+        <div class="zona-name">Escobar</div>
+        <div class="zona-subs">El Naudir · Pilar · Maschwitz</div>
+        <span class="zona-tag">Full cobertura</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section class="contacto-sec reveal" id="contacto">
+  <div class="container">
+    <div class="contacto-grid">
+      <div class="contacto-info">
+        <h2 class="section-title" style="text-align:left;margin-bottom:1.5rem">Charlemos sobre <em>tu proyecto</em></h2>
+        <div class="ci-item">
+          <span class="ci-label">Dirección</span>
+          <span class="ci-val">Av. Agustín M. García 10271, Benavidez · Buenos Aires</span>
+        </div>
+        <div class="ci-item">
+          <span class="ci-label">Email</span>
+          <span class="ci-val">l.lanzalot@pmdarquitectura.com</span>
+        </div>
+        <div class="ci-item">
+          <span class="ci-label">Teléfono</span>
+          <span class="ci-val">+54 9 11 5709-7727</span>
+        </div>
+        <div class="ci-item">
+          <span class="ci-label">Horario</span>
+          <span class="ci-val">Lunes a Viernes · 9 a 18hs · Sábados con cita previa</span>
+        </div>
+        <a href="https://wa.me/5491157097727?text=Hola%20PMD,%20quiero%20consultar%20por%20una%20obra" target="_blank" rel="noopener" class="wa-big">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff"><path d="M17.6 6.32A7.85 7.85 0 0 0 12.05 4a7.94 7.94 0 0 0-6.88 11.9L4 20l4.2-1.1a7.93 7.93 0 0 0 11.74-6.96 7.86 7.86 0 0 0-2.34-5.62zm-5.55 12.2a6.6 6.6 0 0 1-3.36-.92l-.24-.14-2.5.65.67-2.43-.16-.25a6.6 6.6 0 1 1 12.25-3.5 6.55 6.55 0 0 1-6.66 6.59zm3.62-4.94c-.2-.1-1.18-.58-1.36-.65-.18-.07-.32-.1-.45.1-.13.2-.51.65-.62.78-.12.13-.23.15-.43.05-.2-.1-.84-.31-1.6-.99-.6-.53-1-1.18-1.12-1.38-.12-.2-.01-.31.09-.41.09-.09.2-.23.3-.35.1-.12.13-.2.2-.34.06-.13.03-.25-.02-.35-.05-.1-.45-1.08-.62-1.48-.16-.39-.33-.34-.45-.35l-.38-.01a.74.74 0 0 0-.54.25c-.18.2-.7.69-.7 1.68 0 1 .73 1.96.83 2.1.1.13 1.43 2.18 3.46 3.06.48.21.86.34 1.16.43.49.16.93.13 1.28.08.39-.06 1.18-.48 1.35-.95.17-.46.17-.86.12-.94-.05-.09-.18-.14-.38-.24z"/></svg>
+          <span>Consultá por WhatsApp</span>
+        </a>
+      </div>
+      <form class="cf-form reveal" id="pmdContactForm" onsubmit="return submitPMDContact(event)">
+        <h3 class="cf-title">Enviamos el detalle por mail</h3>
+        <div class="cf-field">
+          <label for="cf-nombre">Nombre y apellido</label>
+          <input type="text" id="cf-nombre" name="nombre" required placeholder="Ej: Juan Pérez">
+        </div>
+        <div class="cf-field">
+          <label for="cf-email">Email</label>
+          <input type="email" id="cf-email" name="email" required placeholder="tu@email.com">
+        </div>
+        <div class="cf-field">
+          <label for="cf-whatsapp">WhatsApp</label>
+          <input type="tel" id="cf-whatsapp" name="whatsapp" required placeholder="+54 9 11 1234 5678">
+        </div>
+        <div class="cf-field">
+          <label for="cf-zona">Zona / localidad</label>
+          <select id="cf-zona" name="zona">
+            <option value="">Elegí tu zona</option>
+            <option>Nordelta</option>
+            <option>Tigre</option>
+            <option>San Isidro</option>
+            <option>Escobar</option>
+            <option>Otra</option>
+          </select>
+        </div>
+        <div class="cf-field">
+          <label for="cf-urgencia">¿Cuándo querés arrancar?</label>
+          <select id="cf-urgencia" name="urgencia">
+            <option value="">Elegí una opción</option>
+            <option>Arrancar ya (1 mes)</option>
+            <option>Próximos 2 a 6 meses</option>
+            <option>Solo averiguando</option>
+          </select>
+        </div>
+        <div class="cf-field">
+          <label for="cf-motivo">Motivo de consulta</label>
+          <select id="cf-motivo" name="motivo_consulta">
+            <option value="">Elegí una opción</option>
+            <optgroup label="🏠 Construcción (PMD Arquitectura)">
+              <option value="Casa nueva">Casa nueva</option>
+              <option value="Reforma / Ampliación">Reforma / Ampliación</option>
+              <option value="Edificio / Industrial">Edificio / Industrial</option>
+            </optgroup>
+            <optgroup label="💰 Inversión (PMD Capital)">
+              <option value="Inversión — crowdfunded / fideicomiso">Inversión colaborativa</option>
+              <option value="Inversión — consulta general">Consulta general de inversiones</option>
+            </optgroup>
+            <optgroup label="⚙️ Automatización (PMD Autonomic)">
+              <option value="Automatización — chatbot para mi empresa">Chatbot para mi empresa</option>
+              <option value="Automatización — integraciones / scraping / pipeline">Integración / pipeline de datos</option>
+              <option value="Automatización — consulta general">Consulta general de automatización</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="cf-field">
+          <label for="cf-mensaje">Contanos qué necesitás</label>
+          <textarea id="cf-mensaje" name="mensaje" placeholder="Superficie, terreno, presupuesto estimado, plazos..."></textarea>
+        </div>
+        <button type="submit" class="cf-submit">Enviar consulta →</button>
+        <div class="cf-status" id="cfStatus"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- BANNER CTA sutil: invita a conocer los productos de inversión.
+     Al clickear, expande la sección .pilares de abajo. -->
+<section class="inv-cta reveal">
+  <div class="container">
+    <div class="inv-cta-inner">
+      <div class="inv-cta-left">
+        <div class="eyebrow">PMD · Grupo Económico</div>
+        <h3 class="inv-cta-title">¿Buscás <em>productos de inversión</em>?</h3>
+        <p class="inv-cta-desc">Además de construir casas, PMD ofrece inversiones inmobiliarias colaborativas (crowdfunded) y automatización para empresas. Ticket desde USD 10.000.</p>
+      </div>
+      <button class="inv-cta-btn" onclick="openMiHogar()" aria-expanded="false" aria-controls="que-hacemos">
+        <span>Conocé PMD Capital &amp; Autonomic</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- MI HOGAR / PRODUCTOS DE INVERSIÓN — oculto por default.
+     Se despliega solo cuando el user clickea "Mi Hogar" en el nav
+     o el banner CTA de arriba. -->
+<section class="pilares" id="que-hacemos">
+  <div class="pilares-head">
+    <div class="eyebrow">Mi Hogar · Ecosistema PMD</div>
+    <h2 class="section-title">Un grupo, <em>tres caminos</em>.</h2>
+    <p class="section-sub">Construcción llave en mano, inversiones colaborativas en real estate y automatización para empresas. Lo que empezó como una constructora se convirtió en un ecosistema.</p>
+  </div>
+
+  <div class="pilares-grid">
+    <div class="pilar reveal">
+      <div class="pilar-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+      </div>
+      <div class="pilar-tag">PMD Arquitectura</div>
+      <div class="pilar-title">Casas y obras <em>llave en mano</em></div>
+      <p class="pilar-desc">Diseñamos, construimos y entregamos con precio cerrado. Steel framing o mampostería, según tu proyecto.</p>
+      <ul class="pilar-points">
+        <li>+50 obras entregadas desde 2014</li>
+        <li>GBA Norte <strong>y ahora también Capital Federal</strong></li>
+        <li>Reportes semanales + 2 años de garantía</li>
+      </ul>
+      <a href="javascript:void(0)" class="pilar-cta" onclick="closeMiHogar(); setTimeout(()=>document.getElementById('presupuestador').scrollIntoView({behavior:'smooth'}), 300)">Calculá tu obra →</a>
+    </div>
+
+    <div class="pilar reveal" style="transition-delay:.08s">
+      <div class="pilar-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-10"/><path d="M14 6h6v6"/></svg>
+      </div>
+      <div class="pilar-tag">PMD Capital</div>
+      <div class="pilar-title">Inversión <em>inmobiliaria colaborativa</em></div>
+      <p class="pilar-desc">Proyectos de desarrollo por modalidad crowdfunded. Entrás con ticket bajo, salís con unidad o retorno.</p>
+      <ul class="pilar-points">
+        <li>Fideicomisos y emprendimientos en GBA Norte</li>
+        <li>Tickets desde USD 10.000 según proyecto</li>
+        <li>Reportes trimestrales de avance y valuación</li>
+      </ul>
+      <a href="javascript:void(0)" class="pilar-cta" onclick="openContactoCon('Inversión')">Ver oportunidades →</a>
+    </div>
+
+    <div class="pilar reveal" style="transition-delay:.16s">
+      <div class="pilar-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg>
+      </div>
+      <div class="pilar-tag">PMD Autonomic</div>
+      <div class="pilar-title">Automatización <em>para tu empresa</em></div>
+      <p class="pilar-desc">Chatbots, integraciones, scrapers, pipelines de datos y agentes IA. La misma tecnología que usamos para atender nuestros leads, ahora para vos.</p>
+      <ul class="pilar-points">
+        <li>Bots de atención 24/7 con Claude y Gemini</li>
+        <li>Integración con Gmail, Sheets, n8n, WhatsApp</li>
+        <li>Medición de leads + dashboards en vivo</li>
+      </ul>
+      <a href="javascript:void(0)" class="pilar-cta" onclick="openContactoCon('Automatización')">Consultá por un proyecto →</a>
+    </div>
+  </div>
+
+  <p class="pilares-note">Hoy construimos en <strong>Nordelta, Tigre, San Isidro, Escobar y Capital Federal</strong>. La misma lógica de precio cerrado, comunicación semanal y llave en mano se aplica a las tres unidades de negocio.</p>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer-big">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand-col">
+        <div class="brand footer-brand">
+          <div class="sqs-orbit">
+            <div class="sqs">
+              <div class="sq s1"></div><div class="sq s2"></div><div class="sq s3"></div>
+            </div>
+          </div>
+          <div class="brand-name">PMD Arquitectura</div>
+        </div>
+        <p>Soluciones Arquitectónicas e Integrales. Construcción, ampliación y proyectos llave en mano en GBA Norte desde 2014.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Soluciones</h5>
+        <a href="#portfolio">Proyectos</a>
+        <a href="#proceso">Proceso</a>
+        <a href="#presupuestador">Presupuestador</a>
+        <a href="#contacto">Contacto</a>
+      </div>
+      <div class="footer-col">
+        <h5>Grupo PMD</h5>
+        <a href="javascript:void(0)" onclick="openMiHogar()">Productos de inversión</a>
+        <a href="javascript:void(0)" onclick="openMiHogar()">PMD Capital</a>
+        <a href="javascript:void(0)" onclick="openMiHogar()">PMD Autonomic</a>
+      </div>
+      <div class="footer-col">
+        <h5>Zonas</h5>
+        <a href="#">Nordelta</a>
+        <a href="#">Tigre</a>
+        <a href="#">San Isidro</a>
+        <a href="#">Escobar</a>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <a href="#">Términos y condiciones</a>
+        <a href="#">Política de privacidad</a>
+        <a href="#">Cookies</a>
+      </div>
+      <div class="footer-col">
+        <h5>Seguinos</h5>
+        <a href="#" target="_blank" rel="noopener">Instagram</a>
+        <a href="#" target="_blank" rel="noopener">Facebook</a>
+        <a href="#" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 PMD Arquitectura. Todos los derechos reservados.</span>
+      <span class="made-with">Powered by Lucas — Asistencia 24hs</span>
+    </div>
+  </div>
+</footer>
+
+<!-- CHAT FAB -->
+<button class="chat-fab" id="fab" onclick="openLucasChat()" aria-label="Hablar con un asesor">
+  <span class="pulse"></span>
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+  </svg>
+</button>
+
+<!-- CHAT WINDOW -->
+<div class="chat-window" id="chat">
+  <div class="chat-header">
+    <div class="chat-header-logo">
+      <div class="sqs">
+        <div class="sq s1"></div><div class="sq s2"></div><div class="sq s3"></div>
+      </div>
+      <div class="chat-header-text">
+        <span class="brand">PMD Arquitectura</span>
+        <span class="agent">Lucas · Asesor Senior</span>
+      </div>
+    </div>
+    <button class="chat-close" onclick="LucasChat.close()" aria-label="Cerrar">×</button>
+  </div>
+  <div class="chat-messages" id="messages"></div>
+  <div class="chat-input-wrap">
+    <div class="chat-input">
+      <textarea id="input" placeholder="Escribí tu mensaje…" rows="1" onkeydown="LucasChat.onKey(event)" oninput="LucasChat.autoGrow(this)"></textarea>
+      <button class="chat-send" id="send" onclick="LucasChat.send()" aria-label="Enviar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+    <div class="chat-footer">ASISTIDO POR <span>PMD · LUCAS</span></div>
+  </div>
+</div>
+
+<script>
+// LUCAS CHAT
+const LucasChat = (() => {
+  const API_BASE = '';
+  const $chat = document.getElementById('chat');
+  const $fab = document.getElementById('fab');
+  const $messages = document.getElementById('messages');
+  const $input = document.getElementById('input');
+  const $send = document.getElementById('send');
+  let sessionId = null;
+  let isBusy = false;
+
+  function formatMessage(text){
+    const div = document.createElement('div');
+    div.textContent = text;
+    let html = div.innerHTML;
+    html = html.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+    html = html.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+    return html;
+  }
+
+  function addMessage(role, text){
+    const msg = document.createElement('div');
+    msg.className = 'msg ' + role;
+    msg.innerHTML = formatMessage(text);
+    $messages.appendChild(msg);
+    $messages.scrollTop = $messages.scrollHeight;
+  }
+
+  function showTyping(){
+    const el = document.createElement('div');
+    el.className = 'typing';
+    el.id = 'typing-indicator';
+    el.innerHTML = '<span></span><span></span><span></span>';
+    $messages.appendChild(el);
+    $messages.scrollTop = $messages.scrollHeight;
+  }
+
+  function hideTyping(){
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  async function open(){
+    $chat.classList.add('open');
+    $fab.style.display = 'none';
+    if (!sessionId){
+      try{
+        showTyping();
+        const r = await fetch(API_BASE + '/api/session/new', {method:'POST'});
+        if (!r.ok) throw new Error('No se pudo iniciar sesión');
+        const data = await r.json();
+        sessionId = data.session_id;
+        await new Promise(res => setTimeout(res, 900));
+        hideTyping();
+        addMessage('assistant', data.greeting);
+        $input.focus();
+      }catch(err){
+        hideTyping();
+        addMessage('assistant','⚠️ Error al conectar. Reintentá en un momento.');
+        console.error(err);
+      }
+    }
+  }
+
+  function close(){
+    $chat.classList.remove('open');
+    $fab.style.display = 'flex';
+  }
+
+  async function send(){
+    const text = $input.value.trim();
+    if (!text || isBusy || !sessionId) return;
+    isBusy = true;
+    $send.disabled = true;
+    addMessage('user', text);
+    $input.value = '';
+    $input.style.height = 'auto';
+    showTyping();
+    try{
+      const r = await fetch(API_BASE + '/api/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({session_id: sessionId, message: text})
+      });
+      if (!r.ok) throw new Error('Error ' + r.status);
+      const data = await r.json();
+      hideTyping();
+      const messages = (data.replies && data.replies.length) ? data.replies : [data.reply];
+      for (let i = 0; i < messages.length; i++) {
+        if (i > 0) await new Promise(res => setTimeout(res, 800));
+        showTyping();
+        const typeDelay = Math.min(2800, Math.max(900, messages[i].length * 28));
+        await new Promise(res => setTimeout(res, typeDelay));
+        hideTyping();
+        addMessage('assistant', messages[i]);
+      }
+    }catch(err){
+      hideTyping();
+      addMessage('assistant','⚠️ Disculpe, tuve un inconveniente.');
+      console.error(err);
+    }finally{
+      isBusy = false;
+      $send.disabled = false;
+      $input.focus();
+    }
+  }
+
+  function onKey(e){
+    if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); }
+  }
+
+  function autoGrow(el){
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  function queueMessage(text){
+    if (!text) return;
+    const tryToSend = () => {
+      if (sessionId){
+        setTimeout(() => {
+          const $inp = document.getElementById('input');
+          if ($inp){ $inp.value = text; send(); }
+        }, 600);
+      } else {
+        setTimeout(tryToSend, 250);
+      }
+    };
+    tryToSend();
+  }
+
+  return { open, close, send, onKey, autoGrow, queueMessage };
+})();
+
+window.LucasChat = LucasChat;
+
+// PRESUPUESTADOR IFRAME LISTENER
+// - presu-to-chat: abre el chat Lucas con mensaje pre-armado
+// - presu-height:  ajusta la altura del iframe según el view activo del presu
+window.addEventListener('message', (e) => {
+  if (!e.data) return;
+
+  if (e.data.type === 'presu-to-chat'){
+    if (window.LucasChat){
+      LucasChat.open();
+      if (LucasChat.queueMessage) LucasChat.queueMessage(e.data.message || 'Armé un presupuesto, ¿lo revisamos?');
+    }
+    return;
+  }
+
+  if (e.data.type === 'presu-height'){
+    const iframe = document.getElementById('presuIframe');
+    if (iframe && typeof e.data.height === 'number'){
+      iframe.style.height = Math.max(e.data.height, 400) + 'px';
+    }
+  }
+});
+
+// TIMELINE PROCESO — "ola" que activa cada paso secuencialmente al scrollear
+(function initTimelineWave(){
+  const items = document.querySelectorAll('.timeline-item');
+  if (!items.length || !('IntersectionObserver' in window)){
+    items.forEach(it => it.classList.add('active'));
+    return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting){
+        // Delay proporcional al índice → efecto cascada tipo ola
+        const idx = Array.from(items).indexOf(entry.target);
+        setTimeout(() => entry.target.classList.add('active'), idx * 180);
+      } else {
+        // Al salir del viewport, se reinician los pasos posteriores
+        entry.target.classList.remove('active');
+      }
+    });
+  }, { threshold: 0.35, rootMargin: '0px 0px -15% 0px' });
+  items.forEach(it => io.observe(it));
+})();
+
+// ABRIR CHAT LUCAS — helper global robusto.
+// Siempre llama a LucasChat.open() (que crea la sesión + dispara el saludo).
+// Si el script del chat todavía no cargó, espera y reintenta.
+function openLucasChat(){
+  if (window.LucasChat && typeof window.LucasChat.open === 'function'){
+    window.LucasChat.open();
+    return;
+  }
+  // Reintentar hasta 10 veces (2s máx) mientras el script termina de cargar
+  let tries = 0;
+  const timer = setInterval(() => {
+    tries++;
+    if (window.LucasChat && typeof window.LucasChat.open === 'function'){
+      clearInterval(timer);
+      window.LucasChat.open();
+    } else if (tries >= 10){
+      clearInterval(timer);
+      console.error('LucasChat no pudo inicializarse');
+    }
+  }, 200);
+}
+
+// MI HOGAR — abre/cierra la página "Qué hacemos en PMD" (productos de inversión)
+// Por default la sección .pilares tiene max-height:0 (oculta). Al agregarle .open
+// se expande. Se llama desde el botón "Mi Hogar" del nav y desde los CTAs internos.
+function openMiHogar(){
+  const sec = document.getElementById('que-hacemos');
+  if (!sec) return;
+  sec.classList.add('open');
+  setTimeout(() => sec.scrollIntoView({behavior:'smooth', block:'start'}), 200);
+}
+function closeMiHogar(){
+  const sec = document.getElementById('que-hacemos');
+  if (sec) sec.classList.remove('open');
+}
+
+// PORTFOLIO FILTER
+function filterPortfolio(cat){
+  document.querySelectorAll('.pf-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.pj-card').forEach(card => {
+    if (cat === 'all' || card.dataset.category === cat) {
+      card.classList.remove('hidden');
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+}
+
+// Abrir el form de contacto con un motivo pre-seleccionado.
+// Lo usan los CTAs de los 3 pilares (Arquitectura / Capital / Autonomic).
+function openContactoCon(motivo){
+  // Primero asegurarnos que la sección Mi Hogar esté cerrada (si estaba abierta)
+  closeMiHogar && closeMiHogar();
+  // Ir al form
+  const sec = document.getElementById('contacto');
+  if (sec) sec.scrollIntoView({behavior:'smooth', block:'start'});
+  // Pre-seleccionar el motivo luego de un pequeño delay (esperar al scroll)
+  setTimeout(() => {
+    const sel = document.getElementById('cf-motivo');
+    if (!sel) return;
+    // Buscar la opción cuyo value o texto incluya el motivo
+    const needle = motivo.toLowerCase();
+    for (const opt of sel.options){
+      const txt = (opt.value || opt.text).toLowerCase();
+      if (txt.includes(needle)){ sel.value = opt.value; break; }
+    }
+    // Foco al primer input vacío del form
+    const firstEmpty = Array.from(
+      document.querySelectorAll('#pmdContactForm input, #pmdContactForm textarea')
+    ).find(el => !el.value.trim());
+    if (firstEmpty) firstEmpty.focus();
+  }, 450);
+}
+
+// CONTACT FORM
+function submitPMDContact(e){
+  e.preventDefault();
+  const data = new FormData(document.getElementById('pmdContactForm'));
+  const obj = Object.fromEntries(data);
+  const $status = document.getElementById('cfStatus');
+  $status.textContent = 'Enviando...';
+  fetch('/api/lead/contacto', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(obj)
+  })
+  .then(r => r.json())
+  .then(d => {
+    $status.textContent = 'Enviado! Te contactaremos pronto.';
+    document.getElementById('pmdContactForm').reset();
+  })
+  .catch(err => {
+    $status.textContent = 'Error al enviar. Reintentá.';
+    console.error(err);
+  });
+  return false;
+}
+
+// NAV SCROLL EFFECT + ROTACIÓN PLANETARIA DE LOGOS 3-SQ
+// Los cuadrados del nav y del footer giran sobre su eje Y en función
+// del scroll del usuario. Simula un planeta rotando.
+(function initScrollEffects(){
+  const nav = document.getElementById('nav');
+  // Cuadraditos del NAV: rotan al scrollear. El texto "PMD Arquitectura" queda fijo.
+  // (El footer se anima solo con CSS @keyframes footerSway, sin JS.)
+  const navSqs = document.querySelector('nav .sqs');
+
+  let angle = 0;
+  let lastY = window.scrollY;
+  let ticking = false;
+
+  function onScroll(){
+    const y = window.scrollY;
+    const delta = y - lastY;
+
+    // Rotación planetaria del nav: sumamos ángulo proporcional al delta del scroll.
+    angle -= delta * 0.5;
+
+    if (navSqs){
+      navSqs.style.transform = 'rotateY(' + angle.toFixed(1) + 'deg)';
+    }
+
+    // Navbar: sombra cuando se scrolleó
+    if (nav){
+      if (y > 20) nav.classList.add('scrolled');
+      else        nav.classList.remove('scrolled');
+    }
+
+    lastY = y;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!ticking){
+      window.requestAnimationFrame(() => { onScroll(); ticking = false; });
+      ticking = true;
+    }
+  }, { passive: true });
+  onScroll();
+})();
+
+// REVEAL ANIMATIONS — multi-variante (.reveal, .reveal-image, .reveal-left, .reveal-right, .reveal-scale)
+(function(){
+  const items = document.querySelectorAll('.reveal, .reveal-image, .reveal-left, .reveal-right, .reveal-scale');
+  if (!('IntersectionObserver' in window) || !items.length){
+    items.forEach(el => el.classList.add('in-view'));
+    return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('in-view');
+      else entry.target.classList.remove('in-view');
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -80px 0px' });
+  items.forEach(el => io.observe(el));
+})();
+</script>
+
+</body>
+</html>

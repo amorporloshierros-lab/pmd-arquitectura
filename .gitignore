@@ -1,0 +1,49 @@
+# ===== Secretos / credenciales =====
+.env
+.env.local
+.env.*.local
+credentials/*.json
+credentials/*.key
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ===== Logs y datos runtime =====
+logs/*.log
+logs/leads/
+logs/bookings/
+logs/leads_pmd.xlsx
+
+# ===== Uploads / media generada =====
+static/hero.jpg
+static/interior.jpg
+static/avatar-lucas.*
+
+# ===== Sistema operativo =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Editores =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== Node (por si alguien agrega algo) =====
+node_modules/
+package-lock.json

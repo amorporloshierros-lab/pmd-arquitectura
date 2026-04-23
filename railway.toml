@@ -1,0 +1,20 @@
+# ============================================
+# Railway config para el chatbot Lucas
+# ============================================
+# Doc: https://docs.railway.app/reference/config-as-code
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Reinicia automáticamente si crashea
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+
+# Healthcheck — Railway considera la app "lista" cuando este endpoint responde 200
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+
+# Cantidad de réplicas (1 alcanza para empezar)
+numReplicas = 1

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PMD · Panel Admin</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='10' width='7' height='12' fill='%235BA3C9'/%3E%3Crect x='13' y='10' width='7' height='12' fill='%233B6EA5'/%3E%3Crect x='22' y='10' width='7' height='12' fill='%232B4E7A'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --b1:#5BA3C9;--b2:#3B6EA5;--b3:#2B4E7A;--b4:#1C3356;
+  --ink:#1C1C1A;--ink2:#52524F;--ink3:#909090;--ink4:#C8C8C5;
+  --bg:#F4F2EE;--bg2:#ECEAE5;--white:#FFFFFF;
+  --border:rgba(28,28,26,.09);
+  --green:#2f8d5f;--orange:#e08b3b;--red:#d04848;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'DM Sans',sans-serif;color:var(--ink);
+  background:var(--bg);min-height:100vh;font-size:14px;
+  -webkit-font-smoothing:antialiased;
+}
+.serif{font-family:'Cormorant Garamond',serif}
+a{color:inherit;text-decoration:none}
+
+/* HEADER */
+.admin-head{
+  background:var(--white);border-bottom:1px solid var(--border);
+  padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:10;
+}
+.brand-wrap{display:flex;align-items:center;gap:14px}
+.sqs{display:flex;gap:4px}
+.sq{width:12px;height:12px;border-radius:1.5px}
+.s1{background:var(--b1)}.s2{background:var(--b2)}.s3{background:var(--b3)}
+.brand-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600}
+.brand-title .sub{color:var(--ink3);font-size:13px;margin-left:10px;font-weight:400}
+.admin-nav{display:flex;gap:8px}
+.admin-nav button{
+  padding:8px 16px;border:1px solid var(--border);background:transparent;
+  border-radius:4px;color:var(--ink2);font-family:inherit;font-size:13px;
+  cursor:pointer;transition:all .2s;
+}
+.admin-nav button:hover{border-color:var(--b3);color:var(--ink)}
+.admin-nav button.active{background:var(--b3);color:#fff;border-color:var(--b3)}
+.refresh-btn{
+  padding:8px 14px;background:var(--white);border:1px solid var(--border);
+  border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;color:var(--ink2);
+  display:flex;align-items:center;gap:6px;
+}
+.refresh-btn:hover{border-color:var(--b3);color:var(--b3)}
+.refresh-btn.refreshing svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* LAYOUT */
+.admin-main{max-width:1400px;margin:0 auto;padding:2rem}
+
+/* KPI CARDS */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.kpi{
+  background:var(--white);border:1px solid var(--border);border-radius:6px;
+  padding:1.2rem 1.4rem;transition:transform .2s,box-shadow .2s;
+  position:relative;overflow:hidden;
+}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 12px 30px -18px rgba(43,78,122,.3)}
+.kpi::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--b2);
+}
+.kpi.green::before{background:var(--green)}
+.kpi.orange::before{background:var(--orange)}
+.kpi.red::before{background:var(--red)}
+.kpi-label{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem}
+.kpi-num{font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:500;color:var(--ink);line-height:1}
+.kpi-delta{font-size:12px;color:var(--ink3);margin-top:.4rem}
+.kpi-delta.up{color:var(--green)}
+.kpi-delta.down{color:var(--red)}
+
+/* FILTROS */
+.filters{
+  display:flex;gap:.8rem;align-items:center;
+  background:var(--white);padding:1rem;border-radius:6px;
+  border:1px solid var(--border);margin-bottom:1.2rem;flex-wrap:wrap;
+}
+.filters input, .filters select{
+  padding:8px 12px;border:1px solid var(--border);border-radius:4px;
+  font-family:inherit;font-size:13px;background:var(--white);color:var(--ink);
+  outline:none;transition:border-color .15s;
+}
+.filters input:focus, .filters select:focus{border-color:var(--b2)}
+.filters input{min-width:240px}
+.filters .count{
+  margin-left:auto;font-size:12px;color:var(--ink3);
+}
+.filters .count strong{color:var(--ink);font-weight:600}
+
+/* TABLA */
+.tabla-wrap{
+  background:var(--white);border:1px solid var(--border);border-radius:6px;
+  overflow:hidden;
+}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{
+  background:var(--bg);padding:10px 12px;text-align:left;
+  font-weight:500;color:var(--ink2);font-size:11px;
+  text-transform:uppercase;letter-spacing:.06em;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;
+}
+td{padding:12px;border-bottom:1px solid var(--border);color:var(--ink)}
+tr:hover td{background:#faf9f7}
+tr:last-child td{border-bottom:none}
+
+.tag{
+  display:inline-block;padding:2px 8px;border-radius:3px;
+  font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;
+}
+.tag.chat{background:#e9f2fa;color:var(--b3)}
+.tag.presu{background:#fff3e6;color:#b35a00}
+.tag.contacto{background:#e6f5ec;color:var(--green)}
+.tag.contacto-construccion{background:#e6f5ec;color:var(--green)}
+.tag.contacto-inversion{background:#fff4d6;color:#b38600}
+.tag.contacto-automatizacion{background:#eee6fa;color:#5a3db0}
+.tag.agenda{background:#f3e6fa;color:#7a3eb0}
+.tag.presupuestador-edificio{background:#fde9e9;color:var(--red)}
+
+.col-contact{font-size:12px;color:var(--ink2)}
+.col-contact .mail{font-size:11px;color:var(--ink3)}
+.col-contact a{color:var(--b2)}
+.col-contact a:hover{text-decoration:underline}
+.col-amount{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--b3);font-weight:600}
+.col-time{font-size:11px;color:var(--ink3);white-space:nowrap}
+
+.empty{
+  padding:3rem;text-align:center;color:var(--ink3);
+  font-family:'Cormorant Garamond',serif;font-size:1.3rem;
+}
+
+/* RESERVAS */
+.section-title{
+  font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:500;
+  margin:2rem 0 1rem;color:var(--ink);
+}
+.bookings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.booking{
+  background:var(--white);border:1px solid var(--border);border-radius:6px;
+  padding:1rem 1.2rem;transition:all .2s;
+}
+.booking:hover{border-color:var(--b2);box-shadow:0 8px 20px -12px rgba(43,78,122,.25)}
+.booking .when{
+  font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--b3);
+  font-weight:500;margin-bottom:.4rem;
+}
+.booking .who{font-weight:500;margin-bottom:.2rem}
+.booking .ct{font-size:12px;color:var(--ink3)}
+.booking .ct a{color:var(--b2)}
+.booking .canal{
+  display:inline-block;margin-top:.5rem;font-size:10px;
+  color:var(--b2);text-transform:uppercase;letter-spacing:.08em;
+}
+
+/* MODAL detalle lead */
+.modal{
+  position:fixed;inset:0;background:rgba(28,28,26,.5);
+  display:none;align-items:center;justify-content:center;z-index:100;
+  padding:2rem;
+}
+.modal.open{display:flex}
+.modal-box{
+  background:var(--white);border-radius:8px;max-width:640px;width:100%;
+  max-height:80vh;overflow-y:auto;
+  box-shadow:0 40px 80px -30px rgba(0,0,0,.4);
+}
+.modal-head{
+  padding:1.4rem 1.6rem;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.modal-head h3{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:500}
+.modal-close{
+  background:transparent;border:none;font-size:24px;color:var(--ink3);
+  cursor:pointer;line-height:1;
+}
+.modal-body{padding:1.6rem}
+.modal-body dl{display:grid;grid-template-columns:130px 1fr;gap:8px 16px;font-size:13px}
+.modal-body dt{color:var(--ink3);font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+.modal-body dd{color:var(--ink);word-break:break-word}
+
+.view{display:none}
+.view.active{display:block}
+
+@media(max-width:900px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .filters input{min-width:100%}
+  table{font-size:12px}
+  th,td{padding:8px}
+}
+</style>
+</head>
+<body>
+
+<header class="admin-head">
+  <div class="brand-wrap">
+    <div class="sqs"><div class="sq s1"></div><div class="sq s2"></div><div class="sq s3"></div></div>
+    <div class="brand-title">PMD Admin <span class="sub">Panel de leads &amp; agenda</span></div>
+  </div>
+  <div class="admin-nav">
+    <button class="active" data-view="leads">Leads</button>
+    <button data-view="reuniones">Reuniones</button>
+    <button class="refresh-btn" id="refreshBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Actualizar
+    </button>
+  </div>
+</header>
+
+<main class="admin-main">
+
+  <!-- KPI CARDS -->
+  <section class="kpis">
+    <div class="kpi">
+      <div class="kpi-label">Leads totales</div>
+      <div class="kpi-num" id="k-total">—</div>
+      <div class="kpi-delta" id="k-total-delta"></div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Leads hoy</div>
+      <div class="kpi-num" id="k-today">—</div>
+      <div class="kpi-delta" id="k-today-delta"></div>
+    </div>
+    <div class="kpi orange">
+      <div class="kpi-label">Reuniones próximas</div>
+      <div class="kpi-num" id="k-bookings">—</div>
+      <div class="kpi-delta">Lun–Vie</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Esta semana</div>
+      <div class="kpi-num" id="k-week">—</div>
+      <div class="kpi-delta">Leads últimos 7 días</div>
+    </div>
+  </section>
+
+  <!-- VISTA: LEADS -->
+  <section class="view active" id="view-leads">
+    <div class="filters">
+      <input type="text" id="f-search" placeholder="🔍 Buscar nombre, email, WhatsApp, mensaje...">
+      <select id="f-origen" title="Origen del lead">
+        <option value="">Todos los orígenes</option>
+        <option value="chat">Chat Lucas</option>
+        <option value="presupuestador-web">Presupuestador</option>
+        <option value="presupuestador-edificio">Edificio / Industrial</option>
+        <option value="contacto-construccion">Form · Construcción</option>
+        <option value="contacto-inversion">Form · Inversión 💰</option>
+        <option value="contacto-automatizacion">Form · Automatización ⚙️</option>
+        <option value="contacto">Form · Otro</option>
+        <option value="agenda">Agenda</option>
+      </select>
+      <select id="f-fecha" title="Cuándo entró">
+        <option value="">Cualquier fecha</option>
+        <option value="today">Hoy</option>
+        <option value="week">Últimos 7 días</option>
+        <option value="month">Últimos 30 días</option>
+      </select>
+      <select id="f-urgencia" title="Urgencia">
+        <option value="">Toda urgencia</option>
+        <option value="Arrancar ya">🔴 Arrancar ya</option>
+        <option value="Próximos meses">🟡 Próximos meses</option>
+        <option value="Solo averiguando">🟢 Solo averiguando</option>
+      </select>
+      <select id="f-zona" title="Zona">
+        <option value="">Todas las zonas</option>
+        <option value="Nordelta">Nordelta</option>
+        <option value="Tigre">Tigre</option>
+        <option value="San Isidro">San Isidro</option>
+        <option value="Escobar">Escobar</option>
+        <option value="CABA">CABA / Capital</option>
+        <option value="Otra">Otra</option>
+      </select>
+      <select id="f-tipo" title="Tipo de proyecto">
+        <option value="">Todo tipo</option>
+        <option value="Casa nueva">Casa nueva</option>
+        <option value="Reforma">Reforma</option>
+        <option value="Edificio/Industrial">Edificio / Industrial</option>
+      </select>
+      <input type="number" id="f-min" placeholder="USD min" title="Presupuesto mínimo" style="min-width:100px">
+      <input type="number" id="f-max" placeholder="USD max" title="Presupuesto máximo" style="min-width:100px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2);cursor:pointer">
+        <input type="checkbox" id="f-agenda"> con reunión
+      </label>
+      <button type="button" id="f-reset" style="padding:8px 12px;border:1px solid var(--border);background:transparent;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;color:var(--ink3)">Limpiar</button>
+      <div class="count"><strong id="count">0</strong> lead(s)</div>
+    </div>
+
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Cuándo</th>
+            <th>Origen</th>
+            <th>Contacto</th>
+            <th>Zona / Tipo</th>
+            <th>Urgencia</th>
+            <th>Presup. USD</th>
+            <th>Mensaje</th>
+          </tr>
+        </thead>
+        <tbody id="leads-body">
+          <tr><td colspan="7" class="empty">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- VISTA: REUNIONES -->
+  <section class="view" id="view-reuniones">
+    <h2 class="section-title">Reuniones agendadas (próximas)</h2>
+    <div class="bookings-grid" id="bookings-grid">
+      <div class="empty">Cargando…</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- MODAL detalle -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modal-title">Detalle del lead</h3>
+      <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">×</button>
+    </div>
+    <div class="modal-body">
+      <dl id="modal-body"></dl>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====================== STATE ======================
+let ALL_LEADS = [];
+let ALL_BOOKINGS = [];
+
+// ====================== FETCHERS ======================
+async function fetchLeads(){
+  try{
+    const r = await fetch('/api/leads');
+    const data = await r.json();
+    ALL_LEADS = (data.leads || []).map(normalizeLead);
+  }catch(err){ console.error('leads:', err); ALL_LEADS = []; }
+}
+
+async function fetchBookings(){
+  try{
+    const r = await fetch('/api/bookings');
+    const data = await r.json();
+    ALL_BOOKINGS = data.bookings || [];
+  }catch(err){ console.error('bookings:', err); ALL_BOOKINGS = []; }
+}
+
+// Cada lead tiene formato distinto según origen. Normalizamos a una forma única.
+function normalizeLead(raw){
+  // Si viene del dispatch de chat tiene "contact" y "session_id"; si viene del
+  // presupuestador o form tiene los campos planos.
+  const contact = raw.contact || {};
+  return {
+    timestamp: raw.timestamp || raw.created_at || raw.session_created || '',
+    origen: raw.origen || (raw.session_id ? 'chat' : 'chat'),
+    nombre: raw.nombre || contact.name || '',
+    email: raw.email || contact.email || '',
+    whatsapp: raw.whatsapp || raw.phone || contact.phone || '',
+    zona: raw.zona || raw.zone || '',
+    urgencia: raw.urgencia || '',
+    tipo_proyecto: raw.tipo_proyecto || raw.tipo || '',
+    superficie_m2: raw.superficie_m2 || raw.cubiertos_m2 || '',
+    nivel: raw.nivel || '',
+    total_min_usd: raw.total_min_usd || raw.presupuesto_min_usd || '',
+    total_max_usd: raw.total_max_usd || raw.presupuesto_max_usd || '',
+    mensaje: raw.mensaje || raw.comentarios || raw.necesidad || '',
+    raw: raw,  // guardamos el raw para mostrar todo en el modal
+  };
+}
+
+// ====================== RENDER KPIs ======================
+function renderKPIs(){
+  const now = Date.now();
+  const oneDay = 86400000;
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const weekAgo = now - oneDay * 7;
+
+  const total = ALL_LEADS.length;
+  const today = ALL_LEADS.filter(l => {
+    const t = new Date(l.timestamp).getTime();
+    return t >= todayStart.getTime();
+  }).length;
+  const week = ALL_LEADS.filter(l => {
+    const t = new Date(l.timestamp).getTime();
+    return t >= weekAgo;
+  }).length;
+  const futureB = ALL_BOOKINGS.length;
+
+  document.getElementById('k-total').textContent = total;
+  document.getElementById('k-today').textContent = today;
+  document.getElementById('k-week').textContent = week;
+  document.getElementById('k-bookings').textContent = futureB;
+
+  document.getElementById('k-total-delta').textContent =
+    total === 0 ? 'Sin leads todavía' : `Desde el inicio`;
+  document.getElementById('k-today-delta').textContent =
+    today === 0 ? 'Todavía ninguno hoy' : (today === 1 ? '1 contacto nuevo' : `${today} contactos nuevos`);
+}
+
+// ====================== RENDER LEADS TABLE ======================
+function renderLeads(){
+  const q        = document.getElementById('f-search').value.trim().toLowerCase();
+  const origenF  = document.getElementById('f-origen').value;
+  const fechaF   = document.getElementById('f-fecha').value;
+  const urgF     = document.getElementById('f-urgencia').value;
+  const zonaF    = document.getElementById('f-zona').value;
+  const tipoF    = document.getElementById('f-tipo').value;
+  const minF     = parseFloat(document.getElementById('f-min').value) || null;
+  const maxF     = parseFloat(document.getElementById('f-max').value) || null;
+  const agendaF  = document.getElementById('f-agenda').checked;
+
+  const now = Date.now();
+  const oneDay = 86400000;
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const weekAgo = now - oneDay * 7;
+  const monthAgo = now - oneDay * 30;
+
+  // Emails / whatsapps que tienen reunión agendada (para el toggle "con reunión")
+  const contactsWithBooking = new Set();
+  ALL_BOOKINGS.forEach(b => {
+    if (b.email)    contactsWithBooking.add(('e:' + b.email).toLowerCase());
+    if (b.whatsapp) contactsWithBooking.add('w:' + onlyDigits(b.whatsapp));
+  });
+
+  const filtered = ALL_LEADS.filter(l => {
+    if (origenF && l.origen !== origenF) return false;
+    if (urgF && !String(l.urgencia || '').toLowerCase().includes(urgF.toLowerCase())) return false;
+    if (zonaF && !String(l.zona || '').toLowerCase().includes(zonaF.toLowerCase())) return false;
+    if (tipoF && !String(l.tipo_proyecto || '').toLowerCase().includes(tipoF.toLowerCase())) return false;
+
+    if (fechaF){
+      const t = new Date(l.timestamp).getTime();
+      if (fechaF === 'today' && t < todayStart.getTime()) return false;
+      if (fechaF === 'week'  && t < weekAgo) return false;
+      if (fechaF === 'month' && t < monthAgo) return false;
+    }
+
+    // Rango de presupuesto: el lead pasa si su rango [min, max] tiene
+    // intersección con el filtro [minF, maxF]
+    const lMin = parseFloat(l.total_min_usd) || 0;
+    const lMax = parseFloat(l.total_max_usd) || lMin;
+    if (minF !== null && lMax < minF) return false;
+    if (maxF !== null && lMin > maxF) return false;
+
+    if (agendaF){
+      const hasBooking =
+        (l.email    && contactsWithBooking.has('e:' + l.email.toLowerCase())) ||
+        (l.whatsapp && contactsWithBooking.has('w:' + onlyDigits(l.whatsapp)));
+      if (!hasBooking) return false;
+    }
+
+    if (q){
+      const blob = [
+        l.nombre, l.email, l.whatsapp, l.zona, l.tipo_proyecto,
+        l.mensaje, l.nivel, l.urgencia
+      ].join(' ').toLowerCase();
+      if (!blob.includes(q)) return false;
+    }
+    return true;
+  }).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  document.getElementById('count').textContent = filtered.length;
+
+  const body = document.getElementById('leads-body');
+  if (filtered.length === 0){
+    body.innerHTML = '<tr><td colspan="7" class="empty">Sin leads que coincidan.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = filtered.map((l, i) => `
+    <tr onclick="openModal(${ALL_LEADS.indexOf(l)})">
+      <td class="col-time">${formatDate(l.timestamp)}</td>
+      <td><span class="tag ${l.origen}">${formatOrigen(l.origen)}</span></td>
+      <td class="col-contact">
+        <strong>${escape(l.nombre) || '—'}</strong><br>
+        ${l.whatsapp ? `<a href="https://wa.me/${onlyDigits(l.whatsapp)}" target="_blank" rel="noopener">${escape(l.whatsapp)}</a>` : ''}
+        ${l.email ? `<div class="mail">${escape(l.email)}</div>` : ''}
+      </td>
+      <td>
+        ${l.zona ? `<div>${escape(l.zona)}</div>` : ''}
+        ${l.tipo_proyecto ? `<div style="color:var(--ink3);font-size:11px">${escape(l.tipo_proyecto)}</div>` : ''}
+      </td>
+      <td style="font-size:12px">${escape(l.urgencia) || '—'}</td>
+      <td class="col-amount">${formatRange(l.total_min_usd, l.total_max_usd)}</td>
+      <td style="max-width:240px;font-size:12px;color:var(--ink2)">${truncate(escape(l.mensaje), 80) || '—'}</td>
+    </tr>
+  `).join('');
+}
+
+// ====================== RENDER BOOKINGS ======================
+function renderBookings(){
+  const grid = document.getElementById('bookings-grid');
+  if (!ALL_BOOKINGS.length){
+    grid.innerHTML = '<div class="empty">No hay reuniones agendadas.</div>';
+    return;
+  }
+  grid.innerHTML = ALL_BOOKINGS.map(b => {
+    const [date, hhmm] = (b.slot_key || '').split('_');
+    const whenPretty = `${date || '—'} · ${hhmm ? hhmm.slice(0,2)+':'+hhmm.slice(2) : '--:--'}`;
+    return `
+      <div class="booking">
+        <div class="when">${whenPretty}</div>
+        <div class="who">${escape(b.nombre || '—')}</div>
+        <div class="ct">
+          ${b.whatsapp ? `<a href="https://wa.me/${onlyDigits(b.whatsapp)}" target="_blank">📱 ${escape(b.whatsapp)}</a><br>` : ''}
+          ${b.email ? `✉️ ${escape(b.email)}` : ''}
+        </div>
+        ${b.canal ? `<span class="canal">${escape(b.canal)}</span>` : ''}
+        ${b.notas ? `<div style="margin-top:.5rem;font-size:12px;color:var(--ink3)">${escape(b.notas)}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ====================== HELPERS ======================
+function formatDate(iso){
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const ayer = new Date(hoy); ayer.setDate(ayer.getDate()-1);
+  const dStart = new Date(d); dStart.setHours(0,0,0,0);
+  const hhmm = d.toTimeString().slice(0,5);
+  if (dStart.getTime() === hoy.getTime()) return `Hoy ${hhmm}`;
+  if (dStart.getTime() === ayer.getTime()) return `Ayer ${hhmm}`;
+  return d.toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit'}) + ' ' + hhmm;
+}
+function formatOrigen(o){
+  const map = {
+    'chat':'Chat Lucas',
+    'presupuestador-web':'Presupu',
+    'presupuestador-edificio':'Edificio',
+    'contacto':'Contacto',
+    'agenda':'Agenda',
+  };
+  return map[o] || o || '—';
+}
+function formatRange(min, max){
+  if (!min && !max) return '—';
+  const f = n => new Intl.NumberFormat('es-AR').format(n);
+  if (min && max) return `${f(min)}–${f(max)}`;
+  return f(min || max);
+}
+function onlyDigits(s){ return (s||'').replace(/\D/g,''); }
+function escape(s){
+  if (s == null) return '';
+  return String(s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function truncate(s, n){ if (!s) return s; return s.length > n ? s.slice(0,n) + '…' : s; }
+
+// ====================== MODAL ======================
+function openModal(idx){
+  const l = ALL_LEADS[idx];
+  if (!l) return;
+  document.getElementById('modal-title').textContent = l.nombre || 'Detalle del lead';
+  const rows = [
+    ['Origen', formatOrigen(l.origen)],
+    ['Cuándo', formatDate(l.timestamp)],
+    ['Nombre', l.nombre],
+    ['WhatsApp', l.whatsapp],
+    ['Email', l.email],
+    ['Zona', l.zona],
+    ['Urgencia', l.urgencia],
+    ['Tipo proyecto', l.tipo_proyecto],
+    ['Superficie', l.superficie_m2 ? l.superficie_m2 + ' m²' : ''],
+    ['Línea de calidad', l.nivel],
+    ['Presupuesto USD', formatRange(l.total_min_usd, l.total_max_usd)],
+    ['Mensaje', l.mensaje],
+  ];
+  document.getElementById('modal-body').innerHTML = rows
+    .filter(([_,v]) => v)
+    .map(([k,v]) => `<dt>${k}</dt><dd>${escape(v)}</dd>`)
+    .join('');
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open') }
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target.id === 'modal') closeModal();
+});
+
+// ====================== NAV VIEWS ======================
+document.querySelectorAll('.admin-nav button[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.admin-nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + btn.dataset.view).classList.add('active');
+  });
+});
+
+// ====================== EVENTS FILTROS ======================
+['f-search','f-origen','f-fecha','f-urgencia','f-zona','f-tipo','f-min','f-max','f-agenda']
+  .forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener(id === 'f-agenda' ? 'change' : 'input', renderLeads);
+  });
+document.getElementById('f-reset').addEventListener('click', () => {
+  ['f-search','f-origen','f-fecha','f-urgencia','f-zona','f-tipo','f-min','f-max']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('f-agenda').checked = false;
+  renderLeads();
+});
+
+// ====================== REFRESH ======================
+const refreshBtn = document.getElementById('refreshBtn');
+async function refreshAll(){
+  refreshBtn.classList.add('refreshing');
+  await Promise.all([fetchLeads(), fetchBookings()]);
+  renderKPIs();
+  renderLeads();
+  renderBookings();
+  refreshBtn.classList.remove('refreshing');
+}
+refreshBtn.addEventListener('click', refreshAll);
+
+// Initial load + auto-refresh cada 30s
+refreshAll();
+setInterval(refreshAll, 30000);
+</script>
+
+</body>
+</html>

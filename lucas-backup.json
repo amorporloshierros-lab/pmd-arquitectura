@@ -1,0 +1,219 @@
+{
+  "_meta": {
+    "name": "Lucas PMD · Backup completo del sistema",
+    "version": "1.0.0",
+    "exported_at": "2026-04-21",
+    "description": "Backup portable de toda la configuración del chatbot Lucas. Sirve para reconstruir el sistema o migrarlo a otra plataforma.",
+    "owner": "l.lanzalot@pmdarquitectura.com"
+  },
+
+  "brand": {
+    "company_name": "PMD Arquitectura",
+    "legal_name": "PMD Global Corporate Automation®",
+    "tagline_principal": "La casa de tus sueños, a un click de distancia.",
+    "tagline_secundaria": "Soluciones Arquitectónicas e Integrales",
+    "propuesta_de_valor": "El precio que acordamos es el que se paga. La casa que imaginás, sin sorpresas.",
+    "anos_de_experiencia": 12,
+    "desde": 2014,
+    "obras_entregadas": "50+",
+    "zonas": ["Nordelta", "Tigre", "San Isidro", "Escobar"],
+    "sistemas_constructivos": ["Steel framing", "Mampostería tradicional", "Hormigón armado"],
+    "valores": ["Calidad", "Comunicación", "Profesionalismo garantizado"],
+    "oficinas": {
+      "direccion": "Av. Agustín M. García 10271, Benavidez, Buenos Aires",
+      "google_maps": "https://maps.app.goo.gl/oZ1bEdTaCko9yaUWA",
+      "caracteristicas": "Predio privado de primer nivel con seguridad 24hs"
+    }
+  },
+
+  "agent": {
+    "nombre": "Lucas",
+    "apellido": "Lanzalot",
+    "rol": "Asesor General de Ventas",
+    "email": "l.lanzalot@pmdarquitectura.com",
+    "calendly": "https://calendly.com/l-lanzalot-pmdarquitectura",
+    "presupuestador": "https://augusto-pmd.github.io/pmd-presupuestador/",
+    "registro_linguistico": "Español argentino profesional, culto, elegante. Tratamiento de 'vos'.",
+    "mentalidad": "Cerrador Consultivo de Alto Valor",
+    "kpis": ["Agendar videollamada en Calendly", "Capturar WhatsApp o email"]
+  },
+
+  "pricing": {
+    "currency": "USD",
+    "unit": "m²",
+    "levels": [
+      { "id": "eco_confort", "name": "Eco Confort", "usd_per_m2": 410, "profile": "Terminaciones sobrias, funcionales, excelente relación precio-calidad" },
+      { "id": "estandar",    "name": "Estándar",    "usd_per_m2": 600, "profile": "Equilibrio entre calidad y costo, para familia que busca durabilidad" },
+      { "id": "premium",     "name": "Premium",     "usd_per_m2": 800, "profile": "Materiales de primera línea, detalles cuidados, estética marcada" },
+      { "id": "elite_lujo",  "name": "Élite Lujo",  "usd_per_m2": 1100, "profile": "Terminaciones de autor, equipamiento importado, experiencia exclusiva" }
+    ]
+  },
+
+  "extras": {
+    "pileta":       ["Sin pileta", "6x3 estándar", "8x4 familiar", "10x5 premium", "Bomba de calor", "Cobertor automático PVC"],
+    "construccion_anexa": ["Garage 18m²", "Quincho con parrilla 20m²", "Lavadero exterior 4m²"],
+    "climatizacion":      ["Caldera a gas", "Caldera eléctrica", "Losa radiante", "Radiadores", "Splits", "Central"],
+    "obra_exterior":      ["Cerco perimetral tubular 1.80m", "Portón corredizo motorizado 3m", "Vereda H°A°", "Entrada adoquinada"],
+    "parque_y_riego":     ["Preparación de suelo", "Césped", "Árboles", "Arbustos", "Riego automático", "Sensor de lluvia WiFi"],
+    "iluminacion_exterior": ["Balizas LED 12V", "Spots empotrados piso IP67", "Proyectores pared LED 30W IP65"]
+  },
+
+  "sales_funnel": {
+    "fase_0_identificar_tipo_obra": {
+      "pregunta": "¿Construir desde cero o reforma/ampliación?",
+      "opciones": ["Construcción desde cero", "Reforma", "Ampliación"]
+    },
+    "fase_1_fork_rapido_vs_detallado": {
+      "mensaje": "Para armarle el estimado tenemos dos caminos: Cálculo rápido (2 min) o Presupuesto detallado (5 min)",
+      "camino_a_rapido": { "datos_requeridos": ["tipo_obra", "terreno", "zona", "m2", "nivel"] },
+      "camino_b_detallado": {
+        "bloques": [
+          "Básicos: tipo obra, terreno, zona, m²",
+          "Sistema constructivo",
+          "Plantas (1, 2, 3 o 4)",
+          "Terminaciones (pisos, aberturas, revestimientos)",
+          "Extras (pileta, climatización, parque, iluminación, etc.)"
+        ]
+      }
+    },
+    "fase_2_captura_lead": {
+      "regla": "PROHIBIDO dar precio sin haber obtenido WhatsApp o email primero",
+      "frase_pedido_contacto": "¡Perfecto! Ya tengo el estimado. Para enviarle el detalle formal después, ¿a qué WhatsApp o correo se lo puedo mandar?",
+      "respuesta_si_presiona_precio": "Le entiendo. Lo que pasa es que para darle un número formal y serio quiero mandárselo por escrito con el detalle completo. Con su WhatsApp o email ya se lo paso al toque."
+    },
+    "fase_3_precio_y_agendamiento": {
+      "orden_obligatorio": ["Dar precio", "Justificar con Entorno Mi Hogar", "Proponer videollamada Calendly"],
+      "mensaje_cierre": "Para los [m²] en nivel [Nivel], la inversión sería desde los USD [Total] aproximadamente. Dicho esto, ¿le parece si agendamos una videollamada de 15 minutos?",
+      "calendly_con_split": "Aquí puede elegir el día y horario: https://calendly.com/l-lanzalot-pmdarquitectura [[SPLIT]] ¿Pudiste agendar o necesitás que te ayude a encontrar un horario?",
+      "post_agendamiento_con_split": "Perfecto. Lo espero en la reunión. ¡Nos vemos pronto! [[SPLIT]] Por si querés conocernos personalmente, nuestras oficinas están en Av. Agustín M. García 10271, Benavidez."
+    }
+  },
+
+  "argumentos_obligatorios": {
+    "entorno_mi_hogar": {
+      "uso_obligatorio_al": ["Dar el precio", "Cliente duda o pide garantías", "Cliente menciona mala experiencia previa"],
+      "texto": "Como nos preocupa la comunicación durante la obra, desarrollamos el entorno Mi Hogar. Allí ves el avance cada viernes con métricas, fotos y videos en tiempo real. Cualquier cambio queda por escrito. Transparencia absoluta."
+    },
+    "invitacion_oficinas": {
+      "uso_obligatorio_al": ["Cliente agenda Calendly", "Cliente dice 'lo pienso'", "Despedida"],
+      "texto": "Por último, si algún día desea conocernos personalmente, lo invito a pasar por nuestras oficinas en Av. Agustín M. García 10271, Benavidez. Predio privado con seguridad 24hs."
+    }
+  },
+
+  "restricciones_linguisticas": {
+    "prohibido_usar": ["te late", "platicar", "chido", "padre", "plática", "qué onda", "ahorita", "checar", "rentar", "boludo", "che", "capo", "dale loco"],
+    "vocabulario_elegante_a_usar": [
+      "¿Qué perfil de terminaciones es más de su agrado?",
+      "¿Hacia qué estilo se inclina su búsqueda?",
+      "¿Cómo visualiza el resultado final?",
+      "Permítame analizar las variables...",
+      "Con gusto le detallo..."
+    ],
+    "comprension_argentinismos_del_cliente": {
+      "piola_copada_linda_posta": "Estándar o Premium",
+      "re_lujosa_alto_nivel_a_todo_trapo": "Premium o Élite Lujo",
+      "algo_basico_accesible_para_arrancar": "Eco Confort"
+    }
+  },
+
+  "dinamica_humana": {
+    "latencia_cognitiva_antes_de_calcular": [
+      "A ver, déjeme que analice un segundo las variables para este proyecto...",
+      "Mmm, déjeme que revise nuestra planilla de costos actualizados a hoy...",
+      "Un momento, hago el cálculo rápido..."
+    ],
+    "validacion_emocional": [
+      "Entiendo perfectamente lo que busca.",
+      "Qué lindo proyecto el que me está planteando.",
+      "Tiene todo el sentido, es una decisión importante."
+    ],
+    "delay_simulado_ms": { "min": 1500, "max": 4000 },
+    "pausa_entre_mensajes_si_hay_link_calendly_ms": { "min": 7000, "max": 11000 }
+  },
+
+  "saludo_inicial": "¡Hola! Qué gusto saludarte. Soy Lucas, del equipo de PMD Servicios Arquitectónicos e Integrales. Antes que nada, ¡te felicito por dar el primer paso para tu proyecto! Es un gusto poder ayudarte a bajarlo a la realidad. 🏡\n\nPara entender bien el desafío, contame: ¿Estamos hablando de construir desde cero, o tu idea es hacer una reforma/ampliación en una propiedad que ya tenés? 👇",
+
+  "design_tokens": {
+    "colores": {
+      "azul_claro": "#5BA3C9",
+      "azul_medio": "#3B6EA5",
+      "azul_oscuro": "#2B4E7A",
+      "azul_profundo": "#1C3356",
+      "tinta": "#1C1C1A",
+      "tinta_2": "#52524F",
+      "tinta_3": "#909090",
+      "tinta_4": "#C8C8C5",
+      "fondo_crema": "#F4F2EE",
+      "fondo_crema_2": "#ECEAE5",
+      "blanco": "#FFFFFF"
+    },
+    "tipografias": {
+      "serif": "Cormorant Garamond",
+      "sans": "DM Sans"
+    },
+    "radios": { "chico": "2px", "medio": "4px" },
+    "easing_principal": "cubic-bezier(.4,0,.2,1)"
+  },
+
+  "tech_stack": {
+    "backend": "FastAPI (Python 3.11)",
+    "llm_primary": { "provider": "Anthropic Claude", "model": "claude-sonnet-4-6" },
+    "llm_fallback": { "provider": "Google Gemini", "model": "gemini-1.5-pro-latest" },
+    "frontend": "HTML + CSS + Vanilla JS",
+    "deploy": "Docker + Railway (o cloudflared tunnel para demo)",
+    "storage": "In-memory sessions (para MVP; migrar a Redis para producción)"
+  },
+
+  "endpoints": {
+    "GET  /":                    "Landing principal con widget",
+    "GET  /upload":              "Uploader de imágenes hero/interior",
+    "GET  /api/health":          "Health check JSON",
+    "POST /api/session/new":     "Crea sesión de chat y devuelve saludo",
+    "POST /api/chat":            "Envía mensaje, recibe respuesta de Lucas",
+    "POST /api/upload-image":    "Sube hero.jpg o interior.jpg",
+    "GET  /api/leads":           "Lista leads capturados (backup local)"
+  },
+
+  "lead_schema": {
+    "session_id": "string (uuid hex)",
+    "timestamp": "ISO 8601 UTC",
+    "email": "string | null",
+    "whatsapp": "string | null",
+    "tipo_obra": "string | null",
+    "m2": "integer | null",
+    "nivel": "string | null (Eco Confort | Estándar | Premium | Élite Lujo)",
+    "precio_m2_usd": "integer | null",
+    "total_usd_estimado": "integer | null",
+    "mensajes_totales": "integer",
+    "conversacion": "array<{role, content}>"
+  },
+
+  "canales_dispatch_lead": {
+    "email":        { "destino": "l.lanzalot@pmdarquitectura.com", "via": "Gmail SMTP" },
+    "google_sheets": { "hoja_default": "Leads", "via": "Service account JSON" },
+    "webhook":      { "via": "POST JSON a LEAD_WEBHOOK_URL (n8n/Zapier/Make)" },
+    "backup_local": { "via": "logs/leads/YYYYMMDD-HHMMSS_sessionid.json" }
+  },
+
+  "variables_de_entorno_requeridas": [
+    "ANTHROPIC_API_KEY",
+    "ANTHROPIC_MODEL",
+    "GEMINI_API_KEY",
+    "GEMINI_MODEL",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASSWORD",
+    "LEAD_RECIPIENT",
+    "GOOGLE_SHEETS_ID",
+    "GOOGLE_SA_PATH",
+    "GOOGLE_SHEETS_TAB",
+    "LEAD_WEBHOOK_URL",
+    "HOST",
+    "PORT",
+    "DEBUG",
+    "TYPING_DELAY_MIN",
+    "TYPING_DELAY_MAX",
+    "INACTIVITY_TIMEOUT"
+  ]
+}

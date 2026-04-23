@@ -1,0 +1,173 @@
+{
+  "name": "Lucas PMD · Captura de leads",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lucas-lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "n-webhook-001",
+      "name": "Webhook · Recibir lead",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "lucas-lead-webhook-pmd"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "f1", "name": "session_id",          "type": "string", "value": "={{ $json.body.session_id }}" },
+            { "id": "f2", "name": "timestamp",           "type": "string", "value": "={{ $json.body.timestamp }}" },
+            { "id": "f3", "name": "email",               "type": "string", "value": "={{ $json.body.email || '—' }}" },
+            { "id": "f4", "name": "whatsapp",            "type": "string", "value": "={{ $json.body.whatsapp || '—' }}" },
+            { "id": "f5", "name": "tipo_obra",           "type": "string", "value": "={{ $json.body.tipo_obra || 'Sin definir' }}" },
+            { "id": "f6", "name": "m2",                  "type": "number", "value": "={{ $json.body.m2 || 0 }}" },
+            { "id": "f7", "name": "nivel",               "type": "string", "value": "={{ $json.body.nivel || 'Sin definir' }}" },
+            { "id": "f8", "name": "precio_m2_usd",       "type": "number", "value": "={{ $json.body.precio_m2_usd || 0 }}" },
+            { "id": "f9", "name": "total_usd_estimado",  "type": "number", "value": "={{ $json.body.total_usd_estimado || 0 }}" },
+            { "id": "f10","name": "mensajes_totales",    "type": "number", "value": "={{ $json.body.mensajes_totales || 0 }}" },
+            { "id": "f11","name": "conversacion",        "type": "array",  "value": "={{ $json.body.conversacion || [] }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n-set-format",
+      "name": "Formatear lead",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "l.lanzalot@pmdarquitectura.com",
+        "subject": "=[PMD · Lucas] Nuevo lead — {{ $json.tipo_obra }}",
+        "emailType": "html",
+        "message": "=<div style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1C1C1A\">\n  <div style=\"background:#1C3356;color:#fff;padding:24px;border-radius:4px 4px 0 0\">\n    <h1 style=\"margin:0;font-size:22px\">Nuevo lead capturado por Lucas</h1>\n    <p style=\"margin:6px 0 0;color:rgba(255,255,255,.7);font-size:13px\">{{ $json.timestamp }}</p>\n  </div>\n  <div style=\"background:#F4F2EE;padding:24px;border:1px solid #e3dcce;border-top:none;border-radius:0 0 4px 4px\">\n    <h2 style=\"color:#1C3356;font-size:15px;letter-spacing:.05em;text-transform:uppercase;margin:0 0 12px\">Contacto</h2>\n    <p style=\"margin:4px 0\"><strong>WhatsApp:</strong> {{ $json.whatsapp }}</p>\n    <p style=\"margin:4px 0\"><strong>Email:</strong> {{ $json.email }}</p>\n    <h2 style=\"color:#1C3356;font-size:15px;letter-spacing:.05em;text-transform:uppercase;margin:20px 0 12px\">Calificación</h2>\n    <p style=\"margin:4px 0\"><strong>Tipo de obra:</strong> {{ $json.tipo_obra }}</p>\n    <p style=\"margin:4px 0\"><strong>Metros²:</strong> {{ $json.m2 }} m²</p>\n    <p style=\"margin:4px 0\"><strong>Nivel:</strong> {{ $json.nivel }}</p>\n    <p style=\"margin:4px 0\"><strong>USD/m²:</strong> {{ $json.precio_m2_usd }}</p>\n    <p style=\"margin:4px 0;font-size:18px;color:#2B4E7A\"><strong>Total estimado:</strong> USD {{ $json.total_usd_estimado }}</p>\n    <p style=\"color:#52524F;font-size:12px;margin-top:24px\">Session {{ $json.session_id }} · {{ $json.mensajes_totales }} mensajes</p>\n  </div>\n</div>",
+        "options": {}
+      },
+      "id": "n-gmail-send",
+      "name": "Gmail · Enviar notificación",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [740, 180],
+      "credentials": {
+        "gmailOAuth2": { "id": "__FILL_CREDENTIAL_ID__", "name": "Gmail PMD" }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": { "__rl": true, "value": "__FILL_SPREADSHEET_ID__", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "Leads", "mode": "name" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp":     "={{ $json.timestamp }}",
+            "Session ID":    "={{ $json.session_id }}",
+            "WhatsApp":      "={{ $json.whatsapp }}",
+            "Email":         "={{ $json.email }}",
+            "Tipo obra":     "={{ $json.tipo_obra }}",
+            "m²":            "={{ $json.m2 }}",
+            "Nivel":         "={{ $json.nivel }}",
+            "USD/m²":        "={{ $json.precio_m2_usd }}",
+            "Total USD":     "={{ $json.total_usd_estimado }}",
+            "Mensajes":      "={{ $json.mensajes_totales }}",
+            "Origen":        "Chatbot Lucas"
+          }
+        },
+        "options": {}
+      },
+      "id": "n-sheets-append",
+      "name": "Google Sheets · Append",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [740, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": { "id": "__FILL_CREDENTIAL_ID__", "name": "Google Sheets PMD" }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "__FILL_TELEGRAM_CHAT_ID__",
+        "text": "=🏡 <b>Nuevo lead Lucas · PMD</b>\n\n📱 WhatsApp: <code>{{ $json.whatsapp }}</code>\n✉️ Email: <code>{{ $json.email }}</code>\n\n🏗️ {{ $json.tipo_obra }} · {{ $json.m2 }}m² · {{ $json.nivel }}\n💰 USD {{ $json.total_usd_estimado }}\n\nSession {{ $json.session_id }}",
+        "additionalFields": { "parse_mode": "HTML" }
+      },
+      "id": "n-telegram-notify",
+      "name": "Telegram · Notificar al toque",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [740, 420],
+      "credentials": {
+        "telegramApi": { "id": "__FILL_CREDENTIAL_ID__", "name": "Telegram Bot PMD" }
+      },
+      "disabled": true,
+      "notes": "Opcional: habilitá este nodo si querés notificación instantánea al celular vía Telegram. Necesitás crear un bot con @BotFather y obtener el chat_id donde querés recibir los leads."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true, \"session_id\": \"{{ $json.session_id }}\" }"
+      },
+      "id": "n-respond",
+      "name": "Responder OK al backend",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1020, 300]
+    }
+  ],
+  "connections": {
+    "Webhook · Recibir lead": {
+      "main": [
+        [ { "node": "Formatear lead", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Formatear lead": {
+      "main": [
+        [
+          { "node": "Gmail · Enviar notificación", "type": "main", "index": 0 },
+          { "node": "Google Sheets · Append",      "type": "main", "index": 0 },
+          { "node": "Telegram · Notificar al toque","type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Gmail · Enviar notificación": {
+      "main": [ [ { "node": "Responder OK al backend", "type": "main", "index": 0 } ] ]
+    },
+    "Google Sheets · Append": {
+      "main": [ [ { "node": "Responder OK al backend", "type": "main", "index": 0 } ] ]
+    },
+    "Telegram · Notificar al toque": {
+      "main": [ [ { "node": "Responder OK al backend", "type": "main", "index": 0 } ] ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all"
+  },
+  "pinData": {},
+  "staticData": null,
+  "tags": [
+    { "name": "PMD" },
+    { "name": "Lucas" },
+    { "name": "Leads" }
+  ],
+  "meta": {
+    "description": "Workflow que recibe los leads enviados por el backend de Lucas (el chatbot de PMD Arquitectura) y los dispara en paralelo a Gmail, Google Sheets y Telegram. La URL del webhook se usa como valor de LEAD_WEBHOOK_URL en el .env del backend. Fase test: el workflow responde con {ok:true} para no romper la llamada del backend.",
+    "setup_steps": [
+      "1. Importar este JSON en n8n: Workflows → Import from File",
+      "2. Configurar credenciales: Gmail OAuth2, Google Sheets OAuth2, Telegram Bot (opcional)",
+      "3. En el nodo Google Sheets · Append: reemplazar __FILL_SPREADSHEET_ID__ por el ID real de tu planilla",
+      "4. En el nodo Telegram (opcional): reemplazar __FILL_TELEGRAM_CHAT_ID__ por tu chat_id y habilitar el nodo",
+      "5. Activar el workflow (toggle arriba a la derecha)",
+      "6. Copiar la URL de producción del webhook (icono de copia arriba del nodo Webhook)",
+      "7. Pegar esa URL en el archivo .env del backend Lucas: LEAD_WEBHOOK_URL=https://tu-n8n/webhook/lucas-lead",
+      "8. Reiniciar python main.py para que tome el .env actualizado",
+      "9. Testear: simular una conversación con Lucas y dejar un email/WhatsApp → ver que el lead llegue por los 3 canales"
+    ]
+  }
+}

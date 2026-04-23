@@ -1,0 +1,19 @@
+# Cosas que NO se suben a Railway
+.env
+.env.local
+.env.*.local
+__pycache__/
+*.pyc
+.venv/
+venv/
+.git/
+.gitignore
+logs/
+credentials/
+sessions.db
+*.sqlite
+.DS_Store
+*.md
+!README.md
+.vscode/
+.idea/
