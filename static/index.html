@@ -71,7 +71,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 .nav-inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:none;margin:0;padding:0 2.5rem;gap:2rem}
 .brand{display:flex;align-items:center;gap:16px;perspective:600px;flex-shrink:0}
 .brand .sqs{gap:6px}
-.brand .sq{width:15px;height:15px;border-radius:2px}
+.brand .sq{width:13px;height:13px;border-radius:2px}
 .brand-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;letter-spacing:.02em;color:var(--ink);white-space:nowrap;line-height:1}
 .nav.scrolled .brand-name{font-size:22px}
 .nav-links{display:flex;align-items:center;gap:2rem;margin-left:auto;margin-right:1.5rem}
@@ -110,7 +110,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   .nav-btn-hogar span:not(.dot){display:none}
   .nav-cta{height:34px;padding:0 14px;font-size:12px}
   .brand-name{font-size:20px}
-  .brand .sq{width:12px;height:12px}
+  .brand .sq{width:11px;height:11px}
 }
 
 /* ── HERO ── */
@@ -785,6 +785,9 @@ body.intro-ready .intro-sq{animation-play-state:running}
   .intro-sq.s3{--col-drop:calc(50vw - 116px)}
 }
 /* --col-drop y --col-land-y los setea JS (measure del placeholder) */
+/* --col-nav-y: centro vertical de nav 78px según tamaño sq del nav
+   Desktop sq 13px → y=32.5; Mobile sq 11px → y=33.5 */
+.intro-sq{--col-nav-y:32.5px}
 .intro-sq.s1{
   background:var(--b1);
   --col-nav:40px;
@@ -793,13 +796,13 @@ body.intro-ready .intro-sq{animation-play-state:running}
 }
 .intro-sq.s2{
   background:var(--b2);
-  --col-nav:61px;
+  --col-nav:59px;
   animation:introJourney 2.6s .7s forwards;
   filter:drop-shadow(0 8px 20px rgba(59,110,165,.35));
 }
 .intro-sq.s3{
   background:var(--b3);
-  --col-nav:82px;
+  --col-nav:78px;
   animation:introJourney 2.6s .85s forwards;
   filter:drop-shadow(0 8px 20px rgba(43,78,122,.35));
 }
@@ -827,9 +830,9 @@ body.intro-ready .intro-sq{animation-play-state:running}
   /* Breve pausa antes de volar — sigue grande */
   70%{transform:translate(var(--col-drop),var(--col-land-y)) scale(1);opacity:1;animation-timing-function:cubic-bezier(.65,0,.35,1)}
   /* Vuela al nav logo arriba-izq achicándose a tamaño nav (15/28 = 0.536) */
-  94%{transform:translate(var(--col-nav),31.5px) scale(.34);opacity:1}
+  94%{transform:translate(var(--col-nav),var(--col-nav-y)) scale(.3);opacity:1}
   /* Aterriza y se apaga para que el nav real tome el control */
-  100%{transform:translate(var(--col-nav),31.5px) scale(.34);opacity:0}
+  100%{transform:translate(var(--col-nav),var(--col-nav-y)) scale(.3);opacity:0}
 }
 
 /* Ocultar el logo real del nav durante la intro para evitar doble visual.
@@ -843,11 +846,11 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
 
 @media (max-width:900px){
   .intro-pmd{font-size:clamp(72px,16vw,150px)}
-  /* Nav mobile: sq 12px, padding-left 40px. sq2=40+12+6=58, sq3=40+12+6+12+6=76 */
+  /* Nav mobile: sq 11px. sq2=40+11+6=57, sq3=40+11+6+11+6=74. Y=33.5 (sq 11 en nav 78) */
+  .intro-sq{--col-nav-y:33.5px}
   .intro-sq.s1{--col-nav:40px}
-  .intro-sq.s2{--col-nav:58px}
-  .intro-sq.s3{--col-nav:76px}
-  /* En mobile escala final es 12/22 = 0.545 — mantengo .536 (12px→11.8, casi igual) */
+  .intro-sq.s2{--col-nav:57px}
+  .intro-sq.s3{--col-nav:74px}
 }
 
 @media (prefers-reduced-motion:reduce){
