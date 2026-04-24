@@ -696,21 +696,26 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   pointer-events:none;
   overflow:hidden;
 }
-/* Fila central: [placeholder de 3sq] PMD — igual que el logo del nav pero gigante */
+/* Fila central: [3 cuadrados grandes en fila]  PMD — composición del logo en escala gigante.
+   Ligero shift a la derecha para que la "P" no quede exactamente centrada. */
 .intro-content{
   display:flex;align-items:center;
-  gap:clamp(20px,3vw,44px);
+  gap:clamp(28px,4.5vw,72px);
+  transform:translateX(clamp(18px,4vw,70px));
   will-change:opacity,transform;
 }
 .intro-placeholder{
-  width:57px;height:15px;flex-shrink:0;
+  width:96px;height:28px;flex-shrink:0;
   opacity:0; /* invisible — solo marca la posición para los cuadrados reales */
+}
+@media (max-width:900px){
+  .intro-placeholder{width:78px;height:22px}
 }
 .intro-pmd{
   font-family:'Cormorant Garamond',serif;
-  font-size:clamp(104px,19vw,260px);
+  font-size:clamp(84px,14.5vw,190px);
   font-weight:700;
-  letter-spacing:.03em;
+  letter-spacing:.025em;
   color:#F4F2EE;
   opacity:0;
   transform:translateY(18px) scale(.985);
@@ -752,14 +757,19 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
    Cada uno tiene --col-drop (X donde cae) y --col-nav (X final en nav logo). */
 .intro-sq{
   position:fixed;top:0;left:0;
-  width:15px;height:15px;border-radius:2px;
+  width:28px;height:28px;border-radius:3px;
+  transform-origin:top left;
   z-index:10001;
   will-change:transform,opacity,filter;
   pointer-events:none;
   opacity:0;
   /* Fallbacks — JS sobreescribe con la posición exacta del placeholder */
-  --col-drop:calc(50vw - 170px);
-  --col-land-y:calc(50vh - 7.5px);
+  --col-drop:calc(50vw - 200px);
+  --col-land-y:calc(50vh - 14px);
+}
+@media (max-width:900px){
+  .intro-sq{width:22px;height:22px}
+  .intro-sq.s1{--col-drop:calc(50vw - 140px)}
 }
 /* --col-drop y --col-land-y los setea JS (measure del placeholder) */
 .intro-sq.s1{
@@ -782,31 +792,31 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 }
 
 @keyframes introJourney{
-  /* Arranca arriba fuera de la pantalla — cae a la izq de la P */
-  0%{transform:translate(var(--col-drop),-140px);opacity:0;animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  /* Arranca arriba fuera de la pantalla — cae a la izq de la P (28px tamaño inicial) */
+  0%{transform:translate(var(--col-drop),-160px) scale(1);opacity:0;animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
   4%{opacity:1;animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
   /* Cae al "suelo" alineado al medio vertical del PMD */
-  18%{transform:translate(var(--col-drop),var(--col-land-y));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+  18%{transform:translate(var(--col-drop),var(--col-land-y)) scale(1);animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
   /* Rebote 1 — el más alto */
-  28%{transform:translate(var(--col-drop),calc(var(--col-land-y) - 85px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  28%{transform:translate(var(--col-drop),calc(var(--col-land-y) - 95px)) scale(1);animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
   /* Rebote 1 — baja */
-  36%{transform:translate(var(--col-drop),var(--col-land-y));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+  36%{transform:translate(var(--col-drop),var(--col-land-y)) scale(1);animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
   /* Rebote 2 */
-  42%{transform:translate(var(--col-drop),calc(var(--col-land-y) - 45px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
-  48%{transform:translate(var(--col-drop),var(--col-land-y));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+  42%{transform:translate(var(--col-drop),calc(var(--col-land-y) - 52px)) scale(1);animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  48%{transform:translate(var(--col-drop),var(--col-land-y)) scale(1);animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
   /* Rebote 3 */
-  52%{transform:translate(var(--col-drop),calc(var(--col-land-y) - 20px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
-  56%{transform:translate(var(--col-drop),var(--col-land-y));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+  52%{transform:translate(var(--col-drop),calc(var(--col-land-y) - 24px)) scale(1);animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  56%{transform:translate(var(--col-drop),var(--col-land-y)) scale(1);animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
   /* Rebote 4 — casi imperceptible */
-  58%{transform:translate(var(--col-drop),calc(var(--col-land-y) - 9px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  58%{transform:translate(var(--col-drop),calc(var(--col-land-y) - 11px)) scale(1);animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
   /* Asentado */
-  61%{transform:translate(var(--col-drop),var(--col-land-y));opacity:1;animation-timing-function:cubic-bezier(.5,0,.5,1)}
-  /* Breve pausa antes de volar */
-  70%{transform:translate(var(--col-drop),var(--col-land-y));opacity:1;animation-timing-function:cubic-bezier(.65,0,.35,1)}
-  /* Vuela al nav logo arriba-izq */
-  94%{transform:translate(var(--col-nav),31.5px);opacity:1}
+  61%{transform:translate(var(--col-drop),var(--col-land-y)) scale(1);opacity:1;animation-timing-function:cubic-bezier(.5,0,.5,1)}
+  /* Breve pausa antes de volar — sigue grande */
+  70%{transform:translate(var(--col-drop),var(--col-land-y)) scale(1);opacity:1;animation-timing-function:cubic-bezier(.65,0,.35,1)}
+  /* Vuela al nav logo arriba-izq achicándose a tamaño nav (15/28 = 0.536) */
+  94%{transform:translate(var(--col-nav),31.5px) scale(.536);opacity:1}
   /* Aterriza y se apaga para que el nav real tome el control */
-  100%{transform:translate(var(--col-nav),31.5px);opacity:0}
+  100%{transform:translate(var(--col-nav),31.5px) scale(.536);opacity:0}
 }
 
 /* Ocultar el logo real del nav durante la intro para evitar doble visual */
@@ -816,12 +826,12 @@ body:not(.intro-active) nav .brand .sqs,
 body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .5s ease}
 
 @media (max-width:900px){
-  .intro-pmd{font-size:clamp(80px,22vw,180px)}
-  /* Nav mobile tiene .sq de 12px y posiciones distintas */
-  .intro-sq{width:12px;height:12px}
-  .intro-sq.s1{--col-nav:28px}
-  .intro-sq.s2{--col-nav:46px}
-  .intro-sq.s3{--col-nav:64px}
+  .intro-pmd{font-size:clamp(72px,16vw,150px)}
+  /* Nav mobile: sq 12px, padding-left 40px. sq2=40+12+6=58, sq3=40+12+6+12+6=76 */
+  .intro-sq.s1{--col-nav:40px}
+  .intro-sq.s2{--col-nav:58px}
+  .intro-sq.s3{--col-nav:76px}
+  /* En mobile escala final es 12/22 = 0.545 — mantengo .536 (12px→11.8, casi igual) */
 }
 
 @media (prefers-reduced-motion:reduce){
@@ -864,8 +874,8 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .5s 
         var ph=document.getElementById('introPlaceholder');
         if(!ph) return;
         var r=ph.getBoundingClientRect();
-        // Tamaño del cuadrado (15 desktop / 12 mobile)
-        var sqSize=window.matchMedia('(max-width:900px)').matches?12:15;
+        // Tamaño del cuadrado en la intro (28 desktop / 22 mobile)
+        var sqSize=window.matchMedia('(max-width:900px)').matches?22:28;
         var gap=6;
         var centerY=r.top + r.height/2 - sqSize/2;
         var xs=[r.left, r.left+sqSize+gap, r.left+sqSize+gap+sqSize+gap];
