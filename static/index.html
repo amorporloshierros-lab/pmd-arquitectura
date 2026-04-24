@@ -692,7 +692,10 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   position:fixed;inset:0;z-index:9999;
   background:#0A0A0A;
   display:flex;align-items:center;justify-content:center;
-  animation:introFade 0.55s 2.85s cubic-bezier(.4,0,.2,1) forwards;
+  /* Fade del overlay arranca JUSTO cuando los cuadrados empiezan a volar
+     al nav, y termina cuando están aterrizando. La landing se va
+     revelando gradualmente mientras los cuadrados viajan. */
+  animation:introFade 0.55s 2.4s cubic-bezier(.4,0,.2,1) forwards;
   pointer-events:none;
   overflow:hidden;
 }
@@ -705,11 +708,11 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   will-change:opacity,transform;
 }
 .intro-placeholder{
-  width:126px;height:38px;flex-shrink:0;
+  width:144px;height:44px;flex-shrink:0;
   opacity:0; /* invisible — solo marca la posición para los cuadrados reales */
 }
 @media (max-width:900px){
-  .intro-placeholder{width:102px;height:30px}
+  .intro-placeholder{width:120px;height:36px}
 }
 .intro-pmd{
   font-family:'Cormorant Garamond',serif;
@@ -721,7 +724,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   transform:translateY(18px) scale(.985);
   will-change:opacity,transform,filter;
   animation:introPmdIn .55s .2s cubic-bezier(.22,.61,.36,1) forwards,
-            introPmdOut .5s 2.4s cubic-bezier(.4,0,.6,1) forwards;
+            introPmdOut .4s 1.95s cubic-bezier(.4,0,.6,1) forwards;
   text-shadow:0 0 40px rgba(91,163,201,.12), 0 2px 0 rgba(0,0,0,.2);
   line-height:.95;
 }
@@ -745,7 +748,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   background:radial-gradient(circle,rgba(91,163,201,.09) 0%,rgba(59,110,165,.04) 30%,transparent 60%);
   opacity:0;
   animation:introGlow 2s .3s ease-out forwards,
-            introPmdOut .5s 2.4s cubic-bezier(.4,0,.6,1) forwards;
+            introPmdOut .4s 1.95s cubic-bezier(.4,0,.6,1) forwards;
   pointer-events:none;
 }
 @keyframes introGlow{
@@ -757,7 +760,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
    Cada uno tiene --col-drop (X donde cae) y --col-nav (X final en nav logo). */
 .intro-sq{
   position:fixed;top:0;left:0;
-  width:38px;height:38px;border-radius:4px;
+  width:44px;height:44px;border-radius:4px;
   transform-origin:top left;
   z-index:10001;
   will-change:transform,opacity,filter;
@@ -765,21 +768,21 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   opacity:0;
   /* Se empieza en pause; JS mide, setea --col-drop/--col-land-y y suelta */
   animation-play-state:paused;
-  --col-land-y:calc(50vh - 19px);
+  --col-land-y:calc(50vh - 22px);
 }
 /* Fallbacks por si JS tarda — posiciones distintas para cada cuadrado
-   para que caigan en fila (no apilados). */
-.intro-sq.s1{--col-drop:calc(50vw - 280px)}
-.intro-sq.s2{--col-drop:calc(50vw - 236px)}
-.intro-sq.s3{--col-drop:calc(50vw - 192px)}
+   para que caigan en fila (no apilados). Spacing 50px (44 + 6). */
+.intro-sq.s1{--col-drop:calc(50vw - 300px)}
+.intro-sq.s2{--col-drop:calc(50vw - 250px)}
+.intro-sq.s3{--col-drop:calc(50vw - 200px)}
 
 body.intro-ready .intro-sq{animation-play-state:running}
 
 @media (max-width:900px){
-  .intro-sq{width:30px;height:30px;border-radius:3px}
-  .intro-sq.s1{--col-drop:calc(50vw - 180px)}
-  .intro-sq.s2{--col-drop:calc(50vw - 144px)}
-  .intro-sq.s3{--col-drop:calc(50vw - 108px)}
+  .intro-sq{width:36px;height:36px;border-radius:3px}
+  .intro-sq.s1{--col-drop:calc(50vw - 200px)}
+  .intro-sq.s2{--col-drop:calc(50vw - 158px)}
+  .intro-sq.s3{--col-drop:calc(50vw - 116px)}
 }
 /* --col-drop y --col-land-y los setea JS (measure del placeholder) */
 .intro-sq.s1{
@@ -824,16 +827,19 @@ body.intro-ready .intro-sq{animation-play-state:running}
   /* Breve pausa antes de volar — sigue grande */
   70%{transform:translate(var(--col-drop),var(--col-land-y)) scale(1);opacity:1;animation-timing-function:cubic-bezier(.65,0,.35,1)}
   /* Vuela al nav logo arriba-izq achicándose a tamaño nav (15/28 = 0.536) */
-  94%{transform:translate(var(--col-nav),31.5px) scale(.4);opacity:1}
+  94%{transform:translate(var(--col-nav),31.5px) scale(.34);opacity:1}
   /* Aterriza y se apaga para que el nav real tome el control */
-  100%{transform:translate(var(--col-nav),31.5px) scale(.4);opacity:0}
+  100%{transform:translate(var(--col-nav),31.5px) scale(.34);opacity:0}
 }
 
-/* Ocultar el logo real del nav durante la intro para evitar doble visual */
+/* Ocultar el logo real del nav durante la intro para evitar doble visual.
+   Cuando se remueve .intro-active, los cuadrados del nav aparecen con un
+   fade muy rápido para sincronizar con la llegada de los cuadrados de la
+   intro (parece que son los mismos). */
 body.intro-active nav .brand .sqs{opacity:0}
-body.intro-active nav .brand .brand-name{opacity:0;transition:opacity .4s .2s}
-body:not(.intro-active) nav .brand .sqs,
-body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .5s ease}
+body.intro-active nav .brand .brand-name{opacity:0}
+body:not(.intro-active) nav .brand .sqs{opacity:1;transition:opacity .15s ease-out}
+body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s .15s ease-out}
 
 @media (max-width:900px){
   .intro-pmd{font-size:clamp(72px,16vw,150px)}
@@ -884,8 +890,8 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .5s 
         var ph=document.getElementById('introPlaceholder');
         if(!ph){ document.body.classList.add('intro-ready'); return; }
         var r=ph.getBoundingClientRect();
-        // Tamaño del cuadrado en la intro (38 desktop / 30 mobile)
-        var sqSize=window.matchMedia('(max-width:900px)').matches?30:38;
+        // Tamaño del cuadrado en la intro (44 desktop / 36 mobile)
+        var sqSize=window.matchMedia('(max-width:900px)').matches?36:44;
         var gap=6;
         var centerY=r.top + r.height/2 - sqSize/2;
         var xs=[r.left, r.left+sqSize+gap, r.left+sqSize+gap+sqSize+gap];
@@ -909,13 +915,18 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .5s 
       // Fallback: si algo sale mal, soltar igual a los 300ms para no dejar congelada la intro
       setTimeout(function(){ document.body.classList.add('intro-ready'); },300);
 
-      // Limpiar overlay al terminar
+      // Mostrar los cuadrados reales del nav JUSTO cuando los de la intro
+      // están aterrizando ahí (sq1 llega a ~3.0s). Así parece que son los mismos.
       setTimeout(function(){
         document.body.classList.remove('intro-active');
+      },2900);
+
+      // Limpieza final — sacar overlay e intro-sqs del DOM
+      setTimeout(function(){
         var overlay=document.getElementById('introOverlay');
         if(overlay) overlay.remove();
         document.querySelectorAll('.intro-sq').forEach(function(el){el.remove()});
-      },3450);
+      },3550);
     }catch(e){}
   })();
 </script>
