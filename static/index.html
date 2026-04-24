@@ -7,7 +7,7 @@
 <title>PMD Arquitectura — Construcción y Diseño · GBA Norte</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='10' width='7' height='12' fill='%235BA3C9'/%3E%3Crect x='13' y='10' width='7' height='12' fill='%233B6EA5'/%3E%3Crect x='22' y='10' width='7' height='12' fill='%232B4E7A'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
 :root{
   --b1:#5BA3C9;--b2:#3B6EA5;--b3:#2B4E7A;--b4:#1C3356;
@@ -696,18 +696,29 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   pointer-events:none;
   overflow:hidden;
 }
+/* Fila central: [placeholder de 3sq] PMD — igual que el logo del nav pero gigante */
+.intro-content{
+  display:flex;align-items:center;
+  gap:clamp(20px,3vw,44px);
+  will-change:opacity,transform;
+}
+.intro-placeholder{
+  width:57px;height:15px;flex-shrink:0;
+  opacity:0; /* invisible — solo marca la posición para los cuadrados reales */
+}
 .intro-pmd{
   font-family:'Cormorant Garamond',serif;
-  font-size:clamp(96px,18vw,240px);
-  font-weight:500;
-  letter-spacing:.055em;
+  font-size:clamp(104px,19vw,260px);
+  font-weight:700;
+  letter-spacing:.03em;
   color:#F4F2EE;
   opacity:0;
   transform:translateY(18px) scale(.985);
   will-change:opacity,transform,filter;
   animation:introPmdIn .55s .2s cubic-bezier(.22,.61,.36,1) forwards,
             introPmdOut .5s 2.4s cubic-bezier(.4,0,.6,1) forwards;
-  text-shadow:0 0 40px rgba(91,163,201,.08);
+  text-shadow:0 0 40px rgba(91,163,201,.12), 0 2px 0 rgba(0,0,0,.2);
+  line-height:.95;
 }
 @keyframes introPmdIn{
   0%{opacity:0;transform:translateY(18px) scale(.985);filter:blur(8px)}
@@ -746,49 +757,53 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   will-change:transform,opacity,filter;
   pointer-events:none;
   opacity:0;
+  /* Fallbacks — JS sobreescribe con la posición exacta del placeholder */
+  --col-drop:calc(50vw - 170px);
+  --col-land-y:calc(50vh - 7.5px);
 }
+/* --col-drop y --col-land-y los setea JS (measure del placeholder) */
 .intro-sq.s1{
   background:var(--b1);
-  --col-drop:calc(50vw - 28.5px);--col-nav:40px;
+  --col-nav:40px;
   animation:introJourney 2.6s .55s forwards;
   filter:drop-shadow(0 8px 20px rgba(91,163,201,.35));
 }
 .intro-sq.s2{
   background:var(--b2);
-  --col-drop:calc(50vw - 7.5px);--col-nav:61px;
+  --col-nav:61px;
   animation:introJourney 2.6s .7s forwards;
   filter:drop-shadow(0 8px 20px rgba(59,110,165,.35));
 }
 .intro-sq.s3{
   background:var(--b3);
-  --col-drop:calc(50vw + 13.5px);--col-nav:82px;
+  --col-nav:82px;
   animation:introJourney 2.6s .85s forwards;
   filter:drop-shadow(0 8px 20px rgba(43,78,122,.35));
 }
 
 @keyframes introJourney{
-  /* Arranca arriba fuera de la pantalla */
+  /* Arranca arriba fuera de la pantalla — cae a la izq de la P */
   0%{transform:translate(var(--col-drop),-140px);opacity:0;animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
   4%{opacity:1;animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
-  /* Cae al "suelo" — centro vertical */
-  18%{transform:translate(var(--col-drop),calc(50vh - 7.5px));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+  /* Cae al "suelo" alineado al medio vertical del PMD */
+  18%{transform:translate(var(--col-drop),var(--col-land-y));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
   /* Rebote 1 — el más alto */
-  28%{transform:translate(var(--col-drop),calc(50vh - 92px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  28%{transform:translate(var(--col-drop),calc(var(--col-land-y) - 85px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
   /* Rebote 1 — baja */
-  36%{transform:translate(var(--col-drop),calc(50vh - 7.5px));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+  36%{transform:translate(var(--col-drop),var(--col-land-y));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
   /* Rebote 2 */
-  42%{transform:translate(var(--col-drop),calc(50vh - 48px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
-  48%{transform:translate(var(--col-drop),calc(50vh - 7.5px));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+  42%{transform:translate(var(--col-drop),calc(var(--col-land-y) - 45px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  48%{transform:translate(var(--col-drop),var(--col-land-y));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
   /* Rebote 3 */
-  52%{transform:translate(var(--col-drop),calc(50vh - 22px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
-  56%{transform:translate(var(--col-drop),calc(50vh - 7.5px));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+  52%{transform:translate(var(--col-drop),calc(var(--col-land-y) - 20px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  56%{transform:translate(var(--col-drop),var(--col-land-y));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
   /* Rebote 4 — casi imperceptible */
-  58%{transform:translate(var(--col-drop),calc(50vh - 10px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  58%{transform:translate(var(--col-drop),calc(var(--col-land-y) - 9px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
   /* Asentado */
-  61%{transform:translate(var(--col-drop),calc(50vh - 7.5px));opacity:1;animation-timing-function:cubic-bezier(.5,0,.5,1)}
+  61%{transform:translate(var(--col-drop),var(--col-land-y));opacity:1;animation-timing-function:cubic-bezier(.5,0,.5,1)}
   /* Breve pausa antes de volar */
-  70%{transform:translate(var(--col-drop),calc(50vh - 7.5px));opacity:1;animation-timing-function:cubic-bezier(.65,0,.35,1)}
-  /* Vuela al nav logo */
+  70%{transform:translate(var(--col-drop),var(--col-land-y));opacity:1;animation-timing-function:cubic-bezier(.65,0,.35,1)}
+  /* Vuela al nav logo arriba-izq */
   94%{transform:translate(var(--col-nav),31.5px);opacity:1}
   /* Aterriza y se apaga para que el nav real tome el control */
   100%{transform:translate(var(--col-nav),31.5px);opacity:0}
@@ -826,18 +841,51 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .5s 
      ══════════════════════════════════════════════════════════════ -->
 <div class="intro-overlay" id="introOverlay" aria-hidden="true">
   <div class="intro-glow"></div>
-  <div class="intro-pmd">PMD</div>
+  <div class="intro-content">
+    <div class="intro-placeholder" id="introPlaceholder"></div>
+    <div class="intro-pmd">PMD</div>
+  </div>
 </div>
-<div class="intro-sq s1" aria-hidden="true"></div>
-<div class="intro-sq s2" aria-hidden="true"></div>
-<div class="intro-sq s3" aria-hidden="true"></div>
+<div class="intro-sq s1" id="introSq1" aria-hidden="true"></div>
+<div class="intro-sq s2" id="introSq2" aria-hidden="true"></div>
+<div class="intro-sq s3" id="introSq3" aria-hidden="true"></div>
 <script>
-  // Marca el body como "intro activa" para ocultar el logo real del nav
-  // hasta que los cuadrados de la intro hayan aterrizado.
+  // Intro cinemática: mide dónde debe aterrizar el grupo de cuadrados
+  // (a la izq de la P) y setea las CSS vars de cada uno. Después del
+  // tiempo de animación, limpia el overlay y muestra la landing normal.
   (function(){
     try{
       if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
       document.body.classList.add('intro-active');
+
+      // Esperar a que el layout esté listo para medir el placeholder.
+      // Usamos rAF para asegurar que fonts/CSS estén aplicados.
+      function setPositions(){
+        var ph=document.getElementById('introPlaceholder');
+        if(!ph) return;
+        var r=ph.getBoundingClientRect();
+        // Tamaño del cuadrado (15 desktop / 12 mobile)
+        var sqSize=window.matchMedia('(max-width:900px)').matches?12:15;
+        var gap=6;
+        var centerY=r.top + r.height/2 - sqSize/2;
+        var xs=[r.left, r.left+sqSize+gap, r.left+sqSize+gap+sqSize+gap];
+        var ids=['introSq1','introSq2','introSq3'];
+        ids.forEach(function(id,i){
+          var el=document.getElementById(id);
+          if(!el) return;
+          el.style.setProperty('--col-drop', xs[i]+'px');
+          el.style.setProperty('--col-land-y', centerY+'px');
+        });
+      }
+
+      // Medir cuando haya layout válido
+      if(document.readyState==='complete' || document.readyState==='interactive'){
+        requestAnimationFrame(setPositions);
+      }else{
+        document.addEventListener('DOMContentLoaded',function(){requestAnimationFrame(setPositions)});
+      }
+
+      // Limpiar overlay al terminar
       setTimeout(function(){
         document.body.classList.remove('intro-active');
         var overlay=document.getElementById('introOverlay');
