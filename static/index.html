@@ -70,8 +70,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:78px;display:flex;ali
 nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,86,.08);height:64px;background:rgba(244,242,238,.96)}
 .nav-inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:none;margin:0;padding:0 2.5rem;gap:2rem}
 .brand{display:flex;align-items:center;gap:16px;perspective:600px;flex-shrink:0}
-.brand .sqs{gap:6px}
-.brand .sq{width:13px;height:13px;border-radius:2px}
+.brand .sqs{gap:5px}
+.brand .sq{width:10px;height:10px;border-radius:2px}
 .brand-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;letter-spacing:.02em;color:var(--ink);white-space:nowrap;line-height:1}
 .nav.scrolled .brand-name{font-size:22px}
 .nav-links{display:flex;align-items:center;gap:2rem;margin-left:auto;margin-right:1.5rem}
@@ -110,7 +110,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   .nav-btn-hogar span:not(.dot){display:none}
   .nav-cta{height:34px;padding:0 14px;font-size:12px}
   .brand-name{font-size:20px}
-  .brand .sq{width:11px;height:11px}
+  .brand .sq{width:8px;height:8px}
 }
 
 /* ── HERO ── */
@@ -295,7 +295,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 }
 .timeline-item:last-child .tm-line{display:none}
 .timeline-content{
-  padding-top:12px;opacity:.4;filter:grayscale(.3);
+  padding-top:12px;opacity:.4;filter:grayscale(.225);
   transition:opacity .6s cubic-bezier(.2,.8,.2,1),filter .6s;
 }
 .ti-title{
@@ -785,9 +785,8 @@ body.intro-ready .intro-sq{animation-play-state:running}
   .intro-sq.s3{--col-drop:calc(50vw - 116px)}
 }
 /* --col-drop y --col-land-y los setea JS (measure del placeholder) */
-/* --col-nav-y: centro vertical de nav 78px según tamaño sq del nav
-   Desktop sq 13px → y=32.5; Mobile sq 11px → y=33.5 */
-.intro-sq{--col-nav-y:32.5px}
+/* Nav logo: sq 10px desktop / 8px mobile, gap 5px. Y = centro de nav 78px */
+.intro-sq{--col-nav-y:34px}
 .intro-sq.s1{
   background:var(--b1);
   --col-nav:40px;
@@ -796,13 +795,13 @@ body.intro-ready .intro-sq{animation-play-state:running}
 }
 .intro-sq.s2{
   background:var(--b2);
-  --col-nav:59px;
+  --col-nav:55px;
   animation:introJourney 2.6s .7s forwards;
   filter:drop-shadow(0 8px 20px rgba(59,110,165,.35));
 }
 .intro-sq.s3{
   background:var(--b3);
-  --col-nav:78px;
+  --col-nav:70px;
   animation:introJourney 2.6s .85s forwards;
   filter:drop-shadow(0 8px 20px rgba(43,78,122,.35));
 }
@@ -830,9 +829,9 @@ body.intro-ready .intro-sq{animation-play-state:running}
   /* Breve pausa antes de volar — sigue grande */
   70%{transform:translate(var(--col-drop),var(--col-land-y)) scale(1);opacity:1;animation-timing-function:cubic-bezier(.65,0,.35,1)}
   /* Vuela al nav logo arriba-izq achicándose a tamaño nav (15/28 = 0.536) */
-  94%{transform:translate(var(--col-nav),var(--col-nav-y)) scale(.3);opacity:1}
+  94%{transform:translate(var(--col-nav),var(--col-nav-y)) scale(.225);opacity:1}
   /* Aterriza y se apaga para que el nav real tome el control */
-  100%{transform:translate(var(--col-nav),var(--col-nav-y)) scale(.3);opacity:0}
+  100%{transform:translate(var(--col-nav),var(--col-nav-y)) scale(.225);opacity:0}
 }
 
 /* Ocultar el logo real del nav durante la intro para evitar doble visual.
@@ -846,11 +845,11 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
 
 @media (max-width:900px){
   .intro-pmd{font-size:clamp(72px,16vw,150px)}
-  /* Nav mobile: sq 11px. sq2=40+11+6=57, sq3=40+11+6+11+6=74. Y=33.5 (sq 11 en nav 78) */
-  .intro-sq{--col-nav-y:33.5px}
+  /* Nav mobile: sq 8px, gap 5px. sq2=40+8+5=53, sq3=40+8+5+8+5=66. Y=35 */
+  .intro-sq{--col-nav-y:35px}
   .intro-sq.s1{--col-nav:40px}
-  .intro-sq.s2{--col-nav:57px}
-  .intro-sq.s3{--col-nav:74px}
+  .intro-sq.s2{--col-nav:53px}
+  .intro-sq.s3{--col-nav:66px}
 }
 
 @media (prefers-reduced-motion:reduce){
