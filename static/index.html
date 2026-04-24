@@ -705,11 +705,11 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   will-change:opacity,transform;
 }
 .intro-placeholder{
-  width:96px;height:28px;flex-shrink:0;
+  width:126px;height:38px;flex-shrink:0;
   opacity:0; /* invisible — solo marca la posición para los cuadrados reales */
 }
 @media (max-width:900px){
-  .intro-placeholder{width:78px;height:22px}
+  .intro-placeholder{width:102px;height:30px}
 }
 .intro-pmd{
   font-family:'Cormorant Garamond',serif;
@@ -757,19 +757,29 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
    Cada uno tiene --col-drop (X donde cae) y --col-nav (X final en nav logo). */
 .intro-sq{
   position:fixed;top:0;left:0;
-  width:28px;height:28px;border-radius:3px;
+  width:38px;height:38px;border-radius:4px;
   transform-origin:top left;
   z-index:10001;
   will-change:transform,opacity,filter;
   pointer-events:none;
   opacity:0;
-  /* Fallbacks — JS sobreescribe con la posición exacta del placeholder */
-  --col-drop:calc(50vw - 200px);
-  --col-land-y:calc(50vh - 14px);
+  /* Se empieza en pause; JS mide, setea --col-drop/--col-land-y y suelta */
+  animation-play-state:paused;
+  --col-land-y:calc(50vh - 19px);
 }
+/* Fallbacks por si JS tarda — posiciones distintas para cada cuadrado
+   para que caigan en fila (no apilados). */
+.intro-sq.s1{--col-drop:calc(50vw - 280px)}
+.intro-sq.s2{--col-drop:calc(50vw - 236px)}
+.intro-sq.s3{--col-drop:calc(50vw - 192px)}
+
+body.intro-ready .intro-sq{animation-play-state:running}
+
 @media (max-width:900px){
-  .intro-sq{width:22px;height:22px}
-  .intro-sq.s1{--col-drop:calc(50vw - 140px)}
+  .intro-sq{width:30px;height:30px;border-radius:3px}
+  .intro-sq.s1{--col-drop:calc(50vw - 180px)}
+  .intro-sq.s2{--col-drop:calc(50vw - 144px)}
+  .intro-sq.s3{--col-drop:calc(50vw - 108px)}
 }
 /* --col-drop y --col-land-y los setea JS (measure del placeholder) */
 .intro-sq.s1{
@@ -814,9 +824,9 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   /* Breve pausa antes de volar — sigue grande */
   70%{transform:translate(var(--col-drop),var(--col-land-y)) scale(1);opacity:1;animation-timing-function:cubic-bezier(.65,0,.35,1)}
   /* Vuela al nav logo arriba-izq achicándose a tamaño nav (15/28 = 0.536) */
-  94%{transform:translate(var(--col-nav),31.5px) scale(.536);opacity:1}
+  94%{transform:translate(var(--col-nav),31.5px) scale(.4);opacity:1}
   /* Aterriza y se apaga para que el nav real tome el control */
-  100%{transform:translate(var(--col-nav),31.5px) scale(.536);opacity:0}
+  100%{transform:translate(var(--col-nav),31.5px) scale(.4);opacity:0}
 }
 
 /* Ocultar el logo real del nav durante la intro para evitar doble visual */
@@ -872,10 +882,10 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .5s 
       // Usamos rAF para asegurar que fonts/CSS estén aplicados.
       function setPositions(){
         var ph=document.getElementById('introPlaceholder');
-        if(!ph) return;
+        if(!ph){ document.body.classList.add('intro-ready'); return; }
         var r=ph.getBoundingClientRect();
-        // Tamaño del cuadrado en la intro (28 desktop / 22 mobile)
-        var sqSize=window.matchMedia('(max-width:900px)').matches?22:28;
+        // Tamaño del cuadrado en la intro (38 desktop / 30 mobile)
+        var sqSize=window.matchMedia('(max-width:900px)').matches?30:38;
         var gap=6;
         var centerY=r.top + r.height/2 - sqSize/2;
         var xs=[r.left, r.left+sqSize+gap, r.left+sqSize+gap+sqSize+gap];
@@ -886,6 +896,8 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .5s 
           el.style.setProperty('--col-drop', xs[i]+'px');
           el.style.setProperty('--col-land-y', centerY+'px');
         });
+        // Soltar las animaciones (estaban en pause esperando las medidas)
+        document.body.classList.add('intro-ready');
       }
 
       // Medir cuando haya layout válido
@@ -894,6 +906,8 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .5s 
       }else{
         document.addEventListener('DOMContentLoaded',function(){requestAnimationFrame(setPositions)});
       }
+      // Fallback: si algo sale mal, soltar igual a los 300ms para no dejar congelada la intro
+      setTimeout(function(){ document.body.classList.add('intro-ready'); },300);
 
       // Limpiar overlay al terminar
       setTimeout(function(){
