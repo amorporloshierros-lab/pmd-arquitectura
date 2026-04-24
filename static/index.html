@@ -682,9 +682,171 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
   .pilares-grid{grid-template-columns:1fr;gap:1rem}
   .pilares{padding:5rem 0}
 }
+
+/* ── INTRO CINEMÁTICA ──
+   Overlay negro full-screen → letras PMD + 3 cuadrados cayendo en escalera
+   desde arriba → rebotan 4 veces con física realista → vuelan al logo del nav
+   arriba-izq → overlay fade out. Duración total ~3.3s.
+   prefers-reduced-motion: se desactiva al instante. */
+.intro-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:#0A0A0A;
+  display:flex;align-items:center;justify-content:center;
+  animation:introFade 0.55s 2.85s cubic-bezier(.4,0,.2,1) forwards;
+  pointer-events:none;
+  overflow:hidden;
+}
+.intro-pmd{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(96px,18vw,240px);
+  font-weight:500;
+  letter-spacing:.055em;
+  color:#F4F2EE;
+  opacity:0;
+  transform:translateY(18px) scale(.985);
+  will-change:opacity,transform,filter;
+  animation:introPmdIn .55s .2s cubic-bezier(.22,.61,.36,1) forwards,
+            introPmdOut .5s 2.4s cubic-bezier(.4,0,.6,1) forwards;
+  text-shadow:0 0 40px rgba(91,163,201,.08);
+}
+@keyframes introPmdIn{
+  0%{opacity:0;transform:translateY(18px) scale(.985);filter:blur(8px)}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes introPmdOut{
+  0%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+  100%{opacity:0;transform:translateY(-8px) scale(1.015);filter:blur(3px)}
+}
+@keyframes introFade{
+  0%{opacity:1}
+  100%{opacity:0;visibility:hidden}
+}
+/* Sutil resplandor celeste radial detrás de PMD */
+.intro-glow{
+  position:absolute;top:50%;left:50%;
+  width:80vmin;height:80vmin;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(91,163,201,.09) 0%,rgba(59,110,165,.04) 30%,transparent 60%);
+  opacity:0;
+  animation:introGlow 2s .3s ease-out forwards,
+            introPmdOut .5s 2.4s cubic-bezier(.4,0,.6,1) forwards;
+  pointer-events:none;
+}
+@keyframes introGlow{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+
+/* Los 3 cuadrados: position:fixed, se animan por transform
+   Cada uno tiene --col-drop (X donde cae) y --col-nav (X final en nav logo). */
+.intro-sq{
+  position:fixed;top:0;left:0;
+  width:15px;height:15px;border-radius:2px;
+  z-index:10001;
+  will-change:transform,opacity,filter;
+  pointer-events:none;
+  opacity:0;
+}
+.intro-sq.s1{
+  background:var(--b1);
+  --col-drop:calc(50vw - 28.5px);--col-nav:40px;
+  animation:introJourney 2.6s .55s forwards;
+  filter:drop-shadow(0 8px 20px rgba(91,163,201,.35));
+}
+.intro-sq.s2{
+  background:var(--b2);
+  --col-drop:calc(50vw - 7.5px);--col-nav:61px;
+  animation:introJourney 2.6s .7s forwards;
+  filter:drop-shadow(0 8px 20px rgba(59,110,165,.35));
+}
+.intro-sq.s3{
+  background:var(--b3);
+  --col-drop:calc(50vw + 13.5px);--col-nav:82px;
+  animation:introJourney 2.6s .85s forwards;
+  filter:drop-shadow(0 8px 20px rgba(43,78,122,.35));
+}
+
+@keyframes introJourney{
+  /* Arranca arriba fuera de la pantalla */
+  0%{transform:translate(var(--col-drop),-140px);opacity:0;animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  4%{opacity:1;animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  /* Cae al "suelo" — centro vertical */
+  18%{transform:translate(var(--col-drop),calc(50vh - 7.5px));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+  /* Rebote 1 — el más alto */
+  28%{transform:translate(var(--col-drop),calc(50vh - 92px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  /* Rebote 1 — baja */
+  36%{transform:translate(var(--col-drop),calc(50vh - 7.5px));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+  /* Rebote 2 */
+  42%{transform:translate(var(--col-drop),calc(50vh - 48px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  48%{transform:translate(var(--col-drop),calc(50vh - 7.5px));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+  /* Rebote 3 */
+  52%{transform:translate(var(--col-drop),calc(50vh - 22px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  56%{transform:translate(var(--col-drop),calc(50vh - 7.5px));animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+  /* Rebote 4 — casi imperceptible */
+  58%{transform:translate(var(--col-drop),calc(50vh - 10px));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+  /* Asentado */
+  61%{transform:translate(var(--col-drop),calc(50vh - 7.5px));opacity:1;animation-timing-function:cubic-bezier(.5,0,.5,1)}
+  /* Breve pausa antes de volar */
+  70%{transform:translate(var(--col-drop),calc(50vh - 7.5px));opacity:1;animation-timing-function:cubic-bezier(.65,0,.35,1)}
+  /* Vuela al nav logo */
+  94%{transform:translate(var(--col-nav),31.5px);opacity:1}
+  /* Aterriza y se apaga para que el nav real tome el control */
+  100%{transform:translate(var(--col-nav),31.5px);opacity:0}
+}
+
+/* Ocultar el logo real del nav durante la intro para evitar doble visual */
+body.intro-active nav .brand .sqs{opacity:0}
+body.intro-active nav .brand .brand-name{opacity:0;transition:opacity .4s .2s}
+body:not(.intro-active) nav .brand .sqs,
+body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .5s ease}
+
+@media (max-width:900px){
+  .intro-pmd{font-size:clamp(80px,22vw,180px)}
+  /* Nav mobile tiene .sq de 12px y posiciones distintas */
+  .intro-sq{width:12px;height:12px}
+  .intro-sq.s1{--col-nav:28px}
+  .intro-sq.s2{--col-nav:46px}
+  .intro-sq.s3{--col-nav:64px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .intro-overlay,.intro-sq,.intro-glow{display:none !important}
+  body.intro-active nav .brand .sqs,
+  body.intro-active nav .brand .brand-name{opacity:1 !important}
+}
 </style>
 </head>
 <body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     INTRO CINEMÁTICA
+     Fondo negro + letras PMD + 3 cuadrados que caen en escalera,
+     rebotan 4 veces y aterrizan en el logo del nav arriba-izq.
+     Se auto-elimina después de ~3.4s (ver script al final del body).
+     ══════════════════════════════════════════════════════════════ -->
+<div class="intro-overlay" id="introOverlay" aria-hidden="true">
+  <div class="intro-glow"></div>
+  <div class="intro-pmd">PMD</div>
+</div>
+<div class="intro-sq s1" aria-hidden="true"></div>
+<div class="intro-sq s2" aria-hidden="true"></div>
+<div class="intro-sq s3" aria-hidden="true"></div>
+<script>
+  // Marca el body como "intro activa" para ocultar el logo real del nav
+  // hasta que los cuadrados de la intro hayan aterrizado.
+  (function(){
+    try{
+      if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+      document.body.classList.add('intro-active');
+      setTimeout(function(){
+        document.body.classList.remove('intro-active');
+        var overlay=document.getElementById('introOverlay');
+        if(overlay) overlay.remove();
+        document.querySelectorAll('.intro-sq').forEach(function(el){el.remove()});
+      },3450);
+    }catch(e){}
+  })();
+</script>
 
 <!-- NAV -->
 <nav id="nav">
