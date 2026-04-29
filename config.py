@@ -75,6 +75,9 @@ TYPING_DELAY_MIN = get_float("TYPING_DELAY_MIN", 1.5)
 TYPING_DELAY_MAX = get_float("TYPING_DELAY_MAX", 4.0)
 INACTIVITY_TIMEOUT = get_int("INACTIVITY_TIMEOUT", 600)
 
+# ---- Admin Auth ----
+PMD_AUTH_SECRET = get_env("PMD_AUTH_SECRET", default="", required=False)
+
 # ---- Rutas ----
 STATIC_DIR = ROOT_DIR / "static"
 LOGS_DIR = ROOT_DIR / "logs"
