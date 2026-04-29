@@ -710,6 +710,10 @@ async function cargarPrecios() {
     if (!r.ok) return;
     _precios = await r.json();
     renderReadonly();
+    // Si el editor ya esta abierto cuando cargan los datos, renderizar
+    if (document.getElementById('p-editor').style.display !== 'none') {
+      renderTabs(); renderTabContent(0);
+    }
   } catch(e) { console.error('precios:', e); }
 }
 
@@ -816,6 +820,10 @@ async function guardarTodo() {
     if (r.ok) {
       _precios = precios;
       renderReadonly();
+    // Si el editor ya esta abierto cuando cargan los datos, renderizar
+    if (document.getElementById('p-editor').style.display !== 'none') {
+      renderTabs(); renderTabContent(0);
+    }
       pMsg('✓ Todos los precios guardados — live ahora','#2D8B57');
       setTimeout(()=>{ toggleEditor(); document.getElementById('p-secret').value=''; pMsg('',''); }, 2500);
     } else {
