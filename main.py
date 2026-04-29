@@ -876,9 +876,10 @@ async def api_get_lineas():
 async def api_update_lineas(payload: dict):
     """Actualiza los precios de las 4 lineas. Requiere secret."""
     from precios_override import save_lineas
+    import os
     secret = payload.get("secret", "")
-    expected = getattr(config, "PMD_AUTH_SECRET", "") or ""
-    if not expected or secret != expected:
+    expected = getattr(config, "PMD_AUTH_SECRET", "") or os.getenv("PMD_AUTH_SECRET", "")
+    if not secret or not expected or secret != expected:
         raise HTTPException(status_code=403, detail="No autorizado")
     lineas = payload.get("lineas")
     if not isinstance(lineas, list) or len(lineas) != 4:
