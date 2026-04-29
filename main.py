@@ -36,6 +36,7 @@ from lead_capture import dispatch_lead, extract_contact
 from excel_leads import append_lead, count_leads, excel_path_str
 from agenda import next_available_slots, book_slot, upcoming_bookings
 from precios import get_precios, invalidate_cache as invalidate_precios_cache, get_source as precios_source
+from precios_override import get_lineas, save_lineas, get_precios_con_override
 from notifications import notify_new_booking, reminder_loop, is_configured as notif_configured
 from system_prompt import LUCAS_SYSTEM_PROMPT  # noqa: F401 (referenciado en logs)
 
@@ -854,6 +855,46 @@ async def upload_interior(file: UploadFile = File(...)):
 async def upload_image(file: UploadFile = File(...)):
     return await _save_upload(file, "hero.jpg")
 
+
+
+
+# ─── ENDPOINTS DE PRECIOS ────────────────────────────────────────────────────
+
+@app.get("/api/precios")
+async def api_get_precios():
+    """Devuelve todos los precios del presupuestador."""
+    from precios_override import get_precios_con_override
+    return get_precios_con_override()
+
+@app.get("/api/precios/lineas")
+async def api_get_lineas():
+    """Devuelve las 4 lineas PMD con sus precios actuales."""
+    from precios_override import get_lineas
+    return {"lineas": get_lineas()}
+
+@app.post("/api/precios/lineas")
+async def api_update_lineas(payload: dict):
+    """Actualiza los precios de las 4 lineas. Requiere secret."""
+    from precios_override import save_lineas
+    secret = payload.get("secret", "")
+    expected = getattr(config, "PMD_AUTH_SECRET", "") or ""
+    if not expected or secret != expected:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    lineas = payload.get("lineas")
+    if not isinstance(lineas, list) or len(lineas) != 4:
+        raise HTTPException(status_code=400, detail="Se esperan 4 lineas")
+    for l in lineas:
+        if not isinstance(l, dict) or "id" not in l or "base" not in l:
+            raise HTTPException(status_code=400, detail="Cada linea debe tener id y base")
+        try:
+            l["base"] = float(l["base"])
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail=f"Valor base invalido en {l.get('id')}")
+    ok = save_lineas(lineas)
+    if not ok:
+        raise HTTPException(status_code=500, detail="Error guardando precios")
+    logger.info("Precios actualizados por admin: %s", [l["base"] for l in lineas])
+    return {"ok": True, "lineas": lineas}
 
 if __name__ == "__main__":
     import uvicorn
