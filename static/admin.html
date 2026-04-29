@@ -710,8 +710,6 @@ async function cargarPrecios() {
     if (!r.ok) return;
     _precios = await r.json();
     renderReadonly();
-    renderTabs();
-    renderTabContent(_tabActivo);
   } catch(e) { console.error('precios:', e); }
 }
 
