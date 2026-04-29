@@ -1283,7 +1283,8 @@
   // Plantas: cada planta extra suma estructura
   const PLANTAS_FACTOR = {1:1.00, 2:1.04, 3:1.09, 4:1.15};
   // Ajuste PMD obligatorio al final (imprevistos, redeterminación, etc)
-  const AJUSTE_PMD = 1.13;
+  // Es `let` (no const) porque /api/precios puede sobreescribirlo dinámicamente.
+  let AJUSTE_PMD = 1.13;
 
   function calcPresupuesto(){
     const base = LINEA_BASE[state.nivel.v] || LINEA_BASE['Línea Confort'];
@@ -1446,6 +1447,90 @@
   }
 
   updateSidebar();
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // PRECIOS DINÁMICOS — fetch /api/precios y overridear los hardcoded.
+  // Si la API falla o tarda, los valores hardcoded del HTML siguen funcionando
+  // (graceful fallback). El cambio se aplica en milisegundos al cargar.
+  // ───────────────────────────────────────────────────────────────────────────
+  (async function loadPreciosFromAPI(){
+    try{
+      const r = await fetch('/api/precios', { cache: 'no-store' });
+      if (!r.ok) return;
+      const json = await r.json();
+      const p = json.precios || {};
+
+      // Helper genérico: actualiza .opt por (group, value) con un atributo numérico.
+      function applyToOpt(group, item, datasetKey, valueField, hintText){
+        const el = document.querySelector(`.opt[data-group="${group}"][data-value="${CSS.escape(item.label)}"]`);
+        if (!el) return;
+        if (item[valueField] !== undefined) el.dataset[datasetKey] = String(item[valueField]);
+        const sub = el.querySelector('.opt-sub');
+        if (sub && item.sublabel) sub.textContent = item.sublabel;
+        if (hintText){
+          const hint = el.querySelector('.opt-hint');
+          if (hint) hint.textContent = hintText;
+        }
+      }
+
+      // 1) Líneas — data-base + .opt-hint con rango USD/m²
+      (p.lineas || []).forEach(it => applyToOpt('nivel', it, 'base', 'base', it.texto_precio));
+      // 2) Pisos
+      (p.pisos || []).forEach(it => applyToOpt('pisos', it, 'extra', 'extra'));
+      // 3) Aberturas
+      (p.aberturas || []).forEach(it => applyToOpt('aberturas', it, 'extra', 'extra'));
+      // 4) Cocina
+      (p.cocina || []).forEach(it => applyToOpt('cocina', it, 'fixed', 'fixed'));
+      // 5) Cubierta
+      (p.cubierta || []).forEach(it => applyToOpt('cubierta', it, 'roof', 'roof'));
+      // 6) Revestimiento
+      (p.revestimiento || []).forEach(it => applyToOpt('revestimiento', it, 'fach', 'fach'));
+      // 7) Clima
+      (p.clima || []).forEach(it => applyToOpt('clima', it, 'extra', 'extra'));
+      // 8) Agua / Eléctrica / Solar
+      (p.agua || []).forEach(it => applyToOpt('agua', it, 'fixed', 'fixed'));
+      (p.electrica || []).forEach(it => applyToOpt('electrica', it, 'fixed', 'fixed'));
+      (p.solar || []).forEach(it => applyToOpt('solar', it, 'fixed', 'fixed'));
+      // 9) Suelo
+      (p.suelo || []).forEach(it => applyToOpt('suelo', it, 'extra', 'extra'));
+
+      // 10) Baños — atributo data-per-bano (kebab → no usa .dataset.perBano por convención)
+      (p.banos || []).forEach(it => {
+        const el = document.querySelector(`.opt[data-group="banos"][data-value="${CSS.escape(it.label)}"]`);
+        if (!el) return;
+        if (it.per_bano !== undefined) el.setAttribute('data-per-bano', String(it.per_bano));
+        const sub = el.querySelector('.opt-sub');
+        if (sub && it.sublabel) sub.textContent = it.sublabel;
+      });
+
+      // 11) Extras toggle (selector distinto: data-extra-toggle="1")
+      (p.extras || []).forEach(it => {
+        const el = document.querySelector(`.opt[data-extra-toggle="1"][data-value="${CSS.escape(it.label)}"]`);
+        if (!el) return;
+        if (it.fixed !== undefined) el.dataset.fixed = String(it.fixed);
+        const sub = el.querySelector('.opt-sub');
+        if (sub && it.sublabel) sub.textContent = it.sublabel;
+      });
+
+      // 12) Sistema constructivo — data-modifier
+      Object.entries(p.sistema || {}).forEach(([sys, mod]) => {
+        const el = document.querySelector(`.opt[data-group="sistema"][data-value="${CSS.escape(sys)}"]`);
+        if (el) el.dataset.modifier = String(mod);
+      });
+
+      // 13) Constantes JS internas — sobreescribir contenido (objetos mutables)
+      if (p.lineas) p.lineas.forEach(it => { LINEA_BASE[it.label] = it.base; });
+      if (p.linea_spread) Object.entries(p.linea_spread).forEach(([k,v]) => { LINEA_SPREAD[k] = v; });
+      if (p.sistema) Object.entries(p.sistema).forEach(([k,v]) => { SISTEMA_MOD[k] = v; });
+      if (p.plantas) Object.entries(p.plantas).forEach(([k,v]) => { PLANTAS_FACTOR[parseInt(k,10)] = v; });
+      if (typeof p.ajuste_pmd === 'number') AJUSTE_PMD = p.ajuste_pmd;
+
+      console.info('[presupuestador] Precios cargados — source=' + (json.source || 'default'));
+    }catch(e){
+      console.warn('[presupuestador] /api/precios falló — uso defaults del HTML', e);
+    }
+  })();
+
 </script>
 
 </body>

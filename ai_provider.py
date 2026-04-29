@@ -55,7 +55,7 @@ RECOVERABLE_ANTHROPIC = (
 )
 
 
-def _call_claude(history: list[dict]) -> str:
+def _call_claude(history: list[dict], context: str = "landing") -> str:
     """Llama a Claude. Lanza la excepción original si falla."""
     client = _get_anthropic_client()
 
@@ -69,7 +69,7 @@ def _call_claude(history: list[dict]) -> str:
     response = client.messages.create(
         model=config.ANTHROPIC_MODEL,
         max_tokens=1024,
-        system=get_system_prompt(),
+        system=get_system_prompt(context),
         messages=messages,
     )
     # Concatenar bloques de texto
@@ -77,13 +77,13 @@ def _call_claude(history: list[dict]) -> str:
     return "".join(text_parts).strip()
 
 
-def _call_gemini(history: list[dict]) -> str:
+def _call_gemini(history: list[dict], context: str = "landing") -> str:
     """Llama a Gemini. Lanza la excepción original si falla."""
     _ensure_gemini()
 
     model = genai.GenerativeModel(
         model_name=config.GEMINI_MODEL,
-        system_instruction=get_system_prompt(),
+        system_instruction=get_system_prompt(context),
     )
 
     # Gemini usa roles "user" y "model" (no "assistant")
@@ -99,12 +99,16 @@ def _call_gemini(history: list[dict]) -> str:
     return (response.text or "").strip()
 
 
-def generate_response(history: list[dict]) -> tuple[str, Literal["claude", "gemini", "error"]]:
+def generate_response(
+    history: list[dict],
+    context: str = "landing",
+) -> tuple[str, Literal["claude", "gemini", "error"]]:
     """
     Genera la respuesta de Lucas usando Claude primero y Gemini como fallback.
 
     Args:
         history: lista de mensajes en formato [{"role": "user"|"assistant", "content": str}]
+        context: "landing" | "presupuestador" | "mi-hogar" — overlay del system prompt
 
     Returns:
         tupla (respuesta, proveedor_usado)
@@ -113,9 +117,9 @@ def generate_response(history: list[dict]) -> tuple[str, Literal["claude", "gemi
     """
     # ---- Intento 1: Claude ----
     try:
-        text = _call_claude(history)
+        text = _call_claude(history, context)
         if text:
-            logger.info("Respuesta generada con Claude (%d chars)", len(text))
+            logger.info("Respuesta generada con Claude (%d chars, context=%s)", len(text), context)
             return text, "claude"
         raise RuntimeError("Claude devolvió respuesta vacía")
 
@@ -129,9 +133,9 @@ def generate_response(history: list[dict]) -> tuple[str, Literal["claude", "gemi
 
     # ---- Intento 2: Gemini ----
     try:
-        text = _call_gemini(history)
+        text = _call_gemini(history, context)
         if text:
-            logger.info("Respuesta generada con Gemini — FAILOVER (%d chars)", len(text))
+            logger.info("Respuesta generada con Gemini — FAILOVER (%d chars, context=%s)", len(text), context)
             return text, "gemini"
         raise RuntimeError("Gemini devolvió respuesta vacía")
 

@@ -1370,7 +1370,7 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
         <h3 class="inv-cta-title">¿Buscás <em>invertir</em>?</h3>
         <p class="inv-cta-desc">¡Invertí con nosotros! Inversiones inmobiliarias colaborativas (crowdfunded) y automatización para empresas. Ticket desde USD 10.000.</p>
       </div>
-      <button class="inv-cta-btn" onclick="openMiHogar()" aria-expanded="false" aria-controls="que-hacemos">
+      <button class="inv-cta-btn" onclick="showEcosistemaPMD()" aria-expanded="false" aria-controls="que-hacemos">
         <span>Conocé PMD Capital &amp; Autonomic</span>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
       </button>
@@ -1462,9 +1462,9 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
       </div>
       <div class="footer-col">
         <h5>Grupo PMD</h5>
-        <a href="javascript:void(0)" onclick="openMiHogar()">Productos de inversión</a>
-        <a href="javascript:void(0)" onclick="openMiHogar()">PMD Capital</a>
-        <a href="javascript:void(0)" onclick="openMiHogar()">PMD Autonomic</a>
+        <a href="javascript:void(0)" onclick="showEcosistemaPMD()">Productos de inversión</a>
+        <a href="javascript:void(0)" onclick="showEcosistemaPMD()">PMD Capital</a>
+        <a href="javascript:void(0)" onclick="showEcosistemaPMD()">PMD Autonomic</a>
       </div>
       <div class="footer-col">
         <h5>Zonas</h5>
@@ -1578,13 +1578,21 @@ const LucasChat = (() => {
     if (el) el.remove();
   }
 
-  async function open(){
+  // Context valido: "landing" (default) | "presupuestador" | "mi-hogar"
+  // Si la sesion ya existe (chat abierto antes), no se vuelve a crear.
+  // Para forzar una sesion nueva con otro context, hay que cerrar+recrear.
+  async function open(context){
+    const ctx = context || 'landing';
     $chat.classList.add('open');
     $fab.style.display = 'none';
     if (!sessionId){
       try{
         showTyping();
-        const r = await fetch(API_BASE + '/api/session/new', {method:'POST'});
+        const r = await fetch(API_BASE + '/api/session/new', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({context: ctx})
+        });
         if (!r.ok) throw new Error('No se pudo iniciar sesión');
         const data = await r.json();
         sessionId = data.session_id;
@@ -1680,7 +1688,7 @@ window.addEventListener('message', (e) => {
 
   if (e.data.type === 'presu-to-chat'){
     if (window.LucasChat){
-      LucasChat.open();
+      LucasChat.open('presupuestador');
       if (LucasChat.queueMessage) LucasChat.queueMessage(e.data.message || 'Armé un presupuesto, ¿lo revisamos?');
     }
     return;
@@ -1717,11 +1725,13 @@ window.addEventListener('message', (e) => {
 })();
 
 // ABRIR CHAT LUCAS — helper global robusto.
-// Siempre llama a LucasChat.open() (que crea la sesión + dispara el saludo).
+// Acepta context: "landing" (default) | "presupuestador" | "mi-hogar".
+// Siempre llama a LucasChat.open(context) (que crea la sesión + dispara el saludo).
 // Si el script del chat todavía no cargó, espera y reintenta.
-function openLucasChat(){
+function openLucasChat(context){
+  const ctx = context || 'landing';
   if (window.LucasChat && typeof window.LucasChat.open === 'function'){
-    window.LucasChat.open();
+    window.LucasChat.open(ctx);
     return;
   }
   // Reintentar hasta 10 veces (2s máx) mientras el script termina de cargar
@@ -1730,7 +1740,7 @@ function openLucasChat(){
     tries++;
     if (window.LucasChat && typeof window.LucasChat.open === 'function'){
       clearInterval(timer);
-      window.LucasChat.open();
+      window.LucasChat.open(ctx);
     } else if (tries >= 10){
       clearInterval(timer);
       console.error('LucasChat no pudo inicializarse');
@@ -1738,10 +1748,16 @@ function openLucasChat(){
   }, 200);
 }
 
-// MI HOGAR — abre/cierra la página "Qué hacemos en PMD" (productos de inversión)
-// Por default la sección .pilares tiene max-height:0 (oculta). Al agregarle .open
-// se expande. Se llama desde el botón "Mi Hogar" del nav y desde los CTAs internos.
+// MI HOGAR — desde el nav abre el portal real /mi-hogar (dashboard React de
+// clientes). Para prospectos que aún no son clientes, hay un teaser
+// informativo (3 pilares) que se despliega con showEcosistemaPMD().
 function openMiHogar(){
+  // Abre el portal real en pestaña nueva (no perdemos la landing)
+  window.open('/mi-hogar', '_blank', 'noopener');
+}
+// Mostrar el teaser "Ecosistema PMD" (3 pilares) — uso interno desde CTAs
+// que apuntan a "Inversión" o "Autonomic" sin requerir login.
+function showEcosistemaPMD(){
   const sec = document.getElementById('que-hacemos');
   if (!sec) return;
   sec.classList.add('open');

@@ -35,6 +35,7 @@ from ai_provider import generate_response
 from lead_capture import dispatch_lead, extract_contact
 from excel_leads import append_lead, count_leads, excel_path_str
 from agenda import next_available_slots, book_slot, upcoming_bookings
+from precios import get_precios, invalidate_cache as invalidate_precios_cache, get_source as precios_source
 from notifications import notify_new_booking, reminder_loop, is_configured as notif_configured
 from system_prompt import LUCAS_SYSTEM_PROMPT  # noqa: F401 (referenciado en logs)
 
@@ -63,6 +64,11 @@ app.add_middleware(
 # Servir estáticos (widget HTML)
 if config.STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(config.STATIC_DIR)), name="static")
+    # Mount específico para los assets de Mi Hogar (Vite buildea con base=/mi-hogar/
+    # y referencia /mi-hogar/assets/index.js, etc — esto los sirve directo).
+    mh_dir = config.STATIC_DIR / "mi-hogar"
+    if mh_dir.exists():
+        app.mount("/mi-hogar/assets", StaticFiles(directory=str(mh_dir / "assets")), name="mihogar-assets")
 
 
 # ---- Almacenamiento de sesiones EN MEMORIA (para MVP) ----
@@ -89,9 +95,29 @@ def _saludo_hora_argentina() -> str:
     return "Buenas noches"
 
 
-def get_initial_greeting() -> str:
-    """Saludo inicial que se muestra al abrir el chat, con hora del día."""
+def get_initial_greeting(context: str = "landing") -> str:
+    """Saludo inicial que se muestra al abrir el chat, ajustado al contexto.
+
+    - landing: presentación clásica + ¿en qué puedo ayudarle?
+    - presupuestador: reconoce que ya armó cálculo, NO pregunta tipo de obra.
+    - mi-hogar: tono de bienvenida a cliente existente, modo soporte.
+    """
     saludo = _saludo_hora_argentina()
+
+    if context == "presupuestador":
+        return (
+            f"{saludo}. Soy **Lucas**, del equipo de PMD. Vi que armaste "
+            "tu cálculo en el presupuestador — buenísimo. Contame los "
+            "detalles que tengas en mente y lo afinamos juntos."
+        )
+
+    if context == "mi-hogar":
+        return (
+            f"{saludo}. Soy **Lucas**, del equipo de PMD. Veo que ya sos "
+            "cliente — bienvenido. ¿En qué te puedo dar una mano hoy?"
+        )
+
+    # landing (default)
     return (
         f"{saludo}. Soy **Lucas**, del equipo de PMD Servicios "
         "Arquitectónicos e Integrales. ¿En qué puedo ayudarle hoy?"
@@ -110,9 +136,24 @@ class ChatMessage(BaseModel):
     message: str = Field(..., min_length=1, max_length=4000)
 
 
+# Contextos válidos. Cualquier valor desconocido cae a "landing" en backend.
+_VALID_CONTEXTS = {"landing", "presupuestador", "mi-hogar"}
+
+
+class SessionRequest(BaseModel):
+    context: str = Field(
+        default="landing",
+        description="De dónde viene el usuario: landing | presupuestador | mi-hogar",
+    )
+
+    def normalized_context(self) -> str:
+        return self.context if self.context in _VALID_CONTEXTS else "landing"
+
+
 class SessionResponse(BaseModel):
     session_id: str
     greeting: str
+    context: str = "landing"
 
 
 class ChatResponse(BaseModel):
@@ -178,6 +219,27 @@ async def root():
             },
         )
     return JSONResponse({"status": "ok", "message": "static/index.html no encontrado"})
+
+
+@app.get("/mi-hogar", include_in_schema=False)
+@app.get("/mi-hogar/", include_in_schema=False)
+async def mi_hogar_index():
+    """Sirve el dashboard React Mi Hogar (index.html del bundle de Vite).
+    Los assets (JS, CSS) los sirve el mount /static/mi-hogar/ automáticamente
+    porque Vite buildeó con base='/mi-hogar/' y el HTML referencia /mi-hogar/assets/*.
+    Pero Vite escribe rutas absolutas /mi-hogar/assets/*, así que necesitamos
+    también un mount específico en /mi-hogar/assets/. Lo agrego abajo del mount /static.
+    """
+    page = config.STATIC_DIR / "mi-hogar" / "index.html"
+    if page.exists():
+        return FileResponse(
+            page,
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate",
+                "Pragma": "no-cache",
+            },
+        )
+    return JSONResponse({"status": "error", "message": "mi-hogar build no encontrado"}, status_code=404)
 
 
 @app.get("/admin", include_in_schema=False)
@@ -351,21 +413,170 @@ async def telegram_detect():
         return {"ok": False, "error": str(exc)}
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# MI HOGAR — proxy a Anthropic. La React app del dashboard NO debe llamar
+# a api.anthropic.com directo (no tiene la API key + CORS lo rebota). Estos
+# endpoints usan la misma key del .env que ya usa Lucas.
+# ─────────────────────────────────────────────────────────────────────────────
+
+class MiHogarChatRequest(BaseModel):
+    system: str = Field(default="", description="System prompt completo")
+    messages: list[dict] = Field(default_factory=list, description="Mensajes en formato Anthropic")
+    max_tokens: int = Field(default=400, ge=1, le=4000)
+
+
+@app.post("/api/mi-hogar/chat")
+async def mi_hogar_chat(payload: MiHogarChatRequest):
+    """Proxy de chat para el dashboard Mi Hogar (Valentina IA).
+
+    La React app manda system + history + max_tokens. Nosotros llamamos a
+    Anthropic con la key del backend y devolvemos la respuesta tal cual.
+    """
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
+        # Filtrar mensajes vacíos (Anthropic los rechaza)
+        msgs = [
+            {"role": m.get("role"), "content": m.get("content", "")}
+            for m in payload.messages
+            if (m.get("content") or "").strip() and m.get("role") in ("user", "assistant")
+        ]
+        if not msgs:
+            return JSONResponse({"content": [{"type": "text", "text": "Hola, ¿en qué te puedo ayudar?"}]})
+
+        response = client.messages.create(
+            model=config.ANTHROPIC_MODEL,
+            max_tokens=min(payload.max_tokens, 1500),
+            system=payload.system or "Sos Valentina, asistente IA del portal Mi Hogar de PMD Arquitectura.",
+            messages=msgs,
+        )
+        # Reformatear a la estructura que espera la React app
+        # (mismo formato que devuelve la API de Anthropic directo)
+        content = [{"type": "text", "text": b.text} for b in response.content if hasattr(b, "text")]
+        return JSONResponse({"content": content})
+    except Exception as exc:
+        logger.exception("Mi Hogar chat falló: %s", exc)
+        return JSONResponse(
+            {"content": [{"type": "text", "text": "Hubo un problema de conexión. Intentá de nuevo en un momento."}]},
+            status_code=200,  # 200 para que la React app lo muestre como mensaje
+        )
+
+
+class MiHogarProcessUpdateRequest(BaseModel):
+    description: str = Field(..., min_length=1, max_length=4000)
+    pct: float = Field(default=0)
+    photos_count: int = Field(default=0)
+
+
+@app.post("/api/mi-hogar/process-update")
+async def mi_hogar_process_update(payload: MiHogarProcessUpdateRequest):
+    """Procesa la descripción de un avance del arquitecto y devuelve JSON estructurado.
+
+    Usado por la pestaña 'Subir Avance' del panel del arquitecto. Le pide a
+    Claude que arme título, resumen, items completados y próximos pasos.
+    """
+    try:
+        import anthropic
+        import json as _json
+        client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
+
+        prompt = (
+            f"Sos el asistente de PMD Arquitectura (steel framing, Zona Norte GBA). "
+            f"El arquitecto describió el avance de esta semana:\n\n"
+            f"\"{payload.description}\"\n\n"
+            f"Avance: {payload.pct}%\n"
+            f"Fotos adjuntas: {payload.photos_count}\n\n"
+            f"Generá un JSON con esta estructura EXACTA (solo JSON puro, sin markdown):\n"
+            f'{{"title":"Título ejecutivo del avance (máx 55 chars, sin punto final)",'
+            f'"summary":"Párrafo de 2-3 frases, tono técnico-profesional argentino",'
+            f'"completed":["Tarea 1","Tarea 2","Tarea 3","Tarea 4"],'
+            f'"next":["Próximo paso 1","Próximo paso 2","Próximo paso 3"]}}\n\n'
+            f"Usá terminología técnica argentina de construcción (steel framing, PGC, OSB, DVH, H°A°, etc.). "
+            f"Máximo 4 items en cada array."
+        )
+
+        response = client.messages.create(
+            model=config.ANTHROPIC_MODEL,
+            max_tokens=900,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text = "".join(b.text for b in response.content if hasattr(b, "text"))
+        # Parsear el JSON aunque venga con markdown wrapper
+        text = text.replace("```json", "").replace("```", "").strip()
+        try:
+            parsed = _json.loads(text)
+        except _json.JSONDecodeError:
+            parsed = {
+                "title": "Actualización de avance de obra",
+                "summary": payload.description[:300],
+                "completed": ["Ver descripción adjunta del arquitecto"],
+                "next": ["Confirmar próximos pasos en reunión"],
+            }
+        return JSONResponse(parsed)
+    except Exception as exc:
+        logger.exception("Mi Hogar process-update falló: %s", exc)
+        return JSONResponse({
+            "title": "Actualización de avance de obra",
+            "summary": payload.description[:300],
+            "completed": ["Ver descripción adjunta del arquitecto"],
+            "next": ["Confirmar próximos pasos en reunión"],
+        })
+
+
+@app.get("/api/precios")
+async def api_precios():
+    """Devuelve el catálogo de precios (líneas, pisos, aberturas, cocina, extras…).
+
+    Los lee de Google Sheets si está configurado; si no, usa el fallback
+    hardcoded de precios.py. Cachea 60s para no machacar la API de Sheets.
+    Lo consume el presupuestador en static/presupuestador.html.
+    """
+    data = get_precios()
+    return JSONResponse({
+        "ok": True,
+        "source": precios_source(),  # "sheets" | "default"
+        "precios": data,
+    })
+
+
+@app.post("/api/admin/precios/refresh")
+async def api_precios_refresh():
+    """Fuerza relectura de precios desde Sheets (limpia cache).
+
+    Útil tras editar la planilla — los cambios se ven instantáneo en lugar de
+    esperar el TTL de 60s. NO requiere auth por ahora; agregar antes del lanzamiento
+    si se expone públicamente.
+    """
+    invalidate_precios_cache()
+    data = get_precios(force_refresh=True)
+    return JSONResponse({
+        "ok": True,
+        "source": precios_source(),
+        "categorias": list(data.keys()),
+    })
+
+
 @app.post("/api/session/new", response_model=SessionResponse)
-async def new_session():
+async def new_session(payload: SessionRequest | None = None):
     """Crea una sesión nueva y devuelve el saludo inicial de Lucas.
-    El saludo se calcula en el momento (hora del día de Argentina)."""
+
+    Acepta opcionalmente un body JSON con {context: "landing"|"presupuestador"|"mi-hogar"}.
+    El saludo y el system prompt se ajustan al contexto.
+    Si no se manda body, default es "landing" (compatible con clientes viejos).
+    """
+    context = payload.normalized_context() if payload else "landing"
     session_id = uuid.uuid4().hex
-    greeting = get_initial_greeting()
+    greeting = get_initial_greeting(context)
     SESSIONS[session_id] = {
         "created_at": datetime.now(timezone.utc).isoformat(),
+        "context": context,
         "history": [
             {"role": "assistant", "content": greeting},
         ],
         "lead_captured": False,
     }
-    logger.info("Nueva sesión creada: %s", session_id)
-    return SessionResponse(session_id=session_id, greeting=greeting)
+    logger.info("Nueva sesión creada: %s — context=%s", session_id, context)
+    return SessionResponse(session_id=session_id, greeting=greeting, context=context)
 
 
 @app.post("/api/chat", response_model=ChatResponse)
@@ -392,7 +603,12 @@ async def chat(payload: ChatMessage):
     # Arrancamos la llamada al LLM EN PARALELO al delay de "escribiendo".
     # Antes era secuencial: delay(1.5-4s) + claude(1-3s) = 2.5-7s total.
     # Ahora corren juntos: total = max(delay, claude_time) ≈ 1-3s.
-    llm_task = asyncio.create_task(asyncio.to_thread(generate_response, history))
+    # Pasamos el context guardado en la sesión para que el system prompt
+    # se ajuste (landing / presupuestador / mi-hogar).
+    session_context = session.get("context", "landing")
+    llm_task = asyncio.create_task(
+        asyncio.to_thread(generate_response, history, session_context)
+    )
 
     # Esperar el delay humano en paralelo con el LLM
     await _simulate_typing_delay()
