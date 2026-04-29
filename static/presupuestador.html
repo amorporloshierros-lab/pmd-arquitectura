@@ -347,13 +347,39 @@
   .success-box p{color:var(--muted);margin:0 0 22px}
 </style>
 <script>
+// PMD — carga precios desde el servidor y parchea los data-base del DOM
 (async function() {
   try {
     const r = await fetch('/api/precios/lineas');
-    if (r.ok) {
-      const d = await r.json();
-      if (Array.isArray(d.lineas) && d.lineas.length === 4)
-        window.__PMD_LINEAS_OVERRIDE = d.lineas;
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!Array.isArray(d.lineas) || d.lineas.length !== 4) return;
+    window.__PMD_LINEAS = d.lineas;
+    // Aplicar cuando el DOM este listo
+    function aplicarPrecios() {
+      d.lineas.forEach(function(l) {
+        // Mapeo de id a label del data-value
+        var labelMap = {
+          confort: 'Línea Confort',
+          premium: 'Línea Premium',
+          alta:    'Línea Alta Gama',
+          lujo:    'Línea Lujo Importado'
+        };
+        var label = labelMap[l.id];
+        if (!label) return;
+        var el = document.querySelector('[data-value="'+label+'"]');
+        if (el) {
+          el.setAttribute('data-base', l.base);
+          // Actualizar texto de precio si existe
+          var precioEl = el.querySelector('.opt-precio, .precio, [class*="precio"]');
+          if (precioEl && l.texto_precio) precioEl.textContent = l.texto_precio;
+        }
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', aplicarPrecios);
+    } else {
+      aplicarPrecios();
     }
   } catch(e) {}
 })();
