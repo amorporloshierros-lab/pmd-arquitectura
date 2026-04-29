@@ -346,6 +346,18 @@
   .success-box h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:30px;margin:0 0 8px}
   .success-box p{color:var(--muted);margin:0 0 22px}
 </style>
+<script>
+(async function() {
+  try {
+    const r = await fetch('/api/precios/lineas');
+    if (r.ok) {
+      const d = await r.json();
+      if (Array.isArray(d.lineas) && d.lineas.length === 4)
+        window.__PMD_LINEAS_OVERRIDE = d.lineas;
+    }
+  } catch(e) {}
+})();
+</script>
 </head>
 <body>
 
