@@ -629,5 +629,112 @@ refreshAll();
 setInterval(refreshAll, 30000);
 </script>
 
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECCION PRECIOS DEL COTIZADOR
+       ═══════════════════════════════════════════════════════ -->
+  <section style="margin:32px 16px;max-width:760px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div>
+        <h2 style="font-size:18px;font-weight:800;color:#1E3A5F;margin:0 0 4px;">💰 Precios del cotizador</h2>
+        <p style="font-size:12px;color:#5C6A7A;margin:0;">Los cambios se aplican al instante en la web.</p>
+      </div>
+      <button onclick="togglePrecios()" id="btn-toggle-precios"
+        style="padding:8px 18px;background:#3A6EA5;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">
+        ✏️ Editar precios
+      </button>
+    </div>
+    <div id="precios-readonly" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;"></div>
+    <div id="precios-editor" style="display:none;">
+      <div id="precios-form" style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;"></div>
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:10px;font-weight:800;color:#5C6A7A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Clave de admin</label>
+        <input type="password" id="precios-secret" placeholder="PMD_AUTH_SECRET"
+          style="width:100%;max-width:320px;padding:10px 13px;border:1.5px solid #E2DED8;border-radius:10px;background:#F0EDE8;color:#1E2A3A;font-size:14px;font-family:inherit;outline:none;" />
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button onclick="guardarPrecios()"
+          style="padding:11px 24px;background:#2D8B57;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;">✓ Guardar</button>
+        <button onclick="togglePrecios()"
+          style="padding:11px 18px;background:#F0EDE8;color:#5C6A7A;border:1.5px solid #E2DED8;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
+        <span id="precios-msg" style="font-size:13px;font-weight:700;display:none;"></span>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  let _lineas = [];
+  async function cargarPrecios() {
+    try {
+      const r = await fetch('/api/precios/lineas');
+      const d = await r.json();
+      _lineas = d.lineas || [];
+      renderReadonly(); renderForm();
+    } catch(e) { console.error('precios:', e); }
+  }
+  function renderReadonly() {
+    document.getElementById('precios-readonly').innerHTML = _lineas.map(l => `
+      <div style="background:#fff;border:1px solid #E2DED8;border-radius:14px;padding:14px 16px;">
+        <p style="font-size:9px;font-weight:800;color:#3A6EA5;text-transform:uppercase;letter-spacing:.09em;margin:0 0 4px;">${l.id}</p>
+        <p style="font-size:14px;font-weight:700;color:#1E2A3A;margin:0 0 4px;">${l.label}</p>
+        <p style="font-family:monospace;font-size:22px;font-weight:900;color:#1E3A5F;margin:0;">
+          USD ${Number(l.base).toLocaleString('es-AR')}<span style="font-size:12px;color:#94A0AE;">/m²</span>
+        </p>
+        <p style="font-size:11px;color:#94A0AE;margin:3px 0 0;">${l.texto_precio||''}</p>
+      </div>`).join('');
+  }
+  function renderForm() {
+    document.getElementById('precios-form').innerHTML = _lineas.map((l,i) => `
+      <div style="background:#fff;border:1px solid #E2DED8;border-radius:14px;padding:16px 18px;">
+        <p style="font-size:13px;font-weight:800;color:#1E3A5F;margin:0 0 10px;">${l.label}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label style="font-size:9px;font-weight:800;color:#5C6A7A;text-transform:uppercase;letter-spacing:.09em;display:block;margin-bottom:4px;">Precio base USD/m²</label>
+            <input type="number" id="lb-${i}" value="${l.base}"
+              style="width:100%;padding:9px 12px;border:1.5px solid #E2DED8;border-radius:9px;background:#F0EDE8;color:#1E3A5F;font-size:16px;font-weight:700;font-family:monospace;outline:none;" />
+          </div>
+          <div>
+            <label style="font-size:9px;font-weight:800;color:#5C6A7A;text-transform:uppercase;letter-spacing:.09em;display:block;margin-bottom:4px;">Texto visible</label>
+            <input type="text" id="lt-${i}" value="${l.texto_precio||''}"
+              style="width:100%;padding:9px 12px;border:1.5px solid #E2DED8;border-radius:9px;background:#F0EDE8;color:#1E2A3A;font-size:13px;font-family:inherit;outline:none;" />
+          </div>
+        </div>
+      </div>`).join('');
+  }
+  function togglePrecios() {
+    const ed = document.getElementById('precios-editor');
+    const ro = document.getElementById('precios-readonly');
+    const btn = document.getElementById('btn-toggle-precios');
+    const on = ed.style.display === 'none';
+    ed.style.display = on ? 'block' : 'none';
+    ro.style.display = on ? 'none' : 'grid';
+    btn.textContent = on ? '✕ Cancelar' : '✏️ Editar precios';
+  }
+  async function guardarPrecios() {
+    const secret = document.getElementById('precios-secret').value.trim();
+    if (!secret) { msg('⚠️ Ingresa la clave','#A07020'); return; }
+    const lineas = _lineas.map((l,i) => ({
+      ...l,
+      base: parseFloat(document.getElementById('lb-'+i).value||l.base),
+      texto_precio: document.getElementById('lt-'+i).value||l.texto_precio,
+    }));
+    msg('Guardando...','#3A6EA5');
+    try {
+      const r = await fetch('/api/precios/lineas', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({secret, lineas})
+      });
+      const d = await r.json();
+      if (r.ok) {
+        _lineas = d.lineas; renderReadonly();
+        msg('✓ Guardado — ya esta live','#2D8B57');
+        setTimeout(()=>{ togglePrecios(); document.getElementById('precios-secret').value=''; msg('',''); }, 2500);
+      } else { msg('✗ '+(d.detail||'Error'),'#B8453A'); }
+    } catch(e) { msg('✗ Error de conexion','#B8453A'); }
+  }
+  function msg(t,c){ const el=document.getElementById('precios-msg'); el.textContent=t; el.style.color=c; el.style.display=t?'inline':'none'; }
+  document.addEventListener('DOMContentLoaded', cargarPrecios);
+  </script>
+
 </body>
 </html>
