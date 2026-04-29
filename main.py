@@ -897,6 +897,25 @@ async def api_update_lineas(payload: dict):
     logger.info("Precios actualizados por admin: %s", [l["base"] for l in lineas])
     return {"ok": True, "lineas": lineas}
 
+
+@app.post("/api/precios")
+async def api_update_precios_full(payload: dict):
+    """Actualiza TODOS los precios del presupuestador (no solo lineas)."""
+    import os
+    from precios_override import save_precios_full
+    secret = payload.get("secret", "")
+    expected = getattr(config, "PMD_AUTH_SECRET", "") or os.getenv("PMD_AUTH_SECRET", "")
+    if not secret or not expected or secret != expected:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    data = payload.get("precios")
+    if not isinstance(data, dict):
+        raise HTTPException(status_code=400, detail="Payload invalido")
+    ok = save_precios_full(data)
+    if not ok:
+        raise HTTPException(status_code=500, detail="Error guardando precios")
+    logger.info("Precios completos actualizados por admin")
+    return {"ok": True}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
