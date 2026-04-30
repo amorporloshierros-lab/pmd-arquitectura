@@ -346,68 +346,7 @@
   .success-box h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:30px;margin:0 0 8px}
   .success-box p{color:var(--muted);margin:0 0 22px}
 </style>
-<<script>
-// PMD — carga precios dinamicos y parchea TODOS los data-attributes del DOM
-(function() {
-
-  // Mapeo: categoria → {campo_api, atributo_html, data-group del DOM}
-  var CAT_MAP = [
-    {cat:'lineas',       campo:'base',     attr:'data-base',    group:'nivel'},
-    {cat:'pisos',        campo:'extra',    attr:'data-extra',   group:'pisos'},
-    {cat:'aberturas',    campo:'extra',    attr:'data-extra',   group:'aberturas'},
-    {cat:'cocina',       campo:'fixed',    attr:'data-fixed',   group:'cocina'},
-    {cat:'cubierta',     campo:'roof',     attr:'data-roof',    group:'cubierta'},
-    {cat:'revestimiento',campo:'fach',     attr:'data-fach',    group:'revestimiento'},
-    {cat:'banos',        campo:'per_bano', attr:'data-per-bano',group:'banos'},
-    {cat:'clima',        campo:'extra',    attr:'data-extra',   group:'clima'},
-    {cat:'agua',         campo:'fixed',    attr:'data-fixed',   group:'agua'},
-    {cat:'electrica',    campo:'fixed',    attr:'data-fixed',   group:'electrica'},
-    {cat:'solar',        campo:'fixed',    attr:'data-fixed',   group:'solar'},
-    {cat:'extras',       campo:'fixed',    attr:'data-fixed',   group:'extras'},
-  ];
-
-  function aplicar(data) {
-    var precios = (data.precios || data);
-
-    CAT_MAP.forEach(function(c) {
-      var items = precios[c.cat];
-      if (!Array.isArray(items)) return;
-      items.forEach(function(item) {
-        if (item[c.campo] === undefined) return;
-        // Buscar el elemento en el DOM por data-group + data-value
-        var sel = '[data-group="' + c.group + '"][data-value="' + item.label + '"]';
-        var el = document.querySelector(sel);
-        if (el) {
-          el.setAttribute(c.attr, item[c.campo]);
-          // Actualizar texto de precio si el item tiene texto visible
-          if (item.texto_precio) {
-            var sub = el.querySelector('.opt-sub, .opt-hint, .opt-precio');
-            if (sub) sub.textContent = item.texto_precio;
-          }
-        }
-      });
-    });
-
-    // Tambien sobreescribir LINEA_BASE si ya esta definida
-    if (typeof LINEA_BASE !== 'undefined' && Array.isArray(precios.lineas)) {
-      var lMap = {confort:'Línea Confort',premium:'Línea Premium',alta:'Línea Alta Gama',lujo:'Línea Lujo Importado'};
-      precios.lineas.forEach(function(l){ if(lMap[l.id]) LINEA_BASE[lMap[l.id]] = l.base; });
-    }
-  }
-
-  window.__pmdPreciosPromise = fetch('/api/precios')
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      window.__pmdPrecios = d;
-      aplicar(d);
-    })
-    .catch(function(){});
-
-  document.addEventListener('DOMContentLoaded', function() {
-    if (window.__pmdPrecios) aplicar(window.__pmdPrecios);
-  });
-})();
-</script>
+<
 </head>
 <body>
 
@@ -1049,6 +988,56 @@
 </div>
 
 <script>
+(function(){
+  function pmdAplicar(data){
+    var p = data.precios || data;
+    var cats = [
+      ['lineas','base','data-base','nivel'],
+      ['pisos','extra','data-extra','pisos'],
+      ['aberturas','extra','data-extra','aberturas'],
+      ['cocina','fixed','data-fixed','cocina'],
+      ['cubierta','roof','data-roof','cubierta'],
+      ['revestimiento','fach','data-fach','revestimiento'],
+      ['banos','per_bano','data-per-bano','banos'],
+      ['clima','extra','data-extra','clima'],
+      ['agua','fixed','data-fixed','agua'],
+      ['electrica','fixed','data-fixed','electrica'],
+      ['solar','fixed','data-fixed','solar'],
+      ['extras','fixed','data-fixed','extras']
+    ];
+    cats.forEach(function(c){
+      var items = p[c[0]];
+      if(!Array.isArray(items)) return;
+      items.forEach(function(item){
+        if(item[c[1]]===undefined) return;
+        var els = document.querySelectorAll('[data-group="'+c[3]+'"][data-value="'+item.label+'"]');
+        els.forEach(function(el){
+          el.setAttribute(c[2], item[c[1]]);
+        });
+      });
+    });
+    if(typeof LINEA_BASE!=='undefined' && Array.isArray(p.lineas)){
+      var lm = {'confort':'Linea Confort','premium':'Linea Premium','alta':'Linea Alta Gama','lujo':'Linea Lujo Importado'};
+      p.lineas.forEach(function(l){
+        var label = l.label;
+        if(label && typeof l.base==='number') LINEA_BASE[label]=l.base;
+      });
+    }
+  }
+  function doLoad(){
+    fetch('/api/precios')
+      .then(function(r){return r.json();})
+      .then(function(d){window.__pmd=d; pmdAplicar(d);})
+      .catch(function(){});
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',doLoad);
+  } else {
+    doLoad();
+  }
+})();
+</script>
+<script>
   const state = {
     mode:null,
     nombre:"", tipo:"", urgencia:"",
@@ -1373,7 +1362,7 @@
   let AJUSTE_PMD = 1.13;
 
   function calcPresupuesto(){
-    // Aplicar overrides de precios del servidor antes de calcular
+    if (window.__pmd) { pmdAplicar(window.__pmd); }
     if (window.__pmdPrecios) {
       var lineas = (window.__pmdPrecios.precios || window.__pmdPrecios).lineas;
       if (Array.isArray(lineas)) {
