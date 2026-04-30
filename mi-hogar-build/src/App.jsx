@@ -537,6 +537,19 @@ const ArchPanel = ({user, projects, onLogout}) => {
         <button onClick={onLogout} className="btn" style={{background:"rgba(255,255,255,.1)",border:"none",color:"rgba(255,255,255,.7)",fontSize:11,padding:"5px 11px",borderRadius:8}}>Salir</button>
       </div>
       <div style={{maxWidth:800,margin:"0 auto",padding:"18px 13px 48px"}}>
+        {user.role === "admin" && (
+          <Card style={{padding:"16px 20px",marginBottom:14,background:`linear-gradient(135deg,${C.b1}15,${C.b2}10)`,border:`1px solid ${C.b1}40`}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
+              <div>
+                <p style={{fontSize:14,fontWeight:800,color:C.b3,marginBottom:3}}>Panel de administracion</p>
+                <p style={{fontSize:12,color:C.txt2}}>Crear clientes, gestionar equipo, mandar invites por email</p>
+              </div>
+              <a href="/admin/users" target="_blank" rel="noopener" className="btn" style={{padding:"10px 18px",background:C.b2,color:"#fff",borderRadius:9,fontSize:13,fontWeight:700,textDecoration:"none",display:"inline-block"}}>
+                Gestionar usuarios
+              </a>
+            </div>
+          </Card>
+        )}
         {projects.length>1 && (
           <div style={{marginBottom:14,display:"flex",gap:8,flexWrap:"wrap"}}>
             {projects.map(p=>(
