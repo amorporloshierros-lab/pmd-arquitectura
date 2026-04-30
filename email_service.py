@@ -1,54 +1,71 @@
 """
 email_service.py
 ----------------
-Servicio de email para Mi Hogar PMD via Gmail SMTP.
+Servicio de email para Mi Hogar PMD via Resend HTTP API.
 
 Manda dos tipos de email:
   - Welcome / invite (cuando admin crea un user nuevo)
   - Password reset
+
+Por que Resend en vez de SMTP:
+  Railway bloquea egress en puertos SMTP (25/465/587). Resend usa HTTPS,
+  que sale sin restricciones. La cuenta free incluye 3.000 mails/mes.
 """
 
 from __future__ import annotations
 
 import logging
 import os
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
-import config
+import httpx
 
 logger = logging.getLogger("lucas.email")
 
 DEFAULT_BASE_URL = "https://pmd-arquitectura-production.up.railway.app"
 PMD_BASE_URL = os.getenv("PMD_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
-PMD_FROM_EMAIL = os.getenv("PMD_FROM_EMAIL", "").strip() or config.SMTP_USER
+
+# Si el usuario no configura un from custom, usamos onboarding@resend.dev
+# (el dominio default verificado de Resend, sirve para arrancar sin tocar DNS).
+DEFAULT_FROM = "PMD Arquitectura <onboarding@resend.dev>"
+PMD_FROM_EMAIL = os.getenv("PMD_FROM_EMAIL", "").strip() or DEFAULT_FROM
+
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
+RESEND_API_URL = "https://api.resend.com/emails"
 
 
-def _smtp_configured() -> bool:
-    return bool(config.SMTP_USER and config.SMTP_PASSWORD)
+def _resend_configured() -> bool:
+    return bool(RESEND_API_KEY)
 
 
 def _send(*, to_email: str, subject: str, html: str, plain: str) -> bool:
-    if not _smtp_configured():
-        logger.warning("SMTP no configurado, no se manda email a %s", to_email)
+    if not _resend_configured():
+        logger.warning("RESEND_API_KEY no configurado, no se manda email a %s", to_email)
         return False
     if not to_email:
         return False
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = PMD_FROM_EMAIL
-    msg["To"] = to_email
-    msg.attach(MIMEText(plain, "plain", "utf-8"))
-    msg.attach(MIMEText(html, "html", "utf-8"))
+    payload = {
+        "from": PMD_FROM_EMAIL,
+        "to": [to_email],
+        "subject": subject,
+        "html": html,
+        "text": plain,
+    }
+    headers = {
+        "Authorization": f"Bearer {RESEND_API_KEY}",
+        "Content-Type": "application/json",
+    }
     try:
-        with smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT, timeout=15) as smtp:
-            smtp.ehlo()
-            smtp.starttls()
-            smtp.login(config.SMTP_USER, config.SMTP_PASSWORD)
-            smtp.send_message(msg)
-        logger.info("Email enviado a %s - '%s'", to_email, subject)
-        return True
+        with httpx.Client(timeout=15) as client:
+            r = client.post(RESEND_API_URL, json=payload, headers=headers)
+        if r.status_code in (200, 201, 202):
+            try:
+                eid = r.json().get("id", "")
+            except Exception:
+                eid = ""
+            logger.info("Email enviado a %s - '%s' [resend id=%s]", to_email, subject, eid)
+            return True
+        logger.error("Resend API rechazo el envio a %s (%s): %s", to_email, r.status_code, r.text[:300])
+        return False
     except Exception as exc:  # pylint: disable=broad-except
         logger.exception("Fallo envio de email a %s: %s", to_email, exc)
         return False
