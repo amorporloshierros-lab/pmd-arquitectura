@@ -274,19 +274,27 @@ def add_token(*, token: str, user_id: str, token_type: str, ttl_seconds: int) ->
 
 
 def consume_token(token: str, expected_type: str | None = None) -> dict | None:
+    """Busca y consume un token. Solo lo borra si las validaciones pasan
+    (o si esta expirado, para cleanup). Si el tipo no coincide, devuelve None
+    pero deja el token intacto -- esto permite a un endpoint intentar varios
+    tipos en cascada (reset / invite) sin perderlo.
+    """
     if not token:
         return None
     with _lock:
         data = load()
         for i, t in enumerate(data["tokens"]):
-            if t.get("token") == token:
+            if t.get("token") != token:
+                continue
+            if expected_type and t.get("type") != expected_type:
+                return None
+            if t.get("expires_at", 0) < time.time():
                 data["tokens"].pop(i)
                 save(data)
-                if expected_type and t.get("type") != expected_type:
-                    return None
-                if t.get("expires_at", 0) < time.time():
-                    return None
-                return t
+                return None
+            data["tokens"].pop(i)
+            save(data)
+            return t
         return None
 
 
