@@ -1327,6 +1327,14 @@
   let AJUSTE_PMD = 1.13;
 
   function calcPresupuesto(){
+    // Aplicar overrides de precios del servidor antes de calcular
+    if (window.__pmdPrecios) {
+      var lineas = (window.__pmdPrecios.precios || window.__pmdPrecios).lineas;
+      if (Array.isArray(lineas)) {
+        var lMap = {confort:'Línea Confort',premium:'Línea Premium',alta:'Línea Alta Gama',lujo:'Línea Lujo Importado'};
+        lineas.forEach(function(l){ if(lMap[l.id]) LINEA_BASE[lMap[l.id]] = l.base; });
+      }
+    }
     const base = LINEA_BASE[state.nivel.v] || LINEA_BASE['Línea Confort'];
     const spread = LINEA_SPREAD[state.nivel.v] || {min:0.9, max:1.12};
 
