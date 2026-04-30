@@ -1305,12 +1305,36 @@
   }
 
   // Base USD/m² de cada LÍNEA DE CALIDAD PMD. El rango se arma ±% alrededor.
+  // Precios base — se sobreescriben con los valores del servidor via /api/precios
   let LINEA_BASE = {
-    'Línea Confort':         1100,  // rango 1000-1200
-    'Línea Premium':         1400,  // rango 1200-1600
-    'Línea Alta Gama':       2250,  // rango 2000-2500
-    'Línea Lujo Importado':  3800,  // rango 2600-5000
+    'Línea Confort':         1100,
+    'Línea Premium':         1400,
+    'Línea Alta Gama':       2250,
+    'Línea Lujo Importado':  3800,
   };
+
+  // Cargar precios del servidor y sobreescribir LINEA_BASE
+  fetch('/api/precios')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var lineas = (data.precios || data).lineas;
+      if (!Array.isArray(lineas)) return;
+      var MAP = {
+        'confort': 'Línea Confort',
+        'premium': 'Línea Premium',
+        'alta':    'Línea Alta Gama',
+        'lujo':    'Línea Lujo Importado'
+      };
+      lineas.forEach(function(l){
+        var label = MAP[l.id];
+        if (label && typeof l.base === 'number') {
+          LINEA_BASE[label] = l.base;
+        }
+      });
+      // Recalcular si ya hay superficie ingresada
+      if (state.cubiertos > 0) calcPresupuesto();
+    })
+    .catch(function(){});
   // Cuánto se abre el rango por línea (min/max del total)
   const LINEA_SPREAD = {
     'Línea Confort':         {min:0.91, max:1.09},
