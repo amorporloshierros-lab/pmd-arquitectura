@@ -775,6 +775,207 @@ async def admin_resend_invite(user_id: str, authorization: str | None = Header(d
     return {"ok": True, "sent": sent, "invite_link": f"{email_service.PMD_BASE_URL}/mi-hogar?invite={token}"}
 
 
+def _next_pmd_id() -> str:
+    """Genera el siguiente ID disponible en formato PMD-NNN.
+
+    Mira todos los proyectos cuyo ID empieza con 'PMD-', extrae el numero,
+    devuelve max+1 padded a 3 digitos.
+    """
+    max_num = 0
+    for p in data_store.list_projects():
+        pid = (p.get("id") or "").upper()
+        if pid.startswith("PMD-"):
+            try:
+                n = int(pid.split("-", 1)[1])
+                if n > max_num:
+                    max_num = n
+            except (ValueError, IndexError):
+                continue
+    return f"PMD-{max_num + 1:03d}"
+
+
+class OnboardClientRequest(BaseModel):
+    """Crea un cliente nuevo + su proyecto en una sola operacion.
+
+    Genera un proyecto con la misma estructura que Familia Garcia (5 fases,
+    7 cuotas con %, secciones de CAC/avances/mods/planos vacias) usando los
+    valores que pase el admin. Despues el equipo va ajustando desde el panel
+    de Mi Hogar (subir avance, marcar pagada, editar cuotas, etc.).
+
+    Si project_id no se pasa o esta vacio, lo generamos automaticamente
+    en formato PMD-NNN (PMD-001, PMD-002...).
+    """
+    # Datos del proyecto (project_id es opcional - si vacio, se genera PMD-NNN)
+    project_id: str | None = Field(default=None, max_length=40)
+    project_name: str = Field(..., min_length=2, max_length=200)
+    system: str = Field(default="Steel Framing", max_length=80)
+    location: str = Field(default="", max_length=200)
+    total_m2: float = Field(default=0, ge=0)
+    start_date: str = Field(default="", max_length=40)
+    estimated_end: str = Field(default="", max_length=40)
+    total_contract_usd: float = Field(default=0, ge=0)
+    cac_base_value: float = Field(default=976.4, gt=0)
+    # Datos del cliente
+    client_name: str = Field(..., min_length=2, max_length=200)
+    client_email: str = Field(..., min_length=3, max_length=200)
+    # Equipo (opcional)
+    advisor_id: str | None = None
+    advisor_name_in_chat: str | None = None
+    architect_id: str | None = None
+    # Email opcionalmente desactivable (para crear sin notificar)
+    send_invite_email: bool = True
+
+
+def _build_blank_project(*, project_id: str, project_name: str, client_id: str,
+                         system: str, location: str, total_m2: float,
+                         start_date: str, estimated_end: str,
+                         total_contract_usd: float, cac_base_value: float,
+                         advisor_id: str | None, advisor_name_in_chat: str | None,
+                         architect_id: str | None) -> dict:
+    """Genera el dict del proyecto con la misma estructura que Familia Garcia.
+
+    Cuotas calculadas con los % default (15/20/20/20/15/7/3) sobre total_contract_usd.
+    Fases en 0%. CAC inicializado con base = current = cac_base_value.
+    """
+    from datetime import datetime
+    now = datetime.utcnow()
+    month_label = now.strftime("%b %Y")
+
+    pcts = [
+        ("Firma de contrato", 15),
+        ("Inicio de obra / Platea", 20),
+        ("Estructura SF completa", 20),
+        ("Cerramiento completo", 20),
+        ("Instalaciones completas", 15),
+        ("Terminaciones completas", 7),
+        ("Entrega y llaves", 3),
+    ]
+    milestones = [
+        {
+            "id": i + 1,
+            "name": name,
+            "pct": pct,
+            "usd": round(total_contract_usd * pct / 100),
+            "status": "pending",
+            "paidDate": None,
+            "certRef": None,
+        }
+        for i, (name, pct) in enumerate(pcts)
+    ]
+
+    phases = [
+        {"name": "Platea HoAo", "pct": 0},
+        {"name": "Estructura SF", "pct": 0},
+        {"name": "Cerramiento", "pct": 0},
+        {"name": "Instalaciones", "pct": 0},
+        {"name": "Terminaciones", "pct": 0},
+    ]
+
+    project = {
+        "id": project_id,
+        "name": project_name,
+        "client_id": client_id,
+        "advisor_id": advisor_id,
+        "architect_id": architect_id,
+        "system": system or "Steel Framing",
+        "location": location or "",
+        "startDate": start_date or "",
+        "estimatedEnd": estimated_end or "",
+        "totalM2": total_m2,
+        "overallProgress": 0,
+        "phases": phases,
+        "milestones": milestones,
+        "cac": {
+            "base": {"value": cac_base_value, "date": month_label},
+            "current": {"value": cac_base_value, "date": month_label},
+            "history": [{"m": now.strftime("%b"), "v": cac_base_value}],
+        },
+        "budget": [],
+        "updates": [],
+        "mods": [],
+        "documents": [],
+    }
+    if advisor_name_in_chat:
+        project["advisor_name_in_chat"] = advisor_name_in_chat
+    return project
+
+
+@app.get("/api/admin/projects/next-id")
+async def admin_next_project_id(authorization: str | None = Header(default=None)):
+    """Devuelve el proximo ID auto-generado (PMD-NNN). Solo lo usa el wizard de UI."""
+    if not _require_admin(authorization):
+        return JSONResponse({"ok": False, "error": "Solo admin"}, status_code=403)
+    return {"ok": True, "next_id": _next_pmd_id()}
+
+
+@app.post("/api/admin/clients/onboard")
+async def admin_onboard_client(payload: OnboardClientRequest, authorization: str | None = Header(default=None)):
+    """Onboarding completo de un cliente nuevo: crea proyecto + crea cliente + manda invite."""
+    if not _require_admin(authorization):
+        return JSONResponse({"ok": False, "error": "Solo admin"}, status_code=403)
+
+    # 1. Resolver project_id (auto-generado si viene vacio) y validar que no exista
+    project_id = (payload.project_id or "").strip() or _next_pmd_id()
+    if data_store.get_project(project_id):
+        return JSONResponse({"ok": False, "error": f"Ya existe un proyecto con ID '{project_id}'"}, status_code=400)
+
+    # 2. Validar que el email del cliente no exista
+    if data_store.get_user_by_email(payload.client_email):
+        return JSONResponse({"ok": False, "error": f"Ya existe un usuario con email '{payload.client_email}'"}, status_code=400)
+
+    # 3. Crear el cliente PRIMERO (necesitamos el client_id para el proyecto)
+    try:
+        new_user = data_store.create_user(
+            email=payload.client_email,
+            name=payload.client_name,
+            role="client",
+            project_id=project_id,
+            password_hash=None,
+            must_change_password=True,
+        )
+    except ValueError as exc:
+        return JSONResponse({"ok": False, "error": str(exc)}, status_code=400)
+
+    # 4. Generar el proyecto blank con la plantilla de Garcia
+    project = _build_blank_project(
+        project_id=project_id,
+        project_name=payload.project_name,
+        client_id=new_user["id"],
+        system=payload.system,
+        location=payload.location,
+        total_m2=payload.total_m2,
+        start_date=payload.start_date,
+        estimated_end=payload.estimated_end,
+        total_contract_usd=payload.total_contract_usd,
+        cac_base_value=payload.cac_base_value,
+        advisor_id=payload.advisor_id,
+        advisor_name_in_chat=payload.advisor_name_in_chat,
+        architect_id=payload.architect_id,
+    )
+    saved_project = data_store.upsert_project(project)
+    logger.info("Onboard cliente: proyecto=%s cliente=%s", project_id, new_user["email"])
+
+    # 5. Mandar invite por mail
+    invite_link = None
+    if payload.send_invite_email:
+        token = auth.generate_random_token()
+        data_store.add_token(token=token, user_id=new_user["id"], token_type="invite", ttl_seconds=auth.INVITE_TTL_SECONDS)
+        sent = email_service.send_welcome_invite(
+            to_email=new_user["email"], name=new_user["name"],
+            invite_token=token, role="client",
+        )
+        invite_link = f"{email_service.PMD_BASE_URL}/mi-hogar?invite={token}"
+        if not sent:
+            logger.warning("Email de onboard no se pudo mandar a %s", new_user["email"])
+
+    return {
+        "ok": True,
+        "project": saved_project,
+        "client": _user_summary(new_user),
+        "invite_link": invite_link,
+    }
+
+
 @app.get("/api/admin/projects")
 async def admin_list_projects(authorization: str | None = Header(default=None)):
     if not _require_admin(authorization):

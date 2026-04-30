@@ -65,6 +65,19 @@ tr:last-child td{border-bottom:none}
 @media(max-width:640px){
   .form-grid{grid-template-columns:1fr}
 }
+
+/* MODAL */
+.modal-bd{position:fixed;inset:0;background:rgba(20,30,50,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:14px}
+.modal-cd{background:#fff;border-radius:14px;max-width:640px;width:100%;max-height:92vh;overflow-y:auto;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.modal-cd h3{font-size:18px;color:var(--b3);margin-bottom:6px;font-family:Georgia,serif;font-weight:500}
+.modal-cd .modal-sub{color:var(--ink2);font-size:13px;margin-bottom:18px;line-height:1.5}
+.modal-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
+.modal-row.full{grid-template-columns:1fr}
+.modal-section{border-top:1px solid var(--border);padding-top:14px;margin-top:10px}
+.modal-section h4{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink2);margin-bottom:9px;font-weight:700}
+.id-preview{display:inline-block;background:var(--gBg);color:var(--green);font-family:monospace;font-weight:700;padding:3px 9px;border-radius:6px;font-size:12px;letter-spacing:.04em}
+.btn-big{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--b1),var(--b2));color:#fff;padding:11px 20px;border-radius:9px;border:none;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 4px 14px rgba(28,51,86,.18);transition:all .15s}
+.btn-big:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(28,51,86,.25)}
 </style>
 </head>
 <body>
@@ -111,8 +124,13 @@ tr:last-child td{border-bottom:none}
   <!-- TAB CLIENTES -->
   <div id="tab-clientes" class="tab-panel">
     <div class="card">
-      <h2>Clientes</h2>
-      <p class="sub">Personas que firmaron contrato y tienen acceso a su portal Mi Hogar.</p>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+        <div>
+          <h2 style="margin-bottom:3px">Clientes</h2>
+          <p class="sub" style="margin-bottom:0">Personas que firmaron contrato y tienen acceso a su portal Mi Hogar.</p>
+        </div>
+        <button class="btn-big" onclick="openOnboardModal()">+ Nuevo cliente</button>
+      </div>
       <table id="tbl-clientes">
         <thead><tr><th>Nombre</th><th>Email</th><th>Proyecto</th><th>Estado</th><th></th></tr></thead>
         <tbody></tbody>
@@ -546,6 +564,236 @@ async function deleteUser(userId, name) {
     document.getElementById("login-screen").style.display = "block";
   }
 })();
+</script>
+
+
+<!-- MODAL: Nuevo cliente con proyecto -->
+<div id="onboard-modal" class="modal-bd" style="display:none">
+  <div class="modal-cd">
+    <h3>+ Nuevo cliente con proyecto</h3>
+    <p class="modal-sub">Se crea el proyecto con la misma plantilla que la obra ejemplo (Familia Garcia): 5 fases, 7 cuotas con porcentajes default, secciones de avance/financiero/planos vacias. Despues lo afinas desde Mi Hogar &gt; Equipo.</p>
+
+    <div id="onb-error" class="error" style="display:none"></div>
+    <div id="onb-success" class="success" style="display:none"></div>
+
+    <div class="modal-section" style="border-top:none;padding-top:0;margin-top:0">
+      <h4>Proyecto</h4>
+      <div class="modal-row full">
+        <div class="field">
+          <label>ID interno (auto-generado)</label>
+          <span id="onb-id-preview" class="id-preview">PMD-???</span>
+          <p style="font-size:11px;color:var(--ink3);margin-top:4px">Codigo interno para referenciar el proyecto. El cliente no lo ve.</p>
+        </div>
+      </div>
+      <div class="modal-row full">
+        <div class="field">
+          <label>Nombre del proyecto (lo ve el cliente)</label>
+          <input id="onb-project-name" placeholder="Ej: Casa Lopez - Lote 23" />
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="field">
+          <label>Sistema constructivo</label>
+          <select id="onb-system">
+            <option value="Steel Framing">Steel Framing</option>
+            <option value="Hormigon Armado">Hormigon Armado</option>
+            <option value="Mixto">Mixto</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>m2 totales</label>
+          <input id="onb-m2" type="number" min="0" step="1" placeholder="180" />
+        </div>
+      </div>
+      <div class="modal-row full">
+        <div class="field">
+          <label>Ubicacion</label>
+          <input id="onb-location" placeholder="Ej: Pilar - Buenos Aires" />
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="field">
+          <label>Fecha de inicio</label>
+          <input id="onb-start" placeholder="01 Nov 2025" />
+        </div>
+        <div class="field">
+          <label>Fin estimado</label>
+          <input id="onb-end" placeholder="01 Ago 2026" />
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="field">
+          <label>Total contrato (USD)</label>
+          <input id="onb-total" type="number" min="0" step="100" placeholder="180000" />
+        </div>
+        <div class="field">
+          <label>CAC base (referencia)</label>
+          <input id="onb-cac" type="number" min="0" step="0.1" value="976.4" />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <h4>Cliente</h4>
+      <div class="modal-row">
+        <div class="field">
+          <label>Nombre</label>
+          <input id="onb-client-name" placeholder="Familia Lopez" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="onb-client-email" type="email" placeholder="lopez@gmail.com" />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <h4>Equipo asignado (opcional)</h4>
+      <div class="modal-row">
+        <div class="field">
+          <label>Asesor</label>
+          <select id="onb-advisor">
+            <option value="">Sin asignar</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Arquitecto</label>
+          <select id="onb-architect">
+            <option value="">Sin asignar</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-row full">
+        <div class="field">
+          <label>Nombre del asesor en el chat (lo ve el cliente)</label>
+          <input id="onb-advisor-chat-name" placeholder="Valentina (o el nombre que veras como contacto)" />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-row full" style="margin-top:14px">
+      <div class="field">
+        <label style="font-size:12px;text-transform:none;letter-spacing:0;font-weight:500">
+          <input type="checkbox" id="onb-send-invite" checked style="width:auto;margin-right:6px;vertical-align:middle"/>
+          Enviar email de bienvenida al cliente automaticamente
+        </label>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;border-top:1px solid var(--border);padding-top:16px">
+      <button class="btn btn-ghost" onclick="closeOnboardModal()">Cancelar</button>
+      <button class="btn" id="onb-submit-btn" onclick="submitOnboard()">Crear cliente + proyecto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+async function openOnboardModal() {
+  ["onb-project-name","onb-m2","onb-location","onb-start","onb-end","onb-total",
+   "onb-client-name","onb-client-email","onb-advisor-chat-name"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  document.getElementById("onb-cac").value = "976.4";
+  document.getElementById("onb-system").value = "Steel Framing";
+  document.getElementById("onb-send-invite").checked = true;
+  document.getElementById("onb-error").style.display = "none";
+  document.getElementById("onb-success").style.display = "none";
+
+  try {
+    const r = await api("/api/admin/projects/next-id");
+    if (r.ok) document.getElementById("onb-id-preview").textContent = r.next_id;
+  } catch {}
+
+  try {
+    const r = await api("/api/admin/users");
+    if (r.ok) {
+      const advSel = document.getElementById("onb-advisor");
+      const archSel = document.getElementById("onb-architect");
+      advSel.innerHTML = '<option value="">Sin asignar</option>';
+      archSel.innerHTML = '<option value="">Sin asignar</option>';
+      r.users.forEach(u => {
+        if (u.role === "asesor" || u.role === "admin") {
+          const o = document.createElement("option");
+          o.value = u.id; o.textContent = u.name + " (" + u.role + ")";
+          advSel.appendChild(o);
+        }
+        if (u.role === "architect" || u.role === "admin") {
+          const o = document.createElement("option");
+          o.value = u.id; o.textContent = u.name + " (" + u.role + ")";
+          archSel.appendChild(o);
+        }
+      });
+    }
+  } catch {}
+
+  document.getElementById("onboard-modal").style.display = "flex";
+}
+
+function closeOnboardModal() {
+  document.getElementById("onboard-modal").style.display = "none";
+}
+
+async function submitOnboard() {
+  const errEl = document.getElementById("onb-error");
+  const okEl = document.getElementById("onb-success");
+  errEl.style.display = "none";
+  okEl.style.display = "none";
+
+  const name = document.getElementById("onb-project-name").value.trim();
+  const clientName = document.getElementById("onb-client-name").value.trim();
+  const clientEmail = document.getElementById("onb-client-email").value.trim();
+  if (!name || !clientName || !clientEmail) {
+    errEl.textContent = "Faltan campos: nombre del proyecto, nombre del cliente y email son obligatorios.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  const payload = {
+    project_id: null,
+    project_name: name,
+    system: document.getElementById("onb-system").value,
+    location: document.getElementById("onb-location").value.trim(),
+    total_m2: Number(document.getElementById("onb-m2").value) || 0,
+    start_date: document.getElementById("onb-start").value.trim(),
+    estimated_end: document.getElementById("onb-end").value.trim(),
+    total_contract_usd: Number(document.getElementById("onb-total").value) || 0,
+    cac_base_value: Number(document.getElementById("onb-cac").value) || 976.4,
+    client_name: clientName,
+    client_email: clientEmail,
+    advisor_id: document.getElementById("onb-advisor").value || null,
+    architect_id: document.getElementById("onb-architect").value || null,
+    advisor_name_in_chat: document.getElementById("onb-advisor-chat-name").value.trim() || null,
+    send_invite_email: document.getElementById("onb-send-invite").checked,
+  };
+
+  const btn = document.getElementById("onb-submit-btn");
+  btn.disabled = true; btn.textContent = "Creando...";
+  try {
+    const res = await api("/api/admin/clients/onboard", {
+      method: "POST", body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      errEl.textContent = res.error || "Error desconocido";
+      errEl.style.display = "block";
+      btn.disabled = false; btn.textContent = "Crear cliente + proyecto";
+      return;
+    }
+    let msg = "Proyecto " + res.project.id + " creado para " + res.client.name + ".";
+    if (res.invite_link) msg += " Email de invite enviado.";
+    okEl.innerHTML = msg + (res.invite_link ? "<br><small>Link manual (por si no llego el mail): <code style=\"font-size:10px;word-break:break-all\">" + res.invite_link + "</code></small>" : "");
+    okEl.style.display = "block";
+    btn.disabled = false; btn.textContent = "Crear cliente + proyecto";
+    if (typeof loadUsers === "function") await loadUsers();
+    if (typeof loadProjects === "function") await loadProjects();
+    setTimeout(() => closeOnboardModal(), 4500);
+  } catch (e) {
+    errEl.textContent = "Error de red: " + (e.message || e);
+    errEl.style.display = "block";
+    btn.disabled = false; btn.textContent = "Crear cliente + proyecto";
+  }
+}
 </script>
 
 </body>
