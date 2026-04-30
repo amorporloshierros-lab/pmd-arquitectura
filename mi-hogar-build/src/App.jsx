@@ -509,34 +509,45 @@ const ClientDash = ({user, project, onLogout}) => {
   );
 };
 
-// ─── ARCH PANEL (simplified — vista del arquitecto) ───────────────────────
+// ─── ARCH PANEL — equipo PMD (admin/asesor/architect) ──────────────────────
+// Renderiza la vista completa del proyecto + selector si hay varios + card admin.
 const ArchPanel = ({user, projects, onLogout}) => {
   const [selectedId, setSelectedId] = useState(projects?.[0]?.id || null);
   const project = projects?.find(p=>p.id===selectedId) || projects?.[0];
+  const roleLabel = {admin:"Administrador", asesor:"Asesor", architect:"Arquitecto"}[user.role] || user.role;
 
   if (!project) {
     return (
       <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans',sans-serif"}}>
-        <div style={{textAlign:"center"}}>
-          <Logo size={32}/>
-          <p style={{marginTop:20,color:C.txt2}}>No hay proyectos asignados todavia.</p>
-          <button onClick={onLogout} className="btn" style={{marginTop:14,padding:"8px 18px",background:C.b2,color:"#fff",border:"none",borderRadius:9}}>Salir</button>
-        </div>
+        <Card style={{padding:30,maxWidth:420,textAlign:"center"}}>
+          <div style={{display:"flex",justifyContent:"center",marginBottom:16}}><Logo size={32}/></div>
+          <p style={{fontSize:15,fontWeight:700,color:C.b3,marginBottom:8}}>Hola {user.name}</p>
+          <p style={{color:C.txt2,fontSize:13,marginBottom:18}}>No hay proyectos cargados todavia. Crea clientes y proyectos desde Gestionar usuarios.</p>
+          {user.role === "admin" && (
+            <a href="/admin/users" target="_blank" rel="noopener" className="btn" style={{display:"inline-block",padding:"10px 20px",background:C.b2,color:"#fff",borderRadius:9,fontSize:13,fontWeight:700,textDecoration:"none",marginBottom:10}}>Gestionar usuarios</a>
+          )}
+          <div><button onClick={onLogout} className="btn" style={{padding:"8px 18px",background:"transparent",color:C.txt2,border:`1px solid ${C.border}`,borderRadius:9,fontSize:12}}>Salir</button></div>
+        </Card>
       </div>
     );
   }
 
   return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans',sans-serif"}}>
-      <div style={{background:C.b3,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+      {/* Header oscuro: marca panel del EQUIPO (vs cliente que es claro) */}
+      <div style={{background:C.b3,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:40}}>
         <Logo size={26} dark/>
-        <div style={{textAlign:"right"}}>
-          <p style={{fontSize:9,fontWeight:800,color:"rgba(255,255,255,.4)",textTransform:"uppercase",letterSpacing:".12em"}}>Panel {user.role==="admin"?"Admin":user.role==="asesor"?"Asesor":"Arquitecto"}</p>
+        <div style={{textAlign:"right",flex:1,marginRight:12}}>
+          <p style={{fontSize:9,fontWeight:800,color:"rgba(255,255,255,.4)",textTransform:"uppercase",letterSpacing:".12em"}}>Panel {roleLabel}</p>
           <p style={{fontSize:13,fontWeight:700,color:"#fff"}}>{user.name}</p>
         </div>
-        <button onClick={onLogout} className="btn" style={{background:"rgba(255,255,255,.1)",border:"none",color:"rgba(255,255,255,.7)",fontSize:11,padding:"5px 11px",borderRadius:8}}>Salir</button>
+        <button onClick={onLogout} className="btn" style={{background:"rgba(255,255,255,.1)",border:"none",color:"rgba(255,255,255,.85)",fontSize:11,padding:"6px 12px",borderRadius:8,fontWeight:600}}>Salir</button>
       </div>
+
+      {/* Contenido principal */}
       <div style={{maxWidth:800,margin:"0 auto",padding:"18px 13px 48px"}}>
+
+        {/* Card: gestionar usuarios (solo admin) */}
         {user.role === "admin" && (
           <Card style={{padding:"16px 20px",marginBottom:14,background:`linear-gradient(135deg,${C.b1}15,${C.b2}10)`,border:`1px solid ${C.b1}40`}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
@@ -544,31 +555,230 @@ const ArchPanel = ({user, projects, onLogout}) => {
                 <p style={{fontSize:14,fontWeight:800,color:C.b3,marginBottom:3}}>Panel de administracion</p>
                 <p style={{fontSize:12,color:C.txt2}}>Crear clientes, gestionar equipo, mandar invites por email</p>
               </div>
-              <a href="/admin/users" target="_blank" rel="noopener" className="btn" style={{padding:"10px 18px",background:C.b2,color:"#fff",borderRadius:9,fontSize:13,fontWeight:700,textDecoration:"none",display:"inline-block"}}>
-                Gestionar usuarios
-              </a>
+              <a href="/admin/users" target="_blank" rel="noopener" className="btn" style={{padding:"10px 18px",background:C.b2,color:"#fff",borderRadius:9,fontSize:13,fontWeight:700,textDecoration:"none",display:"inline-block"}}>Gestionar usuarios</a>
             </div>
           </Card>
         )}
-        {projects.length>1 && (
-          <div style={{marginBottom:14,display:"flex",gap:8,flexWrap:"wrap"}}>
-            {projects.map(p=>(
-              <button key={p.id} onClick={()=>setSelectedId(p.id)} className="btn" style={{padding:"7px 14px",background:p.id===selectedId?C.b2:C.bg,color:p.id===selectedId?"#fff":C.txt2,border:`1px solid ${C.border}`,borderRadius:9,fontSize:12,fontWeight:700}}>{p.name}</button>
-            ))}
-          </div>
+
+        {/* Project picker — si hay mas de uno */}
+        {projects.length > 1 && (
+          <Card style={{padding:"12px 16px",marginBottom:14}}>
+            <p style={{fontSize:10,fontWeight:800,color:C.txt2,textTransform:"uppercase",letterSpacing:".09em",marginBottom:8}}>Proyectos en curso ({projects.length})</p>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+              {projects.map(p=>(
+                <button key={p.id} onClick={()=>setSelectedId(p.id)} className="btn" style={{padding:"7px 14px",background:p.id===selectedId?C.b2:C.bg,color:p.id===selectedId?"#fff":C.txt2,border:`1px solid ${C.border}`,borderRadius:9,fontSize:12,fontWeight:700}}>{p.name}</button>
+              ))}
+            </div>
+          </Card>
         )}
-        <Card style={{padding:20}}>
-          <p style={{fontSize:18,fontWeight:900,color:C.b3,marginBottom:5}}>{project.name}</p>
-          <p style={{fontSize:12,color:C.txt2,marginBottom:14}}>{project.system} - {project.totalM2}m2 - {project.location}</p>
-          <div style={{background:C.bg,borderRadius:12,padding:"12px 16px",marginBottom:12}}>
-            <p style={{fontSize:11,color:C.txt2,marginBottom:4}}>Avance general</p>
-            <Mono ch={`${project.overallProgress || 0}%`} size={28} color={C.b2} weight={900}/>
-          </div>
-          <p style={{fontSize:13,color:C.txt2,lineHeight:1.6}}>
-            Para subir avances, editar presupuesto, gestionar cuotas y modificaciones, usa el editor en /admin.
+
+        {/* Vista detallada del proyecto seleccionado — usa el mismo dashboard que el cliente */}
+        <ArchProjectView project={project} />
+
+        {/* Footer info: rol y permisos */}
+        <Card style={{padding:"14px 18px",marginTop:14,background:C.bg,border:`1px dashed ${C.border}`,boxShadow:"none"}}>
+          <p style={{fontSize:11,color:C.txt2,lineHeight:1.6}}>
+            <strong style={{color:C.b3}}>Como {roleLabel.toLowerCase()}</strong> ves la informacion completa de cada proyecto.
+            Para SUBIR un avance nuevo, editar presupuesto/cuotas o aprobar modificaciones, usa <strong>{user.role === "admin" ? "/admin (panel principal)" : "el panel de admin (pedile permisos a Augusto)"}</strong>.
           </p>
         </Card>
       </div>
+
+      {/* Chat de Valentina — para que el equipo vea como ven los clientes */}
+      <ChatWidget project={project} milestones={project.milestones || []} cac={project.cac} updates={project.updates || []} clientName={user.name}/>
+    </div>
+  );
+};
+
+// ─── ARCH PROJECT VIEW — vista detallada del proyecto (usado por ArchPanel) ──
+const ArchProjectView = ({project}) => {
+  const [tab, setTab] = useState("inicio");
+  const [eu, setEu] = useState(0);
+  const milestones = project.milestones || [];
+  const cac = project.cac || {base:{value:1,date:""},current:{value:1,date:""},history:[]};
+  const updates = project.updates || [];
+  const documents = project.documents || [];
+  const mods = project.mods || [];
+
+  const paid = milestones.filter(m=>m.status==="paid").reduce((s,m)=>s+m.usd,0);
+  const totalContract = milestones.reduce((s,m)=>s+m.usd,0) || 1;
+  const pending = totalContract - paid;
+  const cacVar = cac.base.value ? (cac.current.value-cac.base.value)/cac.base.value : 0;
+  const next = milestones.find(m=>m.status==="pending");
+  const phaseData = (project.phases || []).map(ph=>({name:(ph.name||"").slice(0,9),value:ph.pct}));
+  const progressData = [...updates].reverse().map(u=>({sem:u.week,pct:u.progress}));
+
+  const TABS=[["inicio","Inicio"],["avance","Avance"],["financiero","Financiero"],["planos","Planos"],["mods",`Modif. (${mods.length})`]];
+
+  return (
+    <div>
+      {/* Project meta */}
+      <Card style={{padding:"14px 18px",marginBottom:11}}>
+        <p style={{fontSize:18,fontWeight:900,color:C.b3,letterSpacing:"-.02em",marginBottom:3}}>{project.name}</p>
+        <p style={{fontSize:12,color:C.txt2}}>{project.system} - {project.totalM2}m2 - {project.location}</p>
+        <p style={{fontSize:11,color:C.dim,marginTop:4}}>Inicio: {project.startDate} - Fin estimado: {project.estimatedEnd}</p>
+      </Card>
+
+      {/* Tabs */}
+      <div style={{background:C.card,borderRadius:11,border:`1px solid ${C.border}`,padding:"0 8px",marginBottom:11,display:"flex",overflowX:"auto"}}>
+        {TABS.map(([id,lbl])=>(
+          <button key={id} onClick={()=>setTab(id)} style={{padding:"11px 14px",border:"none",background:"transparent",color:tab===id?C.b2:C.txt2,fontSize:12,fontWeight:700,borderBottom:tab===id?`2px solid ${C.b2}`:"2px solid transparent",cursor:"pointer",whiteSpace:"nowrap",fontFamily:"'DM Sans',sans-serif"}}>{lbl}</button>
+        ))}
+      </div>
+
+      {tab==="inicio" && (
+        <div className="up">
+          <div style={{borderRadius:18,padding:"20px 18px 16px",marginBottom:11,background:`linear-gradient(135deg,${C.b3},${C.b2})`}}>
+            <p style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.5)",textTransform:"uppercase",letterSpacing:".12em",marginBottom:2}}>Avance general</p>
+            <div style={{display:"flex",alignItems:"baseline",gap:3,marginBottom:14}}>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:48,fontWeight:900,color:"#fff",lineHeight:1,letterSpacing:"-.04em"}}>{project.overallProgress || 0}</span>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:20,color:"rgba(255,255,255,.4)",fontWeight:700}}>%</span>
+            </div>
+            {(project.phases || []).map((ph,i)=>(
+              <div key={i} style={{marginBottom:7}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                  <span style={{fontSize:11,color:"rgba(255,255,255,.7)"}}>{ph.name}</span>
+                  <Mono ch={`${ph.pct}%`} size={11} color={ph.pct===100?"#6EE7A0":"rgba(255,255,255,.85)"} weight={700}/>
+                </div>
+                <div style={{background:"rgba(255,255,255,.15)",borderRadius:4,height:4}}>
+                  <div style={{width:`${ph.pct}%`,height:"100%",borderRadius:4,background:ph.pct===100?"#4ADE80":"rgba(255,255,255,.85)"}}/>
+                </div>
+              </div>
+            ))}
+          </div>
+          {progressData.length>0 && <Card style={{padding:14,marginBottom:11}}>
+            <p style={{fontSize:11,fontWeight:800,color:C.txt,marginBottom:10}}>Evolucion semanal</p>
+            <ResponsiveContainer width="100%" height={140}>
+              <LineChart data={progressData} margin={{top:4,right:8,left:-22,bottom:0}}>
+                <XAxis dataKey="sem" tick={{fontSize:9,fill:C.dim}} axisLine={false} tickLine={false}/>
+                <YAxis domain={[0,100]} tick={{fontSize:9,fill:C.dim}} axisLine={false} tickLine={false}/>
+                <Tooltip contentStyle={{background:C.card,border:`1px solid ${C.border}`,borderRadius:9,fontSize:11}} formatter={v=>[`${v}%`,"Avance"]}/>
+                <Line type="monotone" dataKey="pct" stroke={C.b2} strokeWidth={2.5} dot={{fill:C.b2,r:4,strokeWidth:0}}/>
+              </LineChart>
+            </ResponsiveContainer>
+          </Card>}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:11}}>
+            <Card style={{padding:13,background:C.gBg,border:"none"}}>
+              <p style={{fontSize:9,fontWeight:800,color:C.green,textTransform:"uppercase",letterSpacing:".09em",marginBottom:4}}>Pagado</p>
+              <Mono ch={`USD ${fmt(paid)}`} size={15} color={C.green} weight={900}/>
+            </Card>
+            <Card style={{padding:13,background:C.aBg,border:"none"}}>
+              <p style={{fontSize:9,fontWeight:800,color:C.amber,textTransform:"uppercase",letterSpacing:".09em",marginBottom:4}}>Saldo</p>
+              <Mono ch={`USD ${fmt(pending)}`} size={15} color={C.amber} weight={900}/>
+              <p style={{fontSize:10,color:C.dim,marginTop:3}}>Proximo: {next?.name || "-"}</p>
+            </Card>
+          </div>
+          {updates[0] && (
+            <Card style={{padding:14,cursor:"pointer"}} onClick={()=>setTab("avance")}>
+              <p style={{fontSize:10,fontWeight:700,color:C.b2,textTransform:"uppercase",letterSpacing:".08em",marginBottom:3}}>{updates[0].week} - {updates[0].date}</p>
+              <p style={{fontSize:14,fontWeight:700,color:C.txt,marginBottom:6}}>{updates[0].title}</p>
+              <p style={{fontSize:12,color:C.txt2,lineHeight:1.5}}>{(updates[0].summary||"").slice(0,160)}...</p>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {tab==="avance" && (
+        <div className="up">
+          {updates.length === 0 && <Card style={{padding:24,textAlign:"center"}}><p style={{color:C.txt2,fontSize:13}}>Sin actualizaciones cargadas todavia.</p></Card>}
+          {updates.map((upd,i)=>(
+            <Card key={upd.id} style={{marginBottom:11,overflow:"hidden"}}>
+              <div onClick={()=>setEu(eu===i?-1:i)} style={{padding:"14px 17px",cursor:"pointer",display:"flex",justifyContent:"space-between"}}>
+                <div>
+                  <span style={{fontSize:10,fontWeight:800,color:C.b2,textTransform:"uppercase",letterSpacing:".09em"}}>{upd.week}</span>
+                  <p style={{fontSize:13,fontWeight:700,color:C.txt,marginTop:4}}>{upd.title}</p>
+                </div>
+                <Mono ch={`${upd.progress}%`} size={18} weight={900}/>
+              </div>
+              {eu===i && <div style={{padding:"0 17px 16px"}}>
+                <p style={{fontSize:12,color:C.txt2,lineHeight:1.6,marginBottom:10}}>{upd.summary}</p>
+                {(upd.photos||[]).length>0 && <div style={{display:"flex",gap:6,marginBottom:10,overflowX:"auto"}}>{upd.photos.map((ph,j)=><img key={j} src={ph} alt="" style={{height:90,width:130,objectFit:"cover",borderRadius:8,flexShrink:0}}/>)}</div>}
+                {(upd.completed||[]).length>0 && <div style={{background:C.gBg,borderRadius:9,padding:"9px 11px",marginBottom:7}}>
+                  <p style={{fontSize:9,fontWeight:800,color:C.green,textTransform:"uppercase",letterSpacing:".08em",marginBottom:5}}>Completado</p>
+                  {upd.completed.map((it,j)=><p key={j} style={{fontSize:11,color:C.txt,marginBottom:3}}>* {it}</p>)}
+                </div>}
+                {(upd.next||[]).length>0 && <div style={{background:C.tag,borderRadius:9,padding:"9px 11px"}}>
+                  <p style={{fontSize:9,fontWeight:800,color:C.b2,textTransform:"uppercase",letterSpacing:".08em",marginBottom:5}}>Proximos pasos</p>
+                  {upd.next.map((it,j)=><p key={j} style={{fontSize:11,color:C.txt,marginBottom:3}}>* {it}</p>)}
+                </div>}
+              </div>}
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {tab==="financiero" && (
+        <div className="up">
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:9,marginBottom:13}}>
+            <Card style={{padding:12,background:C.tag,border:"none"}}>
+              <p style={{fontSize:9,fontWeight:800,color:C.b3,textTransform:"uppercase",marginBottom:3}}>Contrato total</p>
+              <Mono ch={`USD ${fmt(totalContract)}`} size={13} color={C.b3} weight={900}/>
+            </Card>
+            <Card style={{padding:12,background:C.aBg,border:"none"}}>
+              <p style={{fontSize:9,fontWeight:800,color:C.amber,textTransform:"uppercase",marginBottom:3}}>Ajustado CAC</p>
+              <Mono ch={`USD ${fmt(totalContract*(1+cacVar))}`} size={13} color={C.amber} weight={900}/>
+              <p style={{fontSize:10,color:C.dim,marginTop:2}}>+{(cacVar*100).toFixed(2)}%</p>
+            </Card>
+            <Card style={{padding:12,background:C.gBg,border:"none"}}>
+              <p style={{fontSize:9,fontWeight:800,color:C.green,textTransform:"uppercase",marginBottom:3}}>Pagado</p>
+              <Mono ch={`USD ${fmt(paid)}`} size={13} color={C.green} weight={900}/>
+            </Card>
+            <Card style={{padding:12,background:C.rBg,border:"none"}}>
+              <p style={{fontSize:9,fontWeight:800,color:C.red,textTransform:"uppercase",marginBottom:3}}>Saldo</p>
+              <Mono ch={`USD ${fmt(pending)}`} size={13} color={C.red} weight={900}/>
+            </Card>
+          </div>
+          <Card style={{padding:15,marginBottom:13}}>
+            <p style={{fontSize:13,fontWeight:800,color:C.txt,marginBottom:13}}>Cuotas por hito</p>
+            {milestones.map((m,i)=>(
+              <div key={m.id} style={{display:"flex",alignItems:"center",gap:10,paddingBottom:10,marginBottom:10,borderBottom:i<milestones.length-1?`1px dashed ${C.border}`:"none"}}>
+                <div style={{width:26,height:26,borderRadius:"50%",background:m.status==="paid"?C.gBg:C.aBg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:11,fontWeight:800,color:m.status==="paid"?C.green:C.amber}}>{m.status==="paid"?"OK":"--"}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <p style={{fontSize:12,fontWeight:700,color:C.txt,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{m.name}</p>
+                  <p style={{fontSize:10,color:C.dim}}>{m.status==="paid"?`${m.paidDate} - ${m.certRef}`:"Pendiente"}</p>
+                </div>
+                <Mono ch={`USD ${fmt(m.usd)}`} size={12} color={m.status==="paid"?C.green:C.amber} weight={800}/>
+              </div>
+            ))}
+          </Card>
+        </div>
+      )}
+
+      {tab==="planos" && (
+        <div className="up">
+          {documents.length === 0 && <Card style={{padding:24,textAlign:"center"}}><p style={{color:C.txt2,fontSize:13}}>Sin documentos cargados.</p></Card>}
+          {documents.map(doc=>(
+            <Card key={doc.id} style={{padding:"11px 14px",marginBottom:8,display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:32,height:32,borderRadius:8,background:C.tag,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:C.b2}}>{doc.icon}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <p style={{fontSize:13,fontWeight:700,color:C.txt}}>{doc.name}</p>
+                <p style={{fontSize:10,color:C.dim}}>{doc.date} - {doc.size}{doc.ref?` - ${doc.ref}`:""}</p>
+              </div>
+              <Badge status={doc.status}/>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {tab==="mods" && (
+        <div className="up">
+          {mods.length === 0 && <Card style={{padding:24,textAlign:"center"}}><p style={{color:C.txt2,fontSize:13}}>Sin modificaciones solicitadas.</p></Card>}
+          {mods.map(mod=>(
+            <Card key={mod.id} style={{padding:14,marginBottom:9}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+                <Mono ch={`${mod.id} - ${mod.date}`} size={10} color={C.dim} weight={600}/>
+                <Badge status={mod.status}/>
+              </div>
+              <p style={{fontSize:13,fontWeight:700,color:C.txt,marginBottom:5}}>{mod.title}</p>
+              <p style={{fontSize:12,color:C.txt2,lineHeight:1.5,marginBottom:mod.archNote?7:0}}>{mod.description}</p>
+              {mod.archNote && <div style={{background:mod.status==="approved"?C.gBg:C.rBg,borderRadius:7,padding:"7px 10px",marginTop:6,borderLeft:`3px solid ${mod.status==="approved"?C.green:C.red}`}}>
+                <p style={{fontSize:9,fontWeight:800,color:mod.status==="approved"?C.green:C.red,textTransform:"uppercase",marginBottom:2}}>{mod.status==="approved"?`Aprobada - ${mod.approvalNumber}`:"Rechazada"}</p>
+                <p style={{fontSize:11,color:C.txt}}>{mod.archNote}</p>
+              </div>}
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
