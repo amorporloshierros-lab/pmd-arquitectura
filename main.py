@@ -745,10 +745,11 @@ async def api_precios():
     hardcoded de precios.py. Cachea 60s para no machacar la API de Sheets.
     Lo consume el presupuestador en static/presupuestador.html.
     """
-    data = get_precios()
+    from precios_override import get_precios_con_override
+    data = get_precios_con_override()
     return JSONResponse({
         "ok": True,
-        "source": precios_source(),  # "sheets" | "default"
+        "source": precios_source(),
         "precios": data,
     })
 
