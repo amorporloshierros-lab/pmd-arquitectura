@@ -655,6 +655,13 @@ const ArchProjectView = ({project: initialProject, canEdit = true, onProjectUpda
 
   const [savingFlash, setSavingFlash] = useState("");
 
+  const [showEditMeta, setShowEditMeta] = useState(false);
+  const [metaForm, setMetaForm] = useState({
+    name: "", system: "", location: "", totalM2: 0,
+    startDate: "", estimatedEnd: "",
+  });
+  const [metaSaving, setMetaSaving] = useState(false);
+
   const milestones = project.milestones || [];
   const cac = project.cac || {base:{value:1,date:""},current:{value:1,date:""},history:[]};
   const updates = project.updates || [];
@@ -762,6 +769,33 @@ const ArchProjectView = ({project: initialProject, canEdit = true, onProjectUpda
 
   const TABS=[["inicio","Inicio"],["avance","Avance"],["financiero","Financiero"],["planos","Planos"],["mods",`Modif. (${mods.length})`]];
 
+  const openEditMeta = () => {
+    setMetaForm({
+      name: project.name || "",
+      system: project.system || "Steel Framing",
+      location: project.location || "",
+      totalM2: project.totalM2 || 0,
+      startDate: project.startDate || "",
+      estimatedEnd: project.estimatedEnd || "",
+    });
+    setShowEditMeta(true);
+  };
+  const confirmEditMeta = async () => {
+    setMetaSaving(true);
+    const newProject = {
+      ...project,
+      name: metaForm.name.trim() || project.name,
+      system: metaForm.system,
+      location: metaForm.location.trim(),
+      totalM2: Number(metaForm.totalM2) || 0,
+      startDate: metaForm.startDate.trim(),
+      estimatedEnd: metaForm.estimatedEnd.trim(),
+    };
+    const ok = await persistAndFlash(newProject, "Datos del proyecto actualizados");
+    if (ok) setShowEditMeta(false);
+    setMetaSaving(false);
+  };
+
   // Modal genérico
   const Modal = ({title, onClose, children}) => (
     <div style={{position:"fixed",inset:0,background:"rgba(20,30,50,.55)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:14}} onClick={onClose}>
@@ -779,11 +813,52 @@ const ArchProjectView = ({project: initialProject, canEdit = true, onProjectUpda
     <div>
       {savingFlash && <div style={{position:"sticky",top:8,zIndex:50,marginBottom:10,padding:"10px 14px",background:savingFlash.startsWith("Error")?C.rBg:C.gBg,color:savingFlash.startsWith("Error")?C.red:C.green,borderRadius:10,border:`1px solid ${savingFlash.startsWith("Error")?C.red:C.green}`,fontSize:12,fontWeight:700,boxShadow:"0 6px 18px rgba(30,58,95,.10)"}}>{savingFlash}</div>}
 
-      <Card style={{padding:"14px 18px",marginBottom:11}}>
-        <p style={{fontSize:18,fontWeight:900,color:C.b3,letterSpacing:"-.02em",marginBottom:3}}>{project.name}</p>
+      <Card style={{padding:"14px 18px",marginBottom:11,position:"relative"}}>
+        {canEdit && <button onClick={openEditMeta} className="btn" style={{position:"absolute",top:11,right:11,padding:"5px 11px",borderRadius:7,border:`1px solid ${C.border}`,background:C.bg,color:C.b2,fontSize:10,fontWeight:700,cursor:"pointer",letterSpacing:".04em"}}>EDITAR</button>}
+        <p style={{fontSize:18,fontWeight:900,color:C.b3,letterSpacing:"-.02em",marginBottom:3,paddingRight:60}}>{project.name}</p>
         <p style={{fontSize:12,color:C.txt2}}>{project.system} - {project.totalM2}m2 - {project.location}</p>
         <p style={{fontSize:11,color:C.dim,marginTop:4}}>Inicio: {project.startDate} - Fin estimado: {project.estimatedEnd}</p>
       </Card>
+
+      {showEditMeta && <Modal title="Editar datos del proyecto" onClose={()=>setShowEditMeta(false)}>
+        <div style={{marginBottom:11}}>
+          <label style={{fontSize:10,fontWeight:800,color:C.txt2,textTransform:"uppercase",letterSpacing:".09em",display:"block",marginBottom:5}}>Nombre del proyecto (lo ve el cliente)</label>
+          <input value={metaForm.name} onChange={e=>setMetaForm({...metaForm,name:e.target.value})} style={{width:"100%",padding:"9px 11px",borderRadius:9,border:`1px solid ${C.border}`,fontSize:14,fontWeight:700,color:C.b3}}/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:11}}>
+          <div>
+            <label style={{fontSize:10,fontWeight:800,color:C.txt2,textTransform:"uppercase",display:"block",marginBottom:5}}>Sistema</label>
+            <select value={metaForm.system} onChange={e=>setMetaForm({...metaForm,system:e.target.value})} style={{width:"100%",padding:"9px 11px",borderRadius:9,border:`1px solid ${C.border}`,fontSize:13,background:"#fff"}}>
+              <option value="Steel Framing">Steel Framing</option>
+              <option value="Hormigon Armado">Hormigon Armado</option>
+              <option value="Mixto">Mixto</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label style={{fontSize:10,fontWeight:800,color:C.txt2,textTransform:"uppercase",display:"block",marginBottom:5}}>m2 totales</label>
+            <input type="number" min={0} value={metaForm.totalM2} onChange={e=>setMetaForm({...metaForm,totalM2:e.target.value})} style={{width:"100%",padding:"9px 11px",borderRadius:9,border:`1px solid ${C.border}`,fontSize:13}}/>
+          </div>
+        </div>
+        <div style={{marginBottom:11}}>
+          <label style={{fontSize:10,fontWeight:800,color:C.txt2,textTransform:"uppercase",display:"block",marginBottom:5}}>Ubicacion</label>
+          <input value={metaForm.location} onChange={e=>setMetaForm({...metaForm,location:e.target.value})} style={{width:"100%",padding:"9px 11px",borderRadius:9,border:`1px solid ${C.border}`,fontSize:13}}/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+          <div>
+            <label style={{fontSize:10,fontWeight:800,color:C.txt2,textTransform:"uppercase",display:"block",marginBottom:5}}>Inicio</label>
+            <input value={metaForm.startDate} onChange={e=>setMetaForm({...metaForm,startDate:e.target.value})} placeholder="01 Nov 2025" style={{width:"100%",padding:"9px 11px",borderRadius:9,border:`1px solid ${C.border}`,fontSize:13}}/>
+          </div>
+          <div>
+            <label style={{fontSize:10,fontWeight:800,color:C.txt2,textTransform:"uppercase",display:"block",marginBottom:5}}>Fin estimado</label>
+            <input value={metaForm.estimatedEnd} onChange={e=>setMetaForm({...metaForm,estimatedEnd:e.target.value})} placeholder="01 Ago 2026" style={{width:"100%",padding:"9px 11px",borderRadius:9,border:`1px solid ${C.border}`,fontSize:13}}/>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>setShowEditMeta(false)} className="btn" style={{flex:1,padding:"10px 12px",borderRadius:9,border:`1px solid ${C.border}`,background:C.card,color:C.txt2,fontSize:12,fontWeight:700,cursor:"pointer"}}>Cancelar</button>
+          <button onClick={confirmEditMeta} disabled={metaSaving} className="btn" style={{flex:2,padding:"10px 12px",borderRadius:9,border:"none",background:C.b2,color:"#fff",fontSize:12,fontWeight:800,cursor:metaSaving?"wait":"pointer",opacity:metaSaving?0.6:1}}>{metaSaving?"Guardando...":"Guardar cambios"}</button>
+        </div>
+      </Modal>}
 
       <div style={{background:C.card,borderRadius:11,border:`1px solid ${C.border}`,padding:"0 8px",marginBottom:11,display:"flex",overflowX:"auto"}}>
         {TABS.map(([id,lbl])=>(
