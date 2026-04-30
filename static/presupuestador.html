@@ -346,42 +346,44 @@
   .success-box h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:30px;margin:0 0 8px}
   .success-box p{color:var(--muted);margin:0 0 22px}
 </style>
-<script>
-// PMD — carga precios desde el servidor y parchea los data-base del DOM
-(async function() {
-  try {
-    const r = await fetch('/api/precios/lineas');
-    if (!r.ok) return;
-    const d = await r.json();
-    if (!Array.isArray(d.lineas) || d.lineas.length !== 4) return;
-    window.__PMD_LINEAS = d.lineas;
-    // Aplicar cuando el DOM este listo
-    function aplicarPrecios() {
-      d.lineas.forEach(function(l) {
-        // Mapeo de id a label del data-value
-        var labelMap = {
-          confort: 'Línea Confort',
-          premium: 'Línea Premium',
-          alta:    'Línea Alta Gama',
-          lujo:    'Línea Lujo Importado'
-        };
-        var label = labelMap[l.id];
-        if (!label) return;
-        var el = document.querySelector('[data-value="'+label+'"]');
-        if (el) {
-          el.setAttribute('data-base', l.base);
-          // Actualizar texto de precio si existe
-          var precioEl = el.querySelector('.opt-precio, .precio, [class*="precio"]');
-          if (precioEl && l.texto_precio) precioEl.textContent = l.texto_precio;
-        }
-      });
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', aplicarPrecios);
-    } else {
-      aplicarPrecios();
-    }
-  } catch(e) {}
+<<script>
+// PMD — carga precios dinamicos y sobreescribe LINEA_BASE al inicializar
+(function() {
+  function aplicar(data) {
+    var lineas = (data.precios || data).lineas || data.lineas;
+    if (!Array.isArray(lineas)) return;
+    var labelMap = {
+      confort: 'Línea Confort',
+      premium: 'Línea Premium',
+      alta:    'Línea Alta Gama',
+      lujo:    'Línea Lujo Importado'
+    };
+    lineas.forEach(function(l) {
+      var label = labelMap[l.id];
+      if (!label || typeof l.base !== 'number') return;
+      // Sobreescribir LINEA_BASE si ya existe
+      if (typeof LINEA_BASE !== 'undefined') {
+        LINEA_BASE[label] = l.base;
+      }
+      // Parchear data-base en el DOM
+      var el = document.querySelector('[data-value="'+label+'"]');
+      if (el) el.setAttribute('data-base', l.base);
+    });
+  }
+
+  // Cargar ANTES de que el usuario interactue con el paso de nivel
+  window.__pmdPreciosPromise = fetch('/api/precios')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      window.__pmdPrecios = d;
+      aplicar(d);
+    })
+    .catch(function(){});
+
+  // Tambien aplicar cuando el DOM este listo (por si acaso)
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.__pmdPrecios) aplicar(window.__pmdPrecios);
+  });
 })();
 </script>
 </head>
@@ -1303,7 +1305,7 @@
   }
 
   // Base USD/m² de cada LÍNEA DE CALIDAD PMD. El rango se arma ±% alrededor.
-  const LINEA_BASE = {
+  let LINEA_BASE = {
     'Línea Confort':         1100,  // rango 1000-1200
     'Línea Premium':         1400,  // rango 1200-1600
     'Línea Alta Gama':       2250,  // rango 2000-2500
