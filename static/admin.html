@@ -708,7 +708,7 @@ setInterval(refreshAll, 30000);
     fetch('/api/precios')
       .then(function(r){ return r.json(); })
       .then(function(d){
-        _d = d;
+        _d = d.precios || d;
         renderCards();
         if (_editing) { renderTabs(); renderTabla(); }
       })
