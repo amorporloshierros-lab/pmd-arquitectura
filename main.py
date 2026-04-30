@@ -1074,11 +1074,6 @@ async def upload_image(file: UploadFile = File(...)):
 
 # ─── ENDPOINTS DE PRECIOS ────────────────────────────────────────────────────
 
-@app.get("/api/precios")
-async def api_get_precios():
-    """Devuelve todos los precios del presupuestador."""
-    from precios_override import get_precios_con_override
-    return get_precios_con_override()
 
 @app.get("/api/precios/lineas")
 async def api_get_lineas():
