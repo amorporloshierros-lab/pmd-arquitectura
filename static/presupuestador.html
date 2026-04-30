@@ -347,31 +347,54 @@
   .success-box p{color:var(--muted);margin:0 0 22px}
 </style>
 <<script>
-// PMD — carga precios dinamicos y sobreescribe LINEA_BASE al inicializar
+// PMD — carga precios dinamicos y parchea TODOS los data-attributes del DOM
 (function() {
+
+  // Mapeo: categoria → {campo_api, atributo_html, data-group del DOM}
+  var CAT_MAP = [
+    {cat:'lineas',       campo:'base',     attr:'data-base',    group:'nivel'},
+    {cat:'pisos',        campo:'extra',    attr:'data-extra',   group:'pisos'},
+    {cat:'aberturas',    campo:'extra',    attr:'data-extra',   group:'aberturas'},
+    {cat:'cocina',       campo:'fixed',    attr:'data-fixed',   group:'cocina'},
+    {cat:'cubierta',     campo:'roof',     attr:'data-roof',    group:'cubierta'},
+    {cat:'revestimiento',campo:'fach',     attr:'data-fach',    group:'revestimiento'},
+    {cat:'banos',        campo:'per_bano', attr:'data-per-bano',group:'banos'},
+    {cat:'clima',        campo:'extra',    attr:'data-extra',   group:'clima'},
+    {cat:'agua',         campo:'fixed',    attr:'data-fixed',   group:'agua'},
+    {cat:'electrica',    campo:'fixed',    attr:'data-fixed',   group:'electrica'},
+    {cat:'solar',        campo:'fixed',    attr:'data-fixed',   group:'solar'},
+    {cat:'extras',       campo:'fixed',    attr:'data-fixed',   group:'extras'},
+  ];
+
   function aplicar(data) {
-    var lineas = (data.precios || data).lineas || data.lineas;
-    if (!Array.isArray(lineas)) return;
-    var labelMap = {
-      confort: 'Línea Confort',
-      premium: 'Línea Premium',
-      alta:    'Línea Alta Gama',
-      lujo:    'Línea Lujo Importado'
-    };
-    lineas.forEach(function(l) {
-      var label = labelMap[l.id];
-      if (!label || typeof l.base !== 'number') return;
-      // Sobreescribir LINEA_BASE si ya existe
-      if (typeof LINEA_BASE !== 'undefined') {
-        LINEA_BASE[label] = l.base;
-      }
-      // Parchear data-base en el DOM
-      var el = document.querySelector('[data-value="'+label+'"]');
-      if (el) el.setAttribute('data-base', l.base);
+    var precios = (data.precios || data);
+
+    CAT_MAP.forEach(function(c) {
+      var items = precios[c.cat];
+      if (!Array.isArray(items)) return;
+      items.forEach(function(item) {
+        if (item[c.campo] === undefined) return;
+        // Buscar el elemento en el DOM por data-group + data-value
+        var sel = '[data-group="' + c.group + '"][data-value="' + item.label + '"]';
+        var el = document.querySelector(sel);
+        if (el) {
+          el.setAttribute(c.attr, item[c.campo]);
+          // Actualizar texto de precio si el item tiene texto visible
+          if (item.texto_precio) {
+            var sub = el.querySelector('.opt-sub, .opt-hint, .opt-precio');
+            if (sub) sub.textContent = item.texto_precio;
+          }
+        }
+      });
     });
+
+    // Tambien sobreescribir LINEA_BASE si ya esta definida
+    if (typeof LINEA_BASE !== 'undefined' && Array.isArray(precios.lineas)) {
+      var lMap = {confort:'Línea Confort',premium:'Línea Premium',alta:'Línea Alta Gama',lujo:'Línea Lujo Importado'};
+      precios.lineas.forEach(function(l){ if(lMap[l.id]) LINEA_BASE[lMap[l.id]] = l.base; });
+    }
   }
 
-  // Cargar ANTES de que el usuario interactue con el paso de nivel
   window.__pmdPreciosPromise = fetch('/api/precios')
     .then(function(r){ return r.json(); })
     .then(function(d){
@@ -380,7 +403,6 @@
     })
     .catch(function(){});
 
-  // Tambien aplicar cuando el DOM este listo (por si acaso)
   document.addEventListener('DOMContentLoaded', function() {
     if (window.__pmdPrecios) aplicar(window.__pmdPrecios);
   });
