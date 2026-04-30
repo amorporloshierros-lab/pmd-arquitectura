@@ -103,7 +103,8 @@ tr:last-child td{border-bottom:none}
 
   <div class="tabs">
     <button class="tab active" data-tab="clientes" onclick="showTab('clientes')">Clientes</button>
-    <button class="tab" data-tab="equipo" onclick="showTab('equipo')">Equipo (admin/asesor/arquitecto)</button>
+    <button class="tab" data-tab="equipo" onclick="showTab('equipo')">Equipo</button>
+    <button class="tab" data-tab="proyectos" onclick="showTab('proyectos')">Proyectos & Asignaciones</button>
     <button class="tab" data-tab="nuevo" onclick="showTab('nuevo')">+ Nuevo usuario</button>
   </div>
 
@@ -128,6 +129,17 @@ tr:last-child td{border-bottom:none}
         <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
         <tbody></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- TAB PROYECTOS & ASIGNACIONES -->
+  <div id="tab-proyectos" class="tab-panel" style="display:none">
+    <div class="card">
+      <h2>Proyectos y asignaciones</h2>
+      <p class="sub">Asigná asesor + arquitecto (con respaldos opcionales) a cada proyecto. El nombre del asesor en el chat es lo que ve el cliente cuando escribe a Valentina.</p>
+      <div id="projects-list">
+        <p style="color:var(--ink3);font-size:13px;padding:20px 0">Cargando proyectos...</p>
+      </div>
     </div>
   </div>
 
@@ -251,6 +263,130 @@ function showTab(tab) {
   document.querySelector(`.tab[data-tab="${tab}"]`).classList.add("active");
   document.querySelectorAll(".tab-panel").forEach(p => p.style.display = "none");
   document.getElementById(`tab-${tab}`).style.display = "block";
+  if (tab === "proyectos") loadProjects();
+}
+
+// ─── Cache de users + projects para los dropdowns ─────────────────────────
+let _allUsers = [];
+let _allProjects = [];
+
+async function loadProjects() {
+  // Refresh users (para dropdowns) + projects
+  const ud = await api("/api/admin/users");
+  if (!ud.ok) return;
+  _allUsers = ud.users;
+  const pd = await api("/api/admin/projects");
+  if (!pd.ok) {
+    document.getElementById("projects-list").innerHTML = '<p style="color:var(--red)">Error cargando proyectos</p>';
+    return;
+  }
+  _allProjects = pd.projects;
+  renderProjects();
+}
+
+function renderProjects() {
+  const list = document.getElementById("projects-list");
+  if (_allProjects.length === 0) {
+    list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--ink3);font-size:14px">
+      Sin proyectos cargados todavía.<br><br>
+      Cuando creés un cliente desde "Nuevo usuario" y le asignás un Project ID,
+      el proyecto aparece acá automáticamente para que lo edites.
+    </div>`;
+    return;
+  }
+
+  // Filtrar users por rol para los dropdowns
+  const advisors = _allUsers.filter(u => u.role === "admin" || u.role === "asesor");
+  const architects = _allUsers.filter(u => u.role === "admin" || u.role === "architect");
+
+  const optsAdv = (selected) =>
+    `<option value="">— ninguno —</option>` +
+    advisors.map(u => `<option value="${u.id}" ${u.id === selected ? "selected" : ""}>${u.name} (${u.role})</option>`).join("");
+
+  const optsArch = (selected) =>
+    `<option value="">— ninguno —</option>` +
+    architects.map(u => `<option value="${u.id}" ${u.id === selected ? "selected" : ""}>${u.name} (${u.role})</option>`).join("");
+
+  list.innerHTML = _allProjects.map(p => {
+    const client = _allUsers.find(u => u.id === p.client_id);
+    return `
+    <div class="proj-row" data-pid="${p.id}" style="border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px;background:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div>
+          <p style="font-size:15px;font-weight:700;color:var(--b3);margin-bottom:2px">${p.name || "(sin nombre)"}</p>
+          <p style="font-size:11px;color:var(--ink3);font-family:monospace">ID: ${p.id} · Cliente: ${client ? client.name : (p.client_id || "—")}</p>
+        </div>
+        <span style="background:var(--gBg);color:var(--green);padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700">${p.overallProgress || 0}% avance</span>
+      </div>
+
+      <div class="form-grid" style="margin-bottom:8px">
+        <div class="field">
+          <label>Asesor principal (atiende el chat)</label>
+          <select data-field="advisor_id">${optsAdv(p.advisor_id)}</select>
+        </div>
+        <div class="field">
+          <label>Asesor de respaldo (opcional)</label>
+          <select data-field="advisor_backup_id">${optsAdv(p.advisor_backup_id)}</select>
+        </div>
+        <div class="field">
+          <label>Arquitecto principal (sube avances)</label>
+          <select data-field="architect_id">${optsArch(p.architect_id)}</select>
+        </div>
+        <div class="field">
+          <label>Arquitecto de respaldo (opcional)</label>
+          <select data-field="architect_backup_id">${optsArch(p.architect_backup_id)}</select>
+        </div>
+      </div>
+
+      <div class="form-grid full" style="margin-bottom:14px">
+        <div class="field">
+          <label>Nombre del asesor que ve el cliente en el chat</label>
+          <input data-field="advisor_name_in_chat" type="text" placeholder="ej: Fabricio, Valentina, Pablo, Yamila..." value="${p.advisor_name_in_chat || ""}" />
+          <p style="color:var(--ink3);font-size:11px;margin-top:4px">Este es el nombre que ve el cliente cuando abre el chat. Cada cliente puede tener un asesor con nombre distinto (sentí-feel personalizado).</p>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="proj-status" style="font-size:11px;color:var(--ink3)"></span>
+        <button class="btn btn-sm" onclick="saveProjectAssignments('${p.id}')">Guardar cambios</button>
+      </div>
+    </div>
+  `;}).join("");
+}
+
+async function saveProjectAssignments(projId) {
+  const row = document.querySelector(`.proj-row[data-pid="${projId}"]`);
+  const status = row.querySelector(".proj-status");
+  status.textContent = "Guardando...";
+  status.style.color = "var(--ink2)";
+
+  // Tomar los valores actuales del proyecto (no perder otros campos como milestones, cac, etc.)
+  const original = _allProjects.find(p => p.id === projId);
+  if (!original) {
+    status.textContent = "Error: proyecto no encontrado en cache";
+    status.style.color = "var(--red)";
+    return;
+  }
+  const updated = { ...original };
+  row.querySelectorAll("[data-field]").forEach(el => {
+    const key = el.dataset.field;
+    let val = el.value.trim();
+    if (val === "") val = null;
+    updated[key] = val;
+  });
+
+  const res = await api("/api/admin/projects", {method: "POST", body: JSON.stringify({project: updated})});
+  if (res.ok) {
+    status.textContent = "Cambios guardados ✓";
+    status.style.color = "var(--green)";
+    // Actualizar cache local
+    const idx = _allProjects.findIndex(p => p.id === projId);
+    if (idx >= 0) _allProjects[idx] = res.project;
+    setTimeout(() => { status.textContent = ""; }, 2500);
+  } else {
+    status.textContent = "Error: " + (res.error || "no se pudo guardar");
+    status.style.color = "var(--red)";
+  }
 }
 
 function onRoleChange() {

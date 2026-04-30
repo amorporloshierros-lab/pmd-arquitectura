@@ -240,14 +240,18 @@ const ForgotPasswordForm = ({onBack}) => {
   );
 };
 
-// ─── BUILD SYSTEM PROMPT (Valentina chat) ─────────────────────────────────
+// ─── BUILD SYSTEM PROMPT (chat asesor — nombre custom por proyecto) ───────
 const buildSP = (project, milestones, cac, updates) => {
-  if (!project || !milestones) return "Sos Valentina, asesora de PMD. Respondé corto, en español rioplatense.";
+  const advisorName = (project && project.advisor_name_in_chat) || "Valentina";
+  if (!project || !milestones) return `Sos ${advisorName}, asesor/a de PMD. Respondé corto, en español rioplatense.`;
   const paid = milestones.filter(m=>m.status==="paid").reduce((s,m)=>s+m.usd,0);
   const total = milestones.reduce((s,m)=>s+m.usd,0);
   const next = milestones.find(m=>m.status==="pending");
   const cacVar = cac ? ((cac.current.value-cac.base.value)/cac.base.value*100).toFixed(2) : "0";
-  return `Sos Valentina, asesora comercial de PMD Soluciones Arquitectonicas. Cordial, directa, espanol rioplatense.
+  return `Sos ${advisorName}, asesor/a comercial y tecnico/a de PMD Soluciones Arquitectonicas. Cordial, directa/o, espanol rioplatense.
+
+IDENTIDAD - MUY IMPORTANTE:
+Sos ${advisorName}, parte del equipo PMD. Nunca digas que sos IA, bot, asistente virtual ni nada por el estilo. Si te preguntan si sos real o humano/a, respondé natural: "Si, soy parte del equipo PMD aca para ayudarte." Nunca rompas el personaje.
 
 PROYECTO ACTIVO: ${project.name} (${project.id}) - Cliente: ${project.client_id || project.client}
 Sistema: ${project.system} - ${project.totalM2}m2 - ${project.location}
@@ -259,13 +263,15 @@ CAC acumulado: +${cacVar}%
 
 ULTIMA UPDATE (${updates?.[0]?.date || "-"}): ${updates?.[0]?.summary || "Sin datos"}
 
-REGLAS: Siempre da respuestas concretas con rangos de precio. Maximo 5 oraciones. Nunca pidas datos de contacto (ya los tenemos). Cerra con accion: "agendar llamada" o "cargar solicitud formal en el portal". Si excede tu conocimiento, decir "te paso con Lucas". Decisiones ejecutivas: "le aviso a Augusto".`;
+REGLAS: Siempre da respuestas concretas con rangos de precio cuando corresponda. Maximo 5 oraciones. Nunca pidas datos de contacto (ya los tenemos). Cerra con accion: "agendar llamada" o "cargar solicitud formal en el portal". Si excede tu conocimiento decir "te paso con Lucas". Decisiones ejecutivas: "le aviso a Augusto".`;
 };
 
-// ─── CHAT WIDGET (Valentina) ──────────────────────────────────────────────
+// ─── CHAT WIDGET (asesor con nombre custom por proyecto) ──────────────────
 const ChatWidget = ({project, milestones, cac, updates, clientName}) => {
+  const advisorName = (project && project.advisor_name_in_chat) || "Valentina";
+  const advisorInitial = advisorName.charAt(0).toUpperCase();
   const [open,setOpen]=useState(false);
-  const [msgs,setMsgs]=useState([{role:"assistant",content:`Hola ${clientName}! Soy Valentina, asesora de PMD. En que te puedo ayudar?`}]);
+  const [msgs,setMsgs]=useState([{role:"assistant",content:`Hola ${clientName}! Soy ${advisorName} de PMD. En que te puedo ayudar?`}]);
   const [input,setInput]=useState(""); const [loading,setLoading]=useState(false);
   const bottom=useRef(null);
   useEffect(()=>{if(open&&bottom.current)bottom.current.scrollIntoView({behavior:"smooth"});},[msgs,open]);
@@ -284,15 +290,15 @@ const ChatWidget = ({project, milestones, cac, updates, clientName}) => {
     setLoading(false);
   };
   if(!open) return (
-    <button onClick={()=>setOpen(true)} style={{position:"fixed",bottom:22,right:18,zIndex:200,width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.b2},${C.b3})`,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 24px rgba(30,58,95,.35)",animation:"pulse 2s infinite",fontSize:24,color:"#fff"}}>V</button>
+    <button onClick={()=>setOpen(true)} style={{position:"fixed",bottom:22,right:18,zIndex:200,width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.b2},${C.b3})`,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 24px rgba(30,58,95,.35)",animation:"pulse 2s infinite",fontSize:24,color:"#fff",fontWeight:800}}>{advisorInitial}</button>
   );
   return (
     <div style={{position:"fixed",bottom:0,right:0,width:355,height:"86vh",maxHeight:610,zIndex:200,display:"flex",flexDirection:"column",background:C.card,borderRadius:"20px 20px 0 0",boxShadow:"0 -6px 50px rgba(30,58,95,.2)",border:`1px solid ${C.border}`,borderBottom:"none"}}>
       <div style={{background:`linear-gradient(135deg,${C.b3},${C.b2})`,padding:"14px 16px",borderRadius:"20px 20px 0 0"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:38,height:38,borderRadius:"50%",background:"rgba(255,255,255,.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:"#fff",fontWeight:800}}>V</div>
-            <div><p style={{fontSize:13,fontWeight:800,color:"#fff"}}>Valentina</p><p style={{fontSize:10,color:"rgba(255,255,255,.55)"}}>Secretaria PMD - En linea</p></div>
+            <div style={{width:38,height:38,borderRadius:"50%",background:"rgba(255,255,255,.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:"#fff",fontWeight:800}}>{advisorInitial}</div>
+            <div><p style={{fontSize:13,fontWeight:800,color:"#fff"}}>{advisorName}</p><p style={{fontSize:10,color:"rgba(255,255,255,.55)"}}>Equipo PMD - En linea</p></div>
           </div>
           <button onClick={()=>setOpen(false)} style={{background:"rgba(255,255,255,.1)",border:"none",color:"rgba(255,255,255,.7)",fontSize:16,cursor:"pointer",width:28,height:28,borderRadius:"50%"}}>X</button>
         </div>
