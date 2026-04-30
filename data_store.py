@@ -53,7 +53,7 @@ def _seed_data() -> dict[str, Any]:
          "name": "Augusto", "project_id": None, "advisor_for": [],
          "created_at": "2026-04-29T00:00:00Z", "must_change_password": True},
         {"id": "user_lucas", "email": "lucas@pmdarquitectura.com",
-         "password_hash": hash_password(bootstrap_password), "role": "asesor",
+         "password_hash": hash_password(bootstrap_password), "role": "admin",
          "name": "Lucas", "project_id": None, "advisor_for": [],
          "created_at": "2026-04-29T00:00:00Z", "must_change_password": True},
         {"id": "user_marcos", "email": "marcos@pmdarquitectura.com",

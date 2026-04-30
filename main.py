@@ -80,6 +80,28 @@ if config.STATIC_DIR.exists():
 SESSIONS: dict[str, dict] = {}
 
 
+# ---- Migración one-shot al startup ----
+# Asegura que ciertos users del seed tengan el rol correcto, incluso si ya
+# existían en data_store con un rol viejo (porque el seed solo corre la 1ra vez).
+def _ensure_user_role(email: str, expected_role: str) -> None:
+    try:
+        u = data_store.get_user_by_email(email)
+        if u and u.get("role") != expected_role:
+            data_store.update_user(u["id"], role=expected_role)
+            logger.info("Migración: %s actualizado a role=%s", email, expected_role)
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.warning("No se pudo migrar role de %s: %s", email, exc)
+
+
+@app.on_event("startup")
+async def _bootstrap_migrations():
+    # Lucas y Augusto son ambos admin (full power). Marcos es architect.
+    _ensure_user_role("augusto@pmdarquitectura.com", "admin")
+    _ensure_user_role("lucas@pmdarquitectura.com", "admin")
+    _ensure_user_role("marcos@pmdarquitectura.com", "architect")
+    logger.info("Bootstrap migrations completadas")
+
+
 # ---- Saludo inicial dinámico (hora del día) ----
 # El saludo se calcula cuando se crea la sesión. Así Lucas dice "buen día",
 # "buenas tardes" o "buenas noches" según corresponda en hora de Argentina.
@@ -632,8 +654,18 @@ async def mi_hogar_me(authorization: str | None = Header(default=None)):
         project = data_store.get_project(user["project_id"])
         if project:
             response["project"] = project
-    if user.get("role") in ("admin", "asesor", "architect"):
+    role = user.get("role")
+    if role == "admin":
+        # admin ve TODOS los proyectos
         response["projects"] = data_store.list_projects()
+    elif role == "asesor":
+        # asesor ve solo los proyectos donde él es advisor_id
+        all_projs = data_store.list_projects()
+        response["projects"] = [p for p in all_projs if p.get("advisor_id") == user_id]
+    elif role == "architect":
+        # arquitecto ve solo los proyectos donde él es architect_id
+        all_projs = data_store.list_projects()
+        response["projects"] = [p for p in all_projs if p.get("architect_id") == user_id]
     return response
 
 
