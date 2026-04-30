@@ -24,7 +24,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -36,6 +36,9 @@ from lead_capture import dispatch_lead, extract_contact
 from excel_leads import append_lead, count_leads, excel_path_str
 from agenda import next_available_slots, book_slot, upcoming_bookings
 from precios import get_precios, invalidate_cache as invalidate_precios_cache, get_source as precios_source
+import auth
+import data_store
+import email_service
 from precios_override import get_lineas, save_lineas, get_precios_con_override
 from notifications import notify_new_booking, reminder_loop, is_configured as notif_configured
 from system_prompt import LUCAS_SYSTEM_PROMPT  # noqa: F401 (referenciado en logs)
@@ -522,6 +525,216 @@ async def mi_hogar_process_update(payload: MiHogarProcessUpdateRequest):
             "completed": ["Ver descripción adjunta del arquitecto"],
             "next": ["Confirmar próximos pasos en reunión"],
         })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AUTH — login, password reset, magic-link
+# ─────────────────────────────────────────────────────────────────────────────
+
+class LoginRequest(BaseModel):
+    email: str = Field(..., min_length=3, max_length=200)
+    password: str = Field(..., min_length=1, max_length=200)
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(..., min_length=3, max_length=200)
+
+
+class SetPasswordRequest(BaseModel):
+    token: str = Field(..., min_length=10)
+    password: str = Field(..., min_length=4, max_length=200)
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=4, max_length=200)
+
+
+def _user_summary(user: dict) -> dict:
+    return {
+        "id": user.get("id"),
+        "email": user.get("email"),
+        "name": user.get("name"),
+        "role": user.get("role"),
+        "project_id": user.get("project_id"),
+        "must_change_password": user.get("must_change_password", False),
+    }
+
+
+@app.post("/api/mi-hogar/login")
+async def mi_hogar_login(payload: LoginRequest):
+    user = data_store.get_user_by_email(payload.email)
+    if not user or not user.get("password_hash"):
+        return JSONResponse({"ok": False, "error": "Email o contrasena incorrectos"}, status_code=401)
+    if not auth.verify_password(payload.password, user["password_hash"]):
+        return JSONResponse({"ok": False, "error": "Email o contrasena incorrectos"}, status_code=401)
+    token = auth.sign_session_token(user["id"])
+    logger.info("Login OK: %s (%s)", user["email"], user["role"])
+    return {"ok": True, "token": token, "user": _user_summary(user)}
+
+
+@app.post("/api/mi-hogar/forgot-password")
+async def mi_hogar_forgot_password(payload: ForgotPasswordRequest):
+    user = data_store.get_user_by_email(payload.email)
+    if user:
+        token = auth.generate_random_token()
+        data_store.add_token(token=token, user_id=user["id"], token_type="reset", ttl_seconds=auth.INVITE_TTL_SECONDS)
+        email_service.send_password_reset(to_email=user["email"], name=user.get("name", "Hola"), reset_token=token)
+        logger.info("Password reset solicitado para %s", user["email"])
+    return {"ok": True, "message": "Si el email esta registrado, recibiras instrucciones."}
+
+
+@app.post("/api/mi-hogar/set-password")
+async def mi_hogar_set_password(payload: SetPasswordRequest):
+    record = data_store.consume_token(payload.token, expected_type="reset")
+    if not record:
+        record = data_store.consume_token(payload.token, expected_type="invite")
+    if not record:
+        return JSONResponse({"ok": False, "error": "Token invalido o expirado"}, status_code=400)
+    user = data_store.get_user_by_id(record["user_id"])
+    if not user:
+        return JSONResponse({"ok": False, "error": "Usuario no encontrado"}, status_code=404)
+    new_hash = auth.hash_password(payload.password)
+    data_store.update_user(user["id"], password_hash=new_hash, must_change_password=False)
+    user = data_store.get_user_by_id(record["user_id"])
+    session_token = auth.sign_session_token(user["id"])
+    logger.info("Password seteada via %s para %s", record["type"], user["email"])
+    return {"ok": True, "token": session_token, "user": _user_summary(user)}
+
+
+@app.get("/api/mi-hogar/me")
+async def mi_hogar_me(authorization: str | None = Header(default=None)):
+    user_id = auth.authenticated_user_id(authorization)
+    if not user_id:
+        return JSONResponse({"ok": False, "error": "No autenticado"}, status_code=401)
+    user = data_store.get_user_by_id(user_id)
+    if not user:
+        return JSONResponse({"ok": False, "error": "Usuario no encontrado"}, status_code=404)
+    response: dict = {"ok": True, "user": _user_summary(user)}
+    if user.get("project_id"):
+        project = data_store.get_project(user["project_id"])
+        if project:
+            response["project"] = project
+    if user.get("role") in ("admin", "asesor", "architect"):
+        response["projects"] = data_store.list_projects()
+    return response
+
+
+@app.post("/api/mi-hogar/change-password")
+async def mi_hogar_change_password(payload: ChangePasswordRequest, authorization: str | None = Header(default=None)):
+    user_id = auth.authenticated_user_id(authorization)
+    if not user_id:
+        return JSONResponse({"ok": False, "error": "No autenticado"}, status_code=401)
+    user = data_store.get_user_by_id(user_id)
+    if not user or not auth.verify_password(payload.current_password, user.get("password_hash") or ""):
+        return JSONResponse({"ok": False, "error": "Password actual incorrecta"}, status_code=400)
+    new_hash = auth.hash_password(payload.new_password)
+    data_store.update_user(user_id, password_hash=new_hash, must_change_password=False)
+    return {"ok": True}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ADMIN — gestion de users + projects
+# ─────────────────────────────────────────────────────────────────────────────
+
+class CreateUserRequest(BaseModel):
+    email: str = Field(..., min_length=3, max_length=200)
+    name: str = Field(..., min_length=1, max_length=200)
+    role: str = Field(..., pattern="^(admin|asesor|architect|client)$")
+    project_id: str | None = None
+    initial_password: str | None = None
+    send_invite_email: bool = True
+
+
+def _require_admin(authorization: str | None) -> dict | None:
+    user_id = auth.authenticated_user_id(authorization)
+    if not user_id:
+        return None
+    user = data_store.get_user_by_id(user_id)
+    if not user or user.get("role") != "admin":
+        return None
+    return user
+
+
+@app.get("/api/admin/users")
+async def admin_list_users(authorization: str | None = Header(default=None)):
+    if not _require_admin(authorization):
+        return JSONResponse({"ok": False, "error": "Solo admin"}, status_code=403)
+    users = [_user_summary(u) for u in data_store.list_users()]
+    return {"ok": True, "users": users}
+
+
+@app.post("/api/admin/users")
+async def admin_create_user(payload: CreateUserRequest, authorization: str | None = Header(default=None)):
+    if not _require_admin(authorization):
+        return JSONResponse({"ok": False, "error": "Solo admin"}, status_code=403)
+    try:
+        password_hash = None
+        if payload.initial_password:
+            password_hash = auth.hash_password(payload.initial_password)
+        new_user = data_store.create_user(
+            email=payload.email, name=payload.name, role=payload.role,
+            project_id=payload.project_id, password_hash=password_hash,
+            must_change_password=bool(payload.initial_password),
+        )
+    except ValueError as exc:
+        return JSONResponse({"ok": False, "error": str(exc)}, status_code=400)
+    invite_link = None
+    if payload.send_invite_email and not payload.initial_password:
+        token = auth.generate_random_token()
+        data_store.add_token(token=token, user_id=new_user["id"], token_type="invite", ttl_seconds=auth.INVITE_TTL_SECONDS)
+        sent = email_service.send_welcome_invite(to_email=new_user["email"], name=new_user["name"], invite_token=token, role=new_user["role"])
+        invite_link = f"{email_service.PMD_BASE_URL}/mi-hogar?invite={token}"
+        if not sent:
+            logger.warning("Email de invite no se pudo mandar a %s", new_user["email"])
+    return {"ok": True, "user": _user_summary(new_user), "invite_link": invite_link}
+
+
+@app.delete("/api/admin/users/{user_id}")
+async def admin_delete_user(user_id: str, authorization: str | None = Header(default=None)):
+    admin_user = _require_admin(authorization)
+    if not admin_user:
+        return JSONResponse({"ok": False, "error": "Solo admin"}, status_code=403)
+    if user_id == admin_user["id"]:
+        return JSONResponse({"ok": False, "error": "No podes borrar tu propia cuenta admin"}, status_code=400)
+    if data_store.delete_user(user_id):
+        return {"ok": True}
+    return JSONResponse({"ok": False, "error": "Usuario no encontrado"}, status_code=404)
+
+
+@app.post("/api/admin/users/{user_id}/resend-invite")
+async def admin_resend_invite(user_id: str, authorization: str | None = Header(default=None)):
+    if not _require_admin(authorization):
+        return JSONResponse({"ok": False, "error": "Solo admin"}, status_code=403)
+    user = data_store.get_user_by_id(user_id)
+    if not user:
+        return JSONResponse({"ok": False, "error": "Usuario no encontrado"}, status_code=404)
+    token = auth.generate_random_token()
+    data_store.add_token(token=token, user_id=user["id"], token_type="invite", ttl_seconds=auth.INVITE_TTL_SECONDS)
+    sent = email_service.send_welcome_invite(to_email=user["email"], name=user.get("name", ""), invite_token=token, role=user.get("role", "client"))
+    return {"ok": True, "sent": sent, "invite_link": f"{email_service.PMD_BASE_URL}/mi-hogar?invite={token}"}
+
+
+@app.get("/api/admin/projects")
+async def admin_list_projects(authorization: str | None = Header(default=None)):
+    if not _require_admin(authorization):
+        return JSONResponse({"ok": False, "error": "Solo admin"}, status_code=403)
+    return {"ok": True, "projects": data_store.list_projects()}
+
+
+class UpsertProjectRequest(BaseModel):
+    project: dict
+
+
+@app.post("/api/admin/projects")
+async def admin_upsert_project(payload: UpsertProjectRequest, authorization: str | None = Header(default=None)):
+    if not _require_admin(authorization):
+        return JSONResponse({"ok": False, "error": "Solo admin"}, status_code=403)
+    try:
+        result = data_store.upsert_project(payload.project)
+        return {"ok": True, "project": result}
+    except ValueError as exc:
+        return JSONResponse({"ok": False, "error": str(exc)}, status_code=400)
 
 
 @app.get("/api/precios")
