@@ -705,6 +705,17 @@ def _require_admin(authorization: str | None) -> dict | None:
     return user
 
 
+def _require_team(authorization: str | None) -> dict | None:
+    """Devuelve el user si es admin/asesor/architect (equipo PMD), sino None."""
+    user_id = auth.authenticated_user_id(authorization)
+    if not user_id:
+        return None
+    user = data_store.get_user_by_id(user_id)
+    if not user or user.get("role") not in ("admin", "asesor", "architect"):
+        return None
+    return user
+
+
 @app.get("/api/admin/users")
 async def admin_list_users(authorization: str | None = Header(default=None)):
     if not _require_admin(authorization):
@@ -777,8 +788,10 @@ class UpsertProjectRequest(BaseModel):
 
 @app.post("/api/admin/projects")
 async def admin_upsert_project(payload: UpsertProjectRequest, authorization: str | None = Header(default=None)):
-    if not _require_admin(authorization):
-        return JSONResponse({"ok": False, "error": "Solo admin"}, status_code=403)
+    # Permitimos a todo el equipo (admin/asesor/architect) editar proyectos
+    # — el admin-users.html y el panel de equipo de Mi Hogar usan este endpoint.
+    if not _require_team(authorization):
+        return JSONResponse({"ok": False, "error": "Solo equipo PMD"}, status_code=403)
     try:
         result = data_store.upsert_project(payload.project)
         return {"ok": True, "project": result}
@@ -1090,95 +1103,4 @@ async def _save_upload(file: UploadFile, dest_name: str) -> dict:
     """Helper: guarda el archivo subido como static/<dest_name>."""
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Archivo no es una imagen")
-    dest = config.STATIC_DIR / dest_name
-    try:
-        content = await file.read()
-        dest.write_bytes(content)
-        logger.info("Imagen subida: %s (%d bytes)", dest, len(content))
-        return {"ok": True, "path": f"/static/{dest_name}", "bytes": len(content)}
-    except Exception as exc:
-        logger.exception("Error guardando imagen: %s", exc)
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-
-
-@app.post("/api/upload-hero")
-async def upload_hero(file: UploadFile = File(...)):
-    """Sube la imagen del hero (exterior de la casa) → static/hero.jpg"""
-    return await _save_upload(file, "hero.jpg")
-
-
-@app.post("/api/upload-interior")
-async def upload_interior(file: UploadFile = File(...)):
-    """Sube la imagen del interior → static/interior.jpg"""
-    return await _save_upload(file, "interior.jpg")
-
-
-# Alias legacy — algún frontend viejo puede llamar a /api/upload-image
-@app.post("/api/upload-image")
-async def upload_image(file: UploadFile = File(...)):
-    return await _save_upload(file, "hero.jpg")
-
-
-
-
-# ─── ENDPOINTS DE PRECIOS ────────────────────────────────────────────────────
-
-
-@app.get("/api/precios/lineas")
-async def api_get_lineas():
-    """Devuelve las 4 lineas PMD con sus precios actuales."""
-    from precios_override import get_lineas
-    return {"lineas": get_lineas()}
-
-@app.post("/api/precios/lineas")
-async def api_update_lineas(payload: dict):
-    """Actualiza los precios de las 4 lineas. Requiere secret."""
-    from precios_override import save_lineas
-    import os
-    secret = payload.get("secret", "")
-    expected = getattr(config, "PMD_AUTH_SECRET", "") or os.getenv("PMD_AUTH_SECRET", "")
-    if not secret or not expected or secret != expected:
-        raise HTTPException(status_code=403, detail="No autorizado")
-    lineas = payload.get("lineas")
-    if not isinstance(lineas, list) or len(lineas) != 4:
-        raise HTTPException(status_code=400, detail="Se esperan 4 lineas")
-    for l in lineas:
-        if not isinstance(l, dict) or "id" not in l or "base" not in l:
-            raise HTTPException(status_code=400, detail="Cada linea debe tener id y base")
-        try:
-            l["base"] = float(l["base"])
-        except (TypeError, ValueError):
-            raise HTTPException(status_code=400, detail=f"Valor base invalido en {l.get('id')}")
-    ok = save_lineas(lineas)
-    if not ok:
-        raise HTTPException(status_code=500, detail="Error guardando precios")
-    logger.info("Precios actualizados por admin: %s", [l["base"] for l in lineas])
-    return {"ok": True, "lineas": lineas}
-
-
-@app.post("/api/precios")
-async def api_update_precios_full(payload: dict):
-    """Actualiza TODOS los precios del presupuestador (no solo lineas)."""
-    import os
-    from precios_override import save_precios_full
-    secret = payload.get("secret", "")
-    expected = getattr(config, "PMD_AUTH_SECRET", "") or os.getenv("PMD_AUTH_SECRET", "")
-    if not secret or not expected or secret != expected:
-        raise HTTPException(status_code=403, detail="No autorizado")
-    data = payload.get("precios")
-    if not isinstance(data, dict):
-        raise HTTPException(status_code=400, detail="Payload invalido")
-    ok = save_precios_full(data)
-    if not ok:
-        raise HTTPException(status_code=500, detail="Error guardando precios")
-    logger.info("Precios completos actualizados por admin")
-    return {"ok": True}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        "main:app",
-        host=config.HOST,
-        port=config.PORT,
-        reload=config.DEBUG,
-    )
+    dest = config.STA

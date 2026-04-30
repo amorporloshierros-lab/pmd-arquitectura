@@ -517,10 +517,15 @@ const ClientDash = ({user, project, onLogout}) => {
 
 // ─── ARCH PANEL — equipo PMD (admin/asesor/architect) ──────────────────────
 // Renderiza la vista completa del proyecto + selector si hay varios + card admin.
-const ArchPanel = ({user, projects, onLogout}) => {
-  const [selectedId, setSelectedId] = useState(projects?.[0]?.id || null);
+const ArchPanel = ({user, projects: initialProjects, onLogout}) => {
+  const [projects, setProjectsState] = useState(initialProjects || []);
+  useEffect(() => { setProjectsState(initialProjects || []); }, [initialProjects]);
+  const [selectedId, setSelectedId] = useState(initialProjects?.[0]?.id || null);
   const project = projects?.find(p=>p.id===selectedId) || projects?.[0];
   const roleLabel = {admin:"Administrador", asesor:"Asesor", architect:"Arquitecto"}[user.role] || user.role;
+  const handleProjectUpdate = (updated) => {
+    setProjectsState(prev => prev.map(p => p.id === updated.id ? updated : p));
+  };
 
   if (!project) {
     return (
@@ -595,14 +600,13 @@ const ArchPanel = ({user, projects, onLogout}) => {
           </Card>
         )}
 
-        {/* Vista detallada del proyecto seleccionado — usa el mismo dashboard que el cliente */}
-        <ArchProjectView project={project} />
+        {/* Vista detallada del proyecto seleccionado — incluye actions de management */}
+        <ArchProjectView project={project} canEdit={true} onProjectUpdate={handleProjectUpdate}/>
 
         {/* Footer info: rol y permisos */}
         <Card style={{padding:"14px 18px",marginTop:14,background:C.bg,border:`1px dashed ${C.border}`,boxShadow:"none"}}>
           <p style={{fontSize:11,color:C.txt2,lineHeight:1.6}}>
-            <strong style={{color:C.b3}}>Como {roleLabel.toLowerCase()}</strong> ves la informacion completa de cada proyecto.
-            Para SUBIR un avance nuevo, editar presupuesto/cuotas o aprobar modificaciones, usa <strong>{user.role === "admin" ? "/admin (panel principal)" : "el panel de admin (pedile permisos a Augusto)"}</strong>.
+            <strong style={{color:C.b3}}>Como {roleLabel.toLowerCase()}</strong> podes subir avances con IA, marcar cuotas pagadas (genera certificado automatico) y aprobar/rechazar modificaciones desde las pestanas Avance, Financiero y Modif.
           </p>
         </Card>
       </div>
@@ -613,15 +617,140 @@ const ArchPanel = ({user, projects, onLogout}) => {
   );
 };
 
-// ─── ARCH PROJECT VIEW — vista detallada del proyecto (usado por ArchPanel) ──
-const ArchProjectView = ({project}) => {
+// ─── HELPER: persistir proyecto entero al backend ─────────────────────────
+const saveProjectToBackend = async (project) => {
+  const token = getToken();
+  const res = await fetch("/api/admin/projects", {
+    method: "POST",
+    headers: {"Content-Type": "application/json", "Authorization": `Bearer ${token}`},
+    body: JSON.stringify({project}),
+  });
+  return res.json();
+};
+
+// ─── ARCH PROJECT VIEW — vista detallada + management actions (equipo) ─────
+const ArchProjectView = ({project: initialProject, canEdit = true, onProjectUpdate}) => {
+  const [project, setLocalProject] = useState(initialProject);
+  useEffect(() => { setLocalProject(initialProject); }, [initialProject]);
+
   const [tab, setTab] = useState("inicio");
   const [eu, setEu] = useState(0);
+
+  // Estados de management
+  const [showUpload, setShowUpload] = useState(false);
+  const [upDesc, setUpDesc] = useState("");
+  const [upPct, setUpPct] = useState(initialProject.overallProgress || 0);
+  const [upPhotos, setUpPhotos] = useState([]);
+  const [upProcessing, setUpProcessing] = useState(false);
+  const [upPreview, setUpPreview] = useState(null);
+  const upFileRef = useRef(null);
+
+  const [payModal, setPayModal] = useState(null);
+  const [payNote, setPayNote] = useState("");
+  const [paySaving, setPaySaving] = useState(false);
+
+  const [modAction, setModAction] = useState(null);
+  const [modNote, setModNote] = useState("");
+  const [modSaving, setModSaving] = useState(false);
+
+  const [savingFlash, setSavingFlash] = useState("");
+
   const milestones = project.milestones || [];
   const cac = project.cac || {base:{value:1,date:""},current:{value:1,date:""},history:[]};
   const updates = project.updates || [];
   const documents = project.documents || [];
   const mods = project.mods || [];
+
+  const persistAndFlash = async (newProject, msg) => {
+    const r = await saveProjectToBackend(newProject);
+    if (r.ok) {
+      setLocalProject(r.project);
+      if (onProjectUpdate) onProjectUpdate(r.project);
+      setSavingFlash(msg);
+      setTimeout(() => setSavingFlash(""), 3500);
+      return true;
+    }
+    setSavingFlash("Error al guardar: " + (r.error || "?"));
+    setTimeout(() => setSavingFlash(""), 4500);
+    return false;
+  };
+
+  // Upload avance
+  const handleUpFiles = (e) => {
+    const files = Array.from(e.target.files || []);
+    setUpPhotos(p => [...p, ...files.map(f => ({url: URL.createObjectURL(f), name: f.name}))]);
+  };
+  const processUpAI = async () => {
+    if (!upDesc.trim()) return;
+    setUpProcessing(true); setUpPreview(null);
+    try {
+      const res = await fetch("/api/mi-hogar/process-update", {
+        method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({description: upDesc, pct: upPct, photos_count: upPhotos.length}),
+      });
+      const data = await res.json();
+      setUpPreview(data);
+    } catch {
+      setUpPreview({title: "Actualizacion de avance", summary: upDesc, completed: ["Ver descripcion"], next: ["Confirmar proximos pasos"]});
+    }
+    setUpProcessing(false);
+  };
+  const publishUp = async () => {
+    if (!upPreview) return;
+    const newUpdate = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString("es-AR", {day:"numeric",month:"short",year:"numeric"}),
+      week: `Sem. ${(updates.length + 24)}`,
+      title: upPreview.title,
+      progress: upPct,
+      summary: upPreview.summary,
+      completed: upPreview.completed || [],
+      next: upPreview.next || [],
+      photos: upPhotos.length > 0 ? upPhotos.map(p => p.url) : ["https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=700&h=460&fit=crop"],
+    };
+    const newProject = {...project, updates: [newUpdate, ...updates], overallProgress: upPct};
+    const ok = await persistAndFlash(newProject, "Avance publicado al cliente");
+    if (ok) {
+      setShowUpload(false); setUpDesc(""); setUpPhotos([]); setUpPreview(null);
+    }
+  };
+
+  // Mark milestone paid
+  const confirmPay = async () => {
+    if (!payModal) return;
+    setPaySaving(true);
+    const today = new Date().toLocaleDateString("es-AR", {day:"numeric",month:"short",year:"numeric"});
+    const paidCount = milestones.filter(m => m.status === "paid").length;
+    const certRef = `PMD-CERT-${String(paidCount + 1).padStart(3, "0")}`;
+    const newMilestones = milestones.map(m =>
+      m.id === payModal.id ? {...m, status: "paid", paidDate: today, certRef} : m
+    );
+    const newDocuments = [...documents, {
+      id: Date.now(), cat: "cert", icon: "C",
+      name: `Certificado de Avance - ${payModal.name}`,
+      date: today, size: "~200 KB", ref: certRef, status: "emitido",
+    }];
+    const newProject = {...project, milestones: newMilestones, documents: newDocuments};
+    const ok = await persistAndFlash(newProject, `Cuota marcada pagada — certificado ${certRef} emitido`);
+    if (ok) { setPayModal(null); setPayNote(""); }
+    setPaySaving(false);
+  };
+
+  // Approve/Reject mod
+  const confirmModAction = async () => {
+    if (!modAction) return;
+    setModSaving(true);
+    const status = modAction.action === "approve" ? "approved" : "rejected";
+    const approvedCount = mods.filter(m => m.approvalNumber).length;
+    const approvalNumber = status === "approved" ? `PMD-AP-${String(1020 + approvedCount + 1).slice(-4)}` : null;
+    const newMods = mods.map(m =>
+      m.id === modAction.mod.id ? {...m, status, archNote: modNote || (status === "approved" ? "Aprobado." : "No es factible."), approvalNumber} : m
+    );
+    const newProject = {...project, mods: newMods};
+    const ok = await persistAndFlash(newProject, status === "approved" ? `Modificacion aprobada (${approvalNumber})` : "Modificacion rechazada");
+    if (ok) { setModAction(null); setModNote(""); }
+    setModSaving(false);
+  };
 
   const paid = milestones.filter(m=>m.status==="paid").reduce((s,m)=>s+m.usd,0);
   const totalContract = milestones.reduce((s,m)=>s+m.usd,0) || 1;
@@ -633,16 +762,29 @@ const ArchProjectView = ({project}) => {
 
   const TABS=[["inicio","Inicio"],["avance","Avance"],["financiero","Financiero"],["planos","Planos"],["mods",`Modif. (${mods.length})`]];
 
+  // Modal genérico
+  const Modal = ({title, onClose, children}) => (
+    <div style={{position:"fixed",inset:0,background:"rgba(20,30,50,.55)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:14}} onClick={onClose}>
+      <Card style={{maxWidth:480,width:"100%",padding:20,maxHeight:"90vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+          <p style={{fontSize:15,fontWeight:900,color:C.b3,letterSpacing:"-.01em"}}>{title}</p>
+          <button onClick={onClose} className="btn" style={{border:"none",background:"transparent",fontSize:18,color:C.txt2,cursor:"pointer"}}>x</button>
+        </div>
+        {children}
+      </Card>
+    </div>
+  );
+
   return (
     <div>
-      {/* Project meta */}
+      {savingFlash && <div style={{position:"sticky",top:8,zIndex:50,marginBottom:10,padding:"10px 14px",background:savingFlash.startsWith("Error")?C.rBg:C.gBg,color:savingFlash.startsWith("Error")?C.red:C.green,borderRadius:10,border:`1px solid ${savingFlash.startsWith("Error")?C.red:C.green}`,fontSize:12,fontWeight:700,boxShadow:"0 6px 18px rgba(30,58,95,.10)"}}>{savingFlash}</div>}
+
       <Card style={{padding:"14px 18px",marginBottom:11}}>
         <p style={{fontSize:18,fontWeight:900,color:C.b3,letterSpacing:"-.02em",marginBottom:3}}>{project.name}</p>
         <p style={{fontSize:12,color:C.txt2}}>{project.system} - {project.totalM2}m2 - {project.location}</p>
         <p style={{fontSize:11,color:C.dim,marginTop:4}}>Inicio: {project.startDate} - Fin estimado: {project.estimatedEnd}</p>
       </Card>
 
-      {/* Tabs */}
       <div style={{background:C.card,borderRadius:11,border:`1px solid ${C.border}`,padding:"0 8px",marginBottom:11,display:"flex",overflowX:"auto"}}>
         {TABS.map(([id,lbl])=>(
           <button key={id} onClick={()=>setTab(id)} style={{padding:"11px 14px",border:"none",background:"transparent",color:tab===id?C.b2:C.txt2,fontSize:12,fontWeight:700,borderBottom:tab===id?`2px solid ${C.b2}`:"2px solid transparent",cursor:"pointer",whiteSpace:"nowrap",fontFamily:"'DM Sans',sans-serif"}}>{lbl}</button>
@@ -703,6 +845,39 @@ const ArchProjectView = ({project}) => {
 
       {tab==="avance" && (
         <div className="up">
+          {canEdit && <button onClick={()=>setShowUpload(true)} className="btn" style={{width:"100%",padding:"12px 14px",marginBottom:11,borderRadius:11,border:"none",background:`linear-gradient(135deg,${C.b2},${C.b3})`,color:"#fff",fontSize:13,fontWeight:800,letterSpacing:".02em",cursor:"pointer",boxShadow:"0 4px 14px rgba(30,58,95,.20)"}}>+ Subir avance semanal (con IA)</button>}
+          {showUpload && <Modal title="Subir avance semanal" onClose={()=>{setShowUpload(false);setUpPreview(null);}}>
+            <div style={{marginBottom:11}}>
+              <label style={{fontSize:10,fontWeight:800,color:C.txt2,textTransform:"uppercase",letterSpacing:".09em",display:"block",marginBottom:5}}>% Avance general</label>
+              <input type="number" min={0} max={100} value={upPct} onChange={e=>setUpPct(Number(e.target.value))} style={{width:"100%",padding:"9px 11px",borderRadius:9,border:`1px solid ${C.border}`,fontSize:14,fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:C.b3}}/>
+            </div>
+            <div style={{marginBottom:11}}>
+              <label style={{fontSize:10,fontWeight:800,color:C.txt2,textTransform:"uppercase",letterSpacing:".09em",display:"block",marginBottom:5}}>Descripcion (la IA lo formatea)</label>
+              <textarea value={upDesc} onChange={e=>setUpDesc(e.target.value)} rows={4} placeholder="Ej: completamos OSB del sector norte, marcos DVH en planta baja, falta cubierta sector sur..." style={{width:"100%",padding:"9px 11px",borderRadius:9,border:`1px solid ${C.border}`,fontSize:13,resize:"vertical",lineHeight:1.5}}/>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={{fontSize:10,fontWeight:800,color:C.txt2,textTransform:"uppercase",letterSpacing:".09em",display:"block",marginBottom:5}}>Fotos (opcional)</label>
+              <input ref={upFileRef} type="file" accept="image/*" multiple onChange={handleUpFiles} style={{display:"none"}}/>
+              <button onClick={()=>upFileRef.current?.click()} className="btn" style={{padding:"8px 13px",borderRadius:8,border:`1px dashed ${C.b2}`,background:C.tag,color:C.b2,fontSize:12,fontWeight:700,cursor:"pointer"}}>+ Agregar fotos ({upPhotos.length})</button>
+              {upPhotos.length>0 && <div style={{display:"flex",gap:5,marginTop:8,overflowX:"auto"}}>{upPhotos.map((ph,i)=><img key={i} src={ph.url} alt="" style={{height:54,width:74,objectFit:"cover",borderRadius:6,flexShrink:0}}/>)}</div>}
+            </div>
+            {!upPreview && <button onClick={processUpAI} disabled={upProcessing||!upDesc.trim()} className="btn" style={{width:"100%",padding:"11px 14px",borderRadius:10,border:"none",background:upDesc.trim()?C.b2:C.dim,color:"#fff",fontSize:13,fontWeight:800,cursor:upDesc.trim()?"pointer":"not-allowed",opacity:upProcessing?0.6:1}}>{upProcessing?"Procesando con Claude...":"Generar resumen con IA"}</button>}
+            {upPreview && <div>
+              <div style={{background:C.bg,borderRadius:10,padding:13,marginBottom:11,border:`1px solid ${C.border}`}}>
+                <p style={{fontSize:9,fontWeight:800,color:C.b2,textTransform:"uppercase",letterSpacing:".09em",marginBottom:6}}>Vista previa (editable)</p>
+                <input value={upPreview.title} onChange={e=>setUpPreview({...upPreview,title:e.target.value})} style={{width:"100%",padding:"6px 8px",border:`1px solid ${C.border}`,borderRadius:6,fontSize:13,fontWeight:700,marginBottom:7,color:C.txt}}/>
+                <textarea value={upPreview.summary} onChange={e=>setUpPreview({...upPreview,summary:e.target.value})} rows={3} style={{width:"100%",padding:"6px 8px",border:`1px solid ${C.border}`,borderRadius:6,fontSize:12,marginBottom:7,resize:"vertical",lineHeight:1.5,color:C.txt}}/>
+                <p style={{fontSize:9,fontWeight:800,color:C.green,textTransform:"uppercase",marginTop:6,marginBottom:3}}>Completado:</p>
+                {(upPreview.completed||[]).map((it,j)=><p key={j} style={{fontSize:11,color:C.txt}}>* {it}</p>)}
+                <p style={{fontSize:9,fontWeight:800,color:C.b2,textTransform:"uppercase",marginTop:6,marginBottom:3}}>Proximos pasos:</p>
+                {(upPreview.next||[]).map((it,j)=><p key={j} style={{fontSize:11,color:C.txt}}>* {it}</p>)}
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={()=>setUpPreview(null)} className="btn" style={{flex:1,padding:"10px 12px",borderRadius:9,border:`1px solid ${C.border}`,background:C.card,color:C.txt2,fontSize:12,fontWeight:700,cursor:"pointer"}}>Reintentar</button>
+                <button onClick={publishUp} className="btn" style={{flex:2,padding:"10px 12px",borderRadius:9,border:"none",background:C.green,color:"#fff",fontSize:12,fontWeight:800,cursor:"pointer"}}>Publicar al cliente</button>
+              </div>
+            </div>}
+          </Modal>}
           {updates.length === 0 && <Card style={{padding:24,textAlign:"center"}}><p style={{color:C.txt2,fontSize:13}}>Sin actualizaciones cargadas todavia.</p></Card>}
           {updates.map((upd,i)=>(
             <Card key={upd.id} style={{marginBottom:11,overflow:"hidden"}}>
@@ -761,9 +936,23 @@ const ArchProjectView = ({project}) => {
                   <p style={{fontSize:10,color:C.dim}}>{m.status==="paid"?`${m.paidDate} - ${m.certRef}`:"Pendiente"}</p>
                 </div>
                 <Mono ch={`USD ${fmt(m.usd)}`} size={12} color={m.status==="paid"?C.green:C.amber} weight={800}/>
+                {canEdit && m.status!=="paid" && <button onClick={()=>setPayModal(m)} className="btn" style={{padding:"5px 9px",borderRadius:6,border:"none",background:C.green,color:"#fff",fontSize:10,fontWeight:800,cursor:"pointer",letterSpacing:".04em"}}>MARCAR PAGADA</button>}
               </div>
             ))}
           </Card>
+          {payModal && <Modal title={`Marcar pagada: ${payModal.name}`} onClose={()=>setPayModal(null)}>
+            <div style={{background:C.gBg,borderRadius:9,padding:11,marginBottom:11,border:`1px solid ${C.green}`}}>
+              <p style={{fontSize:10,fontWeight:800,color:C.green,textTransform:"uppercase",marginBottom:3}}>Importe a registrar</p>
+              <Mono ch={`USD ${fmt(payModal.usd)}`} size={20} color={C.green} weight={900}/>
+            </div>
+            <p style={{fontSize:11,color:C.txt2,marginBottom:11,lineHeight:1.5}}>Al confirmar se marca la cuota como <strong>pagada</strong>, se registra la fecha de hoy y se emite automaticamente el <strong>Certificado de Avance</strong> en la pestana Planos.</p>
+            <label style={{fontSize:10,fontWeight:800,color:C.txt2,textTransform:"uppercase",display:"block",marginBottom:5}}>Nota interna (opcional)</label>
+            <textarea value={payNote} onChange={e=>setPayNote(e.target.value)} rows={2} placeholder="Ref. transferencia, banco, etc." style={{width:"100%",padding:"8px 10px",border:`1px solid ${C.border}`,borderRadius:8,fontSize:12,marginBottom:13,resize:"vertical"}}/>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setPayModal(null)} className="btn" style={{flex:1,padding:"10px 12px",borderRadius:9,border:`1px solid ${C.border}`,background:C.card,color:C.txt2,fontSize:12,fontWeight:700,cursor:"pointer"}}>Cancelar</button>
+              <button onClick={confirmPay} disabled={paySaving} className="btn" style={{flex:2,padding:"10px 12px",borderRadius:9,border:"none",background:C.green,color:"#fff",fontSize:12,fontWeight:800,cursor:paySaving?"wait":"pointer",opacity:paySaving?0.6:1}}>{paySaving?"Guardando...":"Confirmar y emitir certificado"}</button>
+            </div>
+          </Modal>}
         </div>
       )}
 
@@ -798,8 +987,22 @@ const ArchProjectView = ({project}) => {
                 <p style={{fontSize:9,fontWeight:800,color:mod.status==="approved"?C.green:C.red,textTransform:"uppercase",marginBottom:2}}>{mod.status==="approved"?`Aprobada - ${mod.approvalNumber}`:"Rechazada"}</p>
                 <p style={{fontSize:11,color:C.txt}}>{mod.archNote}</p>
               </div>}
+              {canEdit && (mod.status==="pending"||!mod.status) && <div style={{display:"flex",gap:8,marginTop:10}}>
+                <button onClick={()=>setModAction({mod,action:"reject"})} className="btn" style={{flex:1,padding:"7px 10px",borderRadius:7,border:`1px solid ${C.red}`,background:"#fff",color:C.red,fontSize:11,fontWeight:800,cursor:"pointer",letterSpacing:".03em"}}>RECHAZAR</button>
+                <button onClick={()=>setModAction({mod,action:"approve"})} className="btn" style={{flex:1,padding:"7px 10px",borderRadius:7,border:"none",background:C.green,color:"#fff",fontSize:11,fontWeight:800,cursor:"pointer",letterSpacing:".03em"}}>APROBAR</button>
+              </div>}
             </Card>
           ))}
+          {modAction && <Modal title={`${modAction.action==="approve"?"Aprobar":"Rechazar"} modificacion`} onClose={()=>setModAction(null)}>
+            <p style={{fontSize:12,color:C.txt,marginBottom:11,lineHeight:1.5}}><strong>{modAction.mod.title}</strong></p>
+            <p style={{fontSize:11,color:C.txt2,marginBottom:13,lineHeight:1.5}}>{modAction.mod.description}</p>
+            <label style={{fontSize:10,fontWeight:800,color:C.txt2,textTransform:"uppercase",display:"block",marginBottom:5}}>{modAction.action==="approve"?"Nota tecnica (visible al cliente)":"Motivo del rechazo"}</label>
+            <textarea value={modNote} onChange={e=>setModNote(e.target.value)} rows={3} placeholder={modAction.action==="approve"?"Aprobado. Sumamos $X al contrato y Y dias al cronograma...":"No es factible porque..."} style={{width:"100%",padding:"8px 10px",border:`1px solid ${C.border}`,borderRadius:8,fontSize:12,marginBottom:13,resize:"vertical",lineHeight:1.5}}/>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setModAction(null)} className="btn" style={{flex:1,padding:"10px 12px",borderRadius:9,border:`1px solid ${C.border}`,background:C.card,color:C.txt2,fontSize:12,fontWeight:700,cursor:"pointer"}}>Cancelar</button>
+              <button onClick={confirmModAction} disabled={modSaving} className="btn" style={{flex:2,padding:"10px 12px",borderRadius:9,border:"none",background:modAction.action==="approve"?C.green:C.red,color:"#fff",fontSize:12,fontWeight:800,cursor:modSaving?"wait":"pointer",opacity:modSaving?0.6:1}}>{modSaving?"Guardando...":(modAction.action==="approve"?"Confirmar aprobacion":"Confirmar rechazo")}</button>
+            </div>
+          </Modal>}
         </div>
       )}
     </div>
