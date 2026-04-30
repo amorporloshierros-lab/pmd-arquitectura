@@ -553,15 +553,32 @@ const ArchPanel = ({user, projects, onLogout}) => {
       {/* Contenido principal */}
       <div style={{maxWidth:800,margin:"0 auto",padding:"18px 13px 48px"}}>
 
-        {/* Card: gestionar usuarios (solo admin) */}
+        {/* Panel de administracion — hub central con todos los accesos (solo admin) */}
         {user.role === "admin" && (
-          <Card style={{padding:"16px 20px",marginBottom:14,background:`linear-gradient(135deg,${C.b1}15,${C.b2}10)`,border:`1px solid ${C.b1}40`}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
-              <div>
-                <p style={{fontSize:14,fontWeight:800,color:C.b3,marginBottom:3}}>Panel de administracion</p>
-                <p style={{fontSize:12,color:C.txt2}}>Crear clientes, gestionar equipo, mandar invites por email</p>
-              </div>
-              <a href="/admin/users" target="_blank" rel="noopener" className="btn" style={{padding:"10px 18px",background:C.b2,color:"#fff",borderRadius:9,fontSize:13,fontWeight:700,textDecoration:"none",display:"inline-block"}}>Gestionar usuarios</a>
+          <Card style={{padding:"18px 20px",marginBottom:14,background:`linear-gradient(135deg,${C.b1}15,${C.b2}10)`,border:`1px solid ${C.b1}40`}}>
+            <p style={{fontSize:14,fontWeight:800,color:C.b3,marginBottom:3}}>Panel de administracion</p>
+            <p style={{fontSize:12,color:C.txt2,marginBottom:14}}>Acceso completo a todas las herramientas de PMD</p>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:10}}>
+              <a href="/admin" target="_blank" rel="noopener" className="btn hl" style={{display:"flex",flexDirection:"column",alignItems:"flex-start",gap:6,padding:"14px 16px",background:"#fff",border:`1px solid ${C.border}`,borderRadius:10,textDecoration:"none",color:C.txt}}>
+                <span style={{fontSize:11,fontWeight:800,color:C.b2,textTransform:"uppercase",letterSpacing:".08em"}}>Atencion clientes</span>
+                <span style={{fontSize:14,fontWeight:700,color:C.b3}}>Leads & Reuniones</span>
+                <span style={{fontSize:11,color:C.txt2}}>Mensajes del chat Lucas + reuniones agendadas</span>
+              </a>
+              <a href="/admin" target="_blank" rel="noopener" className="btn hl" style={{display:"flex",flexDirection:"column",alignItems:"flex-start",gap:6,padding:"14px 16px",background:"#fff",border:`1px solid ${C.border}`,borderRadius:10,textDecoration:"none",color:C.txt}}>
+                <span style={{fontSize:11,fontWeight:800,color:C.amber,textTransform:"uppercase",letterSpacing:".08em"}}>Cotizador</span>
+                <span style={{fontSize:14,fontWeight:700,color:C.b3}}>Precios del cotizador</span>
+                <span style={{fontSize:11,color:C.txt2}}>Editar valores de obra que ve el cliente</span>
+              </a>
+              <a href="/admin/users" target="_blank" rel="noopener" className="btn hl" style={{display:"flex",flexDirection:"column",alignItems:"flex-start",gap:6,padding:"14px 16px",background:"#fff",border:`1px solid ${C.border}`,borderRadius:10,textDecoration:"none",color:C.txt}}>
+                <span style={{fontSize:11,fontWeight:800,color:C.green,textTransform:"uppercase",letterSpacing:".08em"}}>Equipo</span>
+                <span style={{fontSize:14,fontWeight:700,color:C.b3}}>Gestionar usuarios</span>
+                <span style={{fontSize:11,color:C.txt2}}>Crear clientes, asignar asesores, invites</span>
+              </a>
+              <a href="/admin/users" target="_blank" rel="noopener" className="btn hl" style={{display:"flex",flexDirection:"column",alignItems:"flex-start",gap:6,padding:"14px 16px",background:"#fff",border:`1px solid ${C.border}`,borderRadius:10,textDecoration:"none",color:C.txt}}>
+                <span style={{fontSize:11,fontWeight:800,color:C.purple,textTransform:"uppercase",letterSpacing:".08em"}}>Asignaciones</span>
+                <span style={{fontSize:14,fontWeight:700,color:C.b3}}>Proyectos & Equipo</span>
+                <span style={{fontSize:11,color:C.txt2}}>Asignar asesor / arquitecto a cada cliente</span>
+              </a>
             </div>
           </Card>
         )}
