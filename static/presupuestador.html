@@ -1038,6 +1038,10 @@
 })();
 </script>
 <script>
+window.__pmd = null;
+fetch('/api/precios').then(function(r){return r.json();}).then(function(d){window.__pmd=d;}).catch(function(){});
+</script>
+<script>
   const state = {
     mode:null,
     nombre:"", tipo:"", urgencia:"",
@@ -1362,7 +1366,50 @@
   let AJUSTE_PMD = 1.13;
 
   function calcPresupuesto(){
-    if (window.__pmd) { pmdAplicar(window.__pmd); }
+    // Override prices from API for currently selected options
+    if (window.__pmd) {
+      var p = window.__pmd.precios || window.__pmd;
+      function findItem(cat, label) {
+        var items = p[cat];
+        if (!Array.isArray(items)) return null;
+        for (var i=0; i<items.length; i++) { if (items[i].label===label) return items[i]; }
+        return null;
+      }
+      // Lineas PMD
+      if (p.lineas) {
+        p.lineas.forEach(function(l){ if(l.label) LINEA_BASE[l.label]=l.base; });
+      }
+      // Pisos
+      var pi = findItem('pisos', state.pisos.v);
+      if (pi) state.pisos.e = pi.extra;
+      // Aberturas
+      var ab = findItem('aberturas', state.aberturas.v);
+      if (ab) state.aberturas.e = ab.extra;
+      // Cocina
+      var co = findItem('cocina', state.cocina.v);
+      if (co) state.cocina.f = co.fixed;
+      // Clima
+      var cl = findItem('clima', state.clima.v);
+      if (cl) { state.clima.e = cl.extra; state.clima.f = cl.fixed; }
+      // Agua
+      var ag = findItem('agua', state.agua.v);
+      if (ag) state.agua.f = ag.fixed;
+      // Electrica
+      var el = findItem('electrica', state.electrica.v);
+      if (el) state.electrica.f = el.fixed;
+      // Solar
+      var so = findItem('solar', state.solar.v);
+      if (so) state.solar.f = so.fixed;
+      // Cubierta
+      var cu = findItem('cubierta', state.cubierta.v);
+      if (cu) state.cubierta_m2 = cu.roof;
+      // Revestimiento
+      var re = findItem('revestimiento', state.revestimiento.v);
+      if (re) state.revest_fach = re.fach;
+      // Banos
+      var ba = findItem('banos', state.banos.v);
+      if (ba) state.banos_extra = ba.per_bano;
+    }
     if (window.__pmdPrecios) {
       var lineas = (window.__pmdPrecios.precios || window.__pmdPrecios).lineas;
       if (Array.isArray(lineas)) {
