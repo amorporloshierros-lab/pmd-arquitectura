@@ -1037,9 +1037,51 @@
   }
 })();
 </script>
+
 <script>
 window.__pmd = null;
-fetch('/api/precios').then(function(r){return r.json();}).then(function(d){window.__pmd=d;}).catch(function(){});
+function pmdActualizarDOM(data) {
+  var p = data.precios || data;
+  var cats = [
+    ['lineas',       'base',    'data-base',    'nivel'],
+    ['pisos',        'extra',   'data-extra',   'pisos'],
+    ['aberturas',    'extra',   'data-extra',   'aberturas'],
+    ['cocina',       'fixed',   'data-fixed',   'cocina'],
+    ['cubierta',     'roof',    'data-roof',    'cubierta'],
+    ['revestimiento','fach',    'data-fach',    'revestimiento'],
+    ['banos',        'per_bano','data-per-bano','banos'],
+    ['clima',        'extra',   'data-extra',   'clima'],
+    ['agua',         'fixed',   'data-fixed',   'agua'],
+    ['electrica',    'fixed',   'data-fixed',   'electrica'],
+    ['solar',        'fixed',   'data-fixed',   'solar'],
+    ['extras',       'fixed',   'data-fixed',   'extras']
+  ];
+  cats.forEach(function(c) {
+    var items = p[c[0]];
+    if (!Array.isArray(items)) return;
+    items.forEach(function(item) {
+      if (item[c[1]] === undefined) return;
+      var el = document.querySelector('[data-group="'+c[3]+'"][data-value="'+item.label+'"]');
+      if (!el) return;
+      // Update the data attribute (used for state when clicked)
+      el.setAttribute(c[2], item[c[1]]);
+      // Update the visible text (opt-sub)
+      var sub = el.querySelector('.opt-sub');
+      if (sub && item.sublabel) sub.textContent = item.sublabel;
+    });
+  });
+}
+fetch('/api/precios')
+  .then(function(r){return r.json();})
+  .then(function(d){
+    window.__pmd = d;
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function(){ pmdActualizarDOM(d); });
+    } else {
+      pmdActualizarDOM(d);
+    }
+  })
+  .catch(function(){});
 </script>
 <script>
   const state = {
