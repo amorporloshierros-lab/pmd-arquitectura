@@ -752,9 +752,11 @@ setInterval(refreshAll, 30000);
         +'<p style="font-size:11px;color:#94A0AE;margin:0;">'+(item.sublabel||'')+'</p>'
         +'</div>'
         +'<input type="number" id="pv-'+_tab+'-'+i+'" value="'+val+'"'
+        +' oninput="pmdSaveItem('+_tab+','+i+',this.value,null)"'
         +' style="width:100%;padding:7px 10px;border:1.5px solid #E2DED8;border-radius:8px;'
         +'background:#F0EDE8;color:#1E3A5F;font-size:14px;font-weight:700;font-family:monospace;outline:none;text-align:right;" />'
         +'<input type="text" id="pt-'+_tab+'-'+i+'" value="'+txt+'"'
+        +' oninput="pmdSaveItem('+_tab+','+i+',null,this.value)"'
         +' style="width:100%;padding:7px 10px;border:1.5px solid #E2DED8;border-radius:8px;'
         +'background:#F0EDE8;color:#1E2A3A;font-size:12px;outline:none;" />'
         +'</div>';
@@ -788,9 +790,21 @@ setInterval(refreshAll, 30000);
       var tEl = document.getElementById('pt-'+_tab+'-'+i);
       if (vEl) item[cat.c] = parseFloat(vEl.value) || 0;
       if (tEl) item.texto_precio = tEl.value;
+      // Also update sublabel to match
+      if (vEl) item.sublabel = item.texto_precio || item.sublabel;
     });
   }
 
+
+  // Save individual item change immediately to _d (so switching tabs doesn't lose data)
+  window.pmdSaveItem = function(tabIdx, itemIdx, val, txt) {
+    if (!_d) return;
+    var cat = CATS[tabIdx];
+    var items = _d[cat.k] || [];
+    if (!items[itemIdx]) return;
+    if (val !== null) items[itemIdx][cat.c] = parseFloat(val) || 0;
+    if (txt !== null) items[itemIdx].texto_precio = txt;
+  };
   window.pmdToggle = function() {
     _editing = !_editing;
     document.getElementById('pmd-editor').style.display = _editing ? 'block' : 'none';
