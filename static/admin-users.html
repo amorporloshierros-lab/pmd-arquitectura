@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestion de Usuarios - PMD Admin</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='10' width='7' height='12' fill='%235BA3C9'/%3E%3Crect x='13' y='10' width='7' height='12' fill='%233B6EA5'/%3E%3Crect x='22' y='10' width='7' height='12' fill='%232B4E7A'/%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+:root{--b1:#5BA3C9;--b2:#3B6EA5;--b3:#2B4E7A;--bg:#F4F2EE;--ink:#1C1C1A;--ink2:#52524F;--ink3:#909090;--border:rgba(28,28,26,.09);--green:#2D8B57;--gBg:#EAF6F0;--red:#B8453A;--rBg:#FAEEED;--amber:#A07020;--aBg:#FEF3E2}
+body{background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px}
+.container{max-width:1100px;margin:0 auto;padding:24px 20px}
+h1{font-family:Georgia,serif;font-size:28px;font-weight:500;color:var(--b3);margin-bottom:5px}
+h2{font-size:16px;font-weight:600;margin-bottom:14px;color:var(--ink)}
+p.sub{color:var(--ink2);font-size:13px;margin-bottom:24px;line-height:1.6}
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:18px;box-shadow:0 2px 12px rgba(28,51,86,.04)}
+
+/* LOGIN */
+#login-screen{max-width:400px;margin:80px auto}
+#login-screen h1{text-align:center;margin-bottom:20px}
+.field{margin-bottom:14px}
+label{display:block;font-size:11px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;background:#F4F2EE;color:var(--ink);font-size:14px;font-family:inherit;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--b2);background:#fff}
+.btn{padding:11px 20px;background:var(--b2);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn:hover{background:var(--b3)}
+.btn:disabled{background:var(--ink3);cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--ink2);border:1px solid var(--border)}
+.btn-ghost:hover{background:#F4F2EE;color:var(--ink)}
+.btn-danger{background:var(--red)}
+.btn-danger:hover{background:#8a3528}
+.btn-sm{padding:6px 12px;font-size:12px}
+.error{background:var(--rBg);color:var(--red);padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px}
+.success{background:var(--gBg);color:var(--green);padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px}
+
+/* HEADER */
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.user-info{display:flex;align-items:center;gap:10px}
+.user-info .role{background:var(--gBg);color:var(--green);padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:18px}
+.tab{padding:10px 16px;background:none;border:none;color:var(--ink2);font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
+.tab.active{color:var(--b2);border-bottom-color:var(--b2)}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:9px 12px;font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:#F4F2EE}
+td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--ink)}
+tr:last-child td{border-bottom:none}
+.role-badge{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.role-admin{background:#F0ECFF;color:#6B48CC}
+.role-asesor{background:var(--aBg);color:var(--amber)}
+.role-architect{background:var(--gBg);color:var(--green)}
+.role-client{background:#EAF0F8;color:var(--b2)}
+
+/* FORM GRID */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.form-grid.full{grid-template-columns:1fr}
+
+/* INVITE LINK */
+.invite-box{background:var(--gBg);border-left:4px solid var(--green);padding:14px 18px;border-radius:6px;margin-top:14px}
+.invite-box code{display:block;background:#fff;padding:8px 12px;border-radius:6px;font-family:'Courier New',monospace;font-size:11px;color:var(--ink);margin-top:8px;word-break:break-all;border:1px solid var(--border)}
+
+@media(max-width:640px){
+  .form-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="container" style="display:none">
+  <div class="card">
+    <h1>Admin · PMD</h1>
+    <p class="sub" style="text-align:center">Ingresá con tus credenciales de administrador</p>
+    <div class="field">
+      <label>Email</label>
+      <input id="login-email" type="email" placeholder="augusto@pmdarquitectura.com" />
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input id="login-password" type="password" placeholder="········" />
+    </div>
+    <div id="login-error" class="error" style="display:none"></div>
+    <button class="btn" style="width:100%" onclick="doLogin()">Ingresar</button>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="admin-screen" class="container" style="display:none">
+  <div class="head">
+    <div>
+      <h1>Gestión de Usuarios</h1>
+      <p style="color:var(--ink2);font-size:13px">Crear, editar y administrar clientes y equipo</p>
+    </div>
+    <div class="user-info">
+      <span id="me-name" style="font-weight:600"></span>
+      <span class="role" id="me-role"></span>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="clientes" onclick="showTab('clientes')">Clientes</button>
+    <button class="tab" data-tab="equipo" onclick="showTab('equipo')">Equipo (admin/asesor/arquitecto)</button>
+    <button class="tab" data-tab="nuevo" onclick="showTab('nuevo')">+ Nuevo usuario</button>
+  </div>
+
+  <!-- TAB CLIENTES -->
+  <div id="tab-clientes" class="tab-panel">
+    <div class="card">
+      <h2>Clientes</h2>
+      <p class="sub">Personas que firmaron contrato y tienen acceso a su portal Mi Hogar.</p>
+      <table id="tbl-clientes">
+        <thead><tr><th>Nombre</th><th>Email</th><th>Proyecto</th><th>Estado</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB EQUIPO -->
+  <div id="tab-equipo" class="tab-panel" style="display:none">
+    <div class="card">
+      <h2>Equipo PMD</h2>
+      <p class="sub">Admins, asesores y arquitectos. Cada rol tiene permisos distintos.</p>
+      <table id="tbl-equipo">
+        <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB NUEVO USUARIO -->
+  <div id="tab-nuevo" class="tab-panel" style="display:none">
+    <div class="card">
+      <h2>Crear nuevo usuario</h2>
+      <p class="sub">Le llega un email automático al usuario con un link para que cree su contraseña.</p>
+      <div id="create-error" class="error" style="display:none"></div>
+      <div id="create-success" class="success" style="display:none"></div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Nombre completo</label>
+          <input id="new-name" placeholder="Familia García" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="new-email" type="email" placeholder="garcia@mail.com" />
+        </div>
+        <div class="field">
+          <label>Rol</label>
+          <select id="new-role" onchange="onRoleChange()">
+            <option value="client">Cliente</option>
+            <option value="architect">Arquitecto</option>
+            <option value="asesor">Asesor</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div class="field" id="field-project" style="display:block">
+          <label>Proyecto asignado (ID)</label>
+          <input id="new-project" placeholder="NDT-45 (dejá vacío si no tiene)" />
+        </div>
+      </div>
+
+      <div class="form-grid full">
+        <div class="field">
+          <label>
+            <input type="checkbox" id="new-send-invite" checked style="width:auto;margin-right:6px;vertical-align:middle"/>
+            Mandar email de bienvenida automáticamente con link de creación de password
+          </label>
+        </div>
+      </div>
+
+      <div class="form-grid" id="manual-pw-block" style="display:none">
+        <div class="field">
+          <label>Contraseña inicial (manual)</label>
+          <input id="new-password" type="text" placeholder="ej: bienvenido2026" />
+        </div>
+      </div>
+
+      <button class="btn" onclick="createUser()">Crear usuario</button>
+      <div id="invite-result" style="display:none" class="invite-box">
+        <strong>Usuario creado.</strong>
+        <p id="invite-msg" style="margin-top:6px"></p>
+        <code id="invite-link"></code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOKEN_KEY = "pmd_admin_token";
+const getToken = () => localStorage.getItem(TOKEN_KEY);
+const setToken = (t) => localStorage.setItem(TOKEN_KEY, t);
+const clearToken = () => localStorage.removeItem(TOKEN_KEY);
+
+let currentUser = null;
+
+async function api(url, options = {}) {
+  const headers = {"Content-Type": "application/json", ...(options.headers || {})};
+  const token = getToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(url, {...options, headers});
+  return res.json();
+}
+
+async function doLogin() {
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value;
+  const errEl = document.getElementById("login-error");
+  errEl.style.display = "none";
+  if (!email || !password) {
+    errEl.textContent = "Completá email y contraseña.";
+    errEl.style.display = "block";
+    return;
+  }
+  const data = await api("/api/mi-hogar/login", {method: "POST", body: JSON.stringify({email, password})});
+  if (data.ok) {
+    if (data.user.role !== "admin") {
+      errEl.textContent = "Solo usuarios con rol Admin pueden acceder.";
+      errEl.style.display = "block";
+      return;
+    }
+    setToken(data.token);
+    currentUser = data.user;
+    showAdmin();
+  } else {
+    errEl.textContent = data.error || "Error de login.";
+    errEl.style.display = "block";
+  }
+}
+
+function doLogout() {
+  clearToken();
+  currentUser = null;
+  document.getElementById("admin-screen").style.display = "none";
+  document.getElementById("login-screen").style.display = "block";
+}
+
+function showAdmin() {
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("admin-screen").style.display = "block";
+  document.getElementById("me-name").textContent = currentUser.name;
+  document.getElementById("me-role").textContent = currentUser.role;
+  loadUsers();
+}
+
+function showTab(tab) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add("active");
+  document.querySelectorAll(".tab-panel").forEach(p => p.style.display = "none");
+  document.getElementById(`tab-${tab}`).style.display = "block";
+}
+
+function onRoleChange() {
+  const role = document.getElementById("new-role").value;
+  document.getElementById("field-project").style.display = role === "client" ? "block" : "none";
+}
+
+document.addEventListener("change", (e) => {
+  if (e.target.id === "new-send-invite") {
+    document.getElementById("manual-pw-block").style.display = e.target.checked ? "none" : "grid";
+  }
+});
+
+async function loadUsers() {
+  const data = await api("/api/admin/users");
+  if (!data.ok) {
+    if (data.error === "Solo admin") {
+      doLogout();
+    }
+    return;
+  }
+  const clientes = data.users.filter(u => u.role === "client");
+  const equipo = data.users.filter(u => u.role !== "client");
+
+  const tbCli = document.querySelector("#tbl-clientes tbody");
+  tbCli.innerHTML = clientes.length === 0
+    ? `<tr><td colspan="5" style="text-align:center;color:var(--ink3);padding:24px">Sin clientes todavía. Creá uno desde "Nuevo usuario".</td></tr>`
+    : clientes.map(u => `
+      <tr>
+        <td><strong>${u.name}</strong></td>
+        <td>${u.email}</td>
+        <td>${u.project_id || "<span style='color:var(--ink3)'>—</span>"}</td>
+        <td>${u.must_change_password ? '<span style="color:var(--amber);font-size:11px;font-weight:700">Pendiente activar</span>' : '<span style="color:var(--green);font-size:11px;font-weight:700">Activo</span>'}</td>
+        <td style="text-align:right">
+          <button class="btn btn-ghost btn-sm" onclick="resendInvite('${u.id}')">Reenviar invite</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name}')">Eliminar</button>
+        </td>
+      </tr>`).join("");
+
+  const tbEq = document.querySelector("#tbl-equipo tbody");
+  tbEq.innerHTML = equipo.length === 0
+    ? `<tr><td colspan="5" style="text-align:center;color:var(--ink3);padding:24px">Sin miembros del equipo todavía.</td></tr>`
+    : equipo.map(u => `
+      <tr>
+        <td><strong>${u.name}</strong></td>
+        <td>${u.email}</td>
+        <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+        <td>${u.must_change_password ? '<span style="color:var(--amber);font-size:11px;font-weight:700">Pendiente</span>' : '<span style="color:var(--green);font-size:11px;font-weight:700">Activo</span>'}</td>
+        <td style="text-align:right">
+          <button class="btn btn-ghost btn-sm" onclick="resendInvite('${u.id}')">Reenviar invite</button>
+          ${u.id === currentUser.id ? '' : `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name}')">Eliminar</button>`}
+        </td>
+      </tr>`).join("");
+}
+
+async function createUser() {
+  const errEl = document.getElementById("create-error");
+  const okEl = document.getElementById("create-success");
+  const linkEl = document.getElementById("invite-result");
+  errEl.style.display = "none";
+  okEl.style.display = "none";
+  linkEl.style.display = "none";
+
+  const payload = {
+    name: document.getElementById("new-name").value.trim(),
+    email: document.getElementById("new-email").value.trim(),
+    role: document.getElementById("new-role").value,
+    project_id: document.getElementById("new-project").value.trim() || null,
+    send_invite_email: document.getElementById("new-send-invite").checked,
+  };
+  if (!payload.send_invite_email) {
+    payload.initial_password = document.getElementById("new-password").value;
+    if (!payload.initial_password) {
+      errEl.textContent = "Si no mandás invite por email, tenés que poner una contraseña manual.";
+      errEl.style.display = "block";
+      return;
+    }
+  }
+  if (!payload.name || !payload.email) {
+    errEl.textContent = "Completá nombre y email.";
+    errEl.style.display = "block";
+    return;
+  }
+  if (payload.role === "client" && !payload.project_id) {
+    errEl.textContent = "Para clientes, asigná un Project ID (ej: NDT-46).";
+    errEl.style.display = "block";
+    return;
+  }
+
+  const data = await api("/api/admin/users", {method: "POST", body: JSON.stringify(payload)});
+  if (!data.ok) {
+    errEl.textContent = data.error || "Error creando usuario.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  okEl.textContent = `Usuario "${data.user.name}" creado.`;
+  okEl.style.display = "block";
+
+  if (data.invite_link) {
+    document.getElementById("invite-msg").textContent =
+      "El email se envió automáticamente. Si no llega, copiá este link y mandalo manualmente:";
+    document.getElementById("invite-link").textContent = data.invite_link;
+    linkEl.style.display = "block";
+  } else if (payload.initial_password) {
+    document.getElementById("invite-msg").textContent =
+      `Le pusiste contraseña manual: "${payload.initial_password}". Compartila por WhatsApp con el usuario.`;
+    document.getElementById("invite-link").textContent = "(sin link — usá email + contraseña que pusiste)";
+    linkEl.style.display = "block";
+  }
+
+  document.getElementById("new-name").value = "";
+  document.getElementById("new-email").value = "";
+  document.getElementById("new-project").value = "";
+  document.getElementById("new-password").value = "";
+
+  loadUsers();
+}
+
+async function resendInvite(userId) {
+  if (!confirm("¿Reenviar invite a este usuario?")) return;
+  const data = await api(`/api/admin/users/${userId}/resend-invite`, {method: "POST"});
+  if (data.ok) {
+    alert(data.sent ? "Invite reenviado por email." : `Email no se pudo enviar.\nLink manual:\n${data.invite_link}`);
+  } else {
+    alert("Error: " + (data.error || "desconocido"));
+  }
+}
+
+async function deleteUser(userId, name) {
+  if (!confirm(`¿Eliminar al usuario "${name}"?\nEsto NO borra el proyecto asociado, solo desactiva el acceso.`)) return;
+  const res = await fetch(`/api/admin/users/${userId}`, {
+    method: "DELETE",
+    headers: {"Authorization": `Bearer ${getToken()}`}
+  });
+  const data = await res.json();
+  if (data.ok) {
+    loadUsers();
+  } else {
+    alert("Error: " + (data.error || "desconocido"));
+  }
+}
+
+// Init: si hay token, ir al admin. Si no, login screen.
+(async function init() {
+  const token = getToken();
+  if (!token) {
+    document.getElementById("login-screen").style.display = "block";
+    return;
+  }
+  const data = await api("/api/mi-hogar/me");
+  if (data.ok && data.user.role === "admin") {
+    currentUser = data.user;
+    showAdmin();
+  } else {
+    clearToken();
+    document.getElementById("login-screen").style.display = "block";
+  }
+})();
+</script>
+
+</body>
+</html>

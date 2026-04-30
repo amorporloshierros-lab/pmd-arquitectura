@@ -261,6 +261,23 @@ async def admin_panel():
     return JSONResponse({"error": "admin.html no encontrado"}, status_code=404)
 
 
+@app.get("/admin/users", include_in_schema=False)
+@app.get("/admin/users/", include_in_schema=False)
+async def admin_users_panel():
+    """Sirve la página de gestión de usuarios (clientes + equipo).
+    Requiere login con rol admin (validado en frontend + backend en cada API call)."""
+    panel = config.STATIC_DIR / "admin-users.html"
+    if panel.exists():
+        return FileResponse(
+            panel,
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate",
+                "Pragma": "no-cache",
+            },
+        )
+    return JSONResponse({"error": "admin-users.html no encontrado"}, status_code=404)
+
+
 @app.get("/api/health")
 async def health():
     return {
