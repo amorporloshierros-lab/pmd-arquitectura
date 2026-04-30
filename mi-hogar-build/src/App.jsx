@@ -87,6 +87,20 @@ const Badge = ({status}) => {
 const Mono = ({ch,size=14,color=C.b2,weight=700}) => <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:size,color,fontWeight:weight}}>{ch}</span>;
 const Card = ({children,style={}}) => <div style={{background:C.card,borderRadius:20,border:`1px solid ${C.border}`,boxShadow:"0 2px 12px rgba(30,58,95,.05)",...style}}>{children}</div>;
 
+// Modal genérico — definido a nivel de módulo (NO dentro de un componente)
+// para que React no lo desmonte/remonte en cada render del padre.
+const Modal = ({title, onClose, children}) => (
+  <div style={{position:"fixed",inset:0,background:"rgba(20,30,50,.55)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:14}} onClick={onClose}>
+    <div style={{background:C.card,borderRadius:20,border:`1px solid ${C.border}`,maxWidth:480,width:"100%",padding:20,maxHeight:"90vh",overflowY:"auto",boxShadow:"0 20px 50px rgba(0,0,0,.3)"}} onClick={e=>e.stopPropagation()}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <p style={{fontSize:15,fontWeight:900,color:C.b3,letterSpacing:"-.01em"}}>{title}</p>
+        <button onClick={onClose} className="btn" style={{border:"none",background:"transparent",fontSize:18,color:C.txt2,cursor:"pointer"}}>x</button>
+      </div>
+      {children}
+    </div>
+  </div>
+);
+
 // ─── SPLASH (mientras carga la sesión inicial) ────────────────────────────
 const Splash = () => (
   <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans',sans-serif"}}>
@@ -795,19 +809,6 @@ const ArchProjectView = ({project: initialProject, canEdit = true, onProjectUpda
     if (ok) setShowEditMeta(false);
     setMetaSaving(false);
   };
-
-  // Modal genérico
-  const Modal = ({title, onClose, children}) => (
-    <div style={{position:"fixed",inset:0,background:"rgba(20,30,50,.55)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:14}} onClick={onClose}>
-      <Card style={{maxWidth:480,width:"100%",padding:20,maxHeight:"90vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-          <p style={{fontSize:15,fontWeight:900,color:C.b3,letterSpacing:"-.01em"}}>{title}</p>
-          <button onClick={onClose} className="btn" style={{border:"none",background:"transparent",fontSize:18,color:C.txt2,cursor:"pointer"}}>x</button>
-        </div>
-        {children}
-      </Card>
-    </div>
-  );
 
   return (
     <div>
