@@ -676,6 +676,11 @@ const ArchProjectView = ({project: initialProject, canEdit = true, onProjectUpda
   });
   const [metaSaving, setMetaSaving] = useState(false);
 
+  // Estado para editor de cuotas
+  const [showEditCuotas, setShowEditCuotas] = useState(false);
+  const [cuotasForm, setCuotasForm] = useState([]);
+  const [cuotasSaving, setCuotasSaving] = useState(false);
+
   const milestones = project.milestones || [];
   const cac = project.cac || {base:{value:1,date:""},current:{value:1,date:""},history:[]};
   const updates = project.updates || [];
@@ -808,6 +813,39 @@ const ArchProjectView = ({project: initialProject, canEdit = true, onProjectUpda
     const ok = await persistAndFlash(newProject, "Datos del proyecto actualizados");
     if (ok) setShowEditMeta(false);
     setMetaSaving(false);
+  };
+
+  // Editor de cuotas / hitos
+  const openEditCuotas = () => {
+    setCuotasForm((milestones || []).map(m => ({...m})));
+    setShowEditCuotas(true);
+  };
+  const cuotaRowChange = (idx, key, val) => {
+    setCuotasForm(prev => prev.map((c,i) => i===idx ? {...c, [key]: val} : c));
+  };
+  const cuotaAddRow = () => {
+    const nextId = Math.max(0, ...cuotasForm.map(c => c.id || 0)) + 1;
+    setCuotasForm([...cuotasForm, {id: nextId, name: "Nueva cuota", pct: 0, usd: 0, status: "pending", paidDate: null, certRef: null}]);
+  };
+  const cuotaRemoveRow = (idx) => {
+    setCuotasForm(prev => prev.filter((_,i) => i!==idx));
+  };
+  const recalcFromTotal = (newTotal) => {
+    setCuotasForm(prev => prev.map(c => ({...c, usd: Math.round((Number(newTotal)||0) * (Number(c.pct)||0) / 100)})));
+  };
+  const confirmEditCuotas = async () => {
+    setCuotasSaving(true);
+    const cleaned = cuotasForm.map((c,i) => ({
+      ...c,
+      id: c.id || (i + 1),
+      name: (c.name||"").trim() || `Cuota ${i+1}`,
+      pct: Number(c.pct) || 0,
+      usd: Math.round(Number(c.usd) || 0),
+    }));
+    const newProject = {...project, milestones: cleaned};
+    const ok = await persistAndFlash(newProject, "Cuotas actualizadas");
+    if (ok) setShowEditCuotas(false);
+    setCuotasSaving(false);
   };
 
   return (
@@ -1003,7 +1041,10 @@ const ArchProjectView = ({project: initialProject, canEdit = true, onProjectUpda
             </Card>
           </div>
           <Card style={{padding:15,marginBottom:13}}>
-            <p style={{fontSize:13,fontWeight:800,color:C.txt,marginBottom:13}}>Cuotas por hito</p>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:13}}>
+              <p style={{fontSize:13,fontWeight:800,color:C.txt}}>Cuotas por hito</p>
+              {canEdit && <button onClick={openEditCuotas} className="btn" style={{padding:"5px 11px",borderRadius:7,border:`1px solid ${C.border}`,background:C.bg,color:C.b2,fontSize:10,fontWeight:700,cursor:"pointer",letterSpacing:".04em"}}>EDITAR CUOTAS</button>}
+            </div>
             {milestones.map((m,i)=>(
               <div key={m.id} style={{display:"flex",alignItems:"center",gap:10,paddingBottom:10,marginBottom:10,borderBottom:i<milestones.length-1?`1px dashed ${C.border}`:"none"}}>
                 <div style={{width:26,height:26,borderRadius:"50%",background:m.status==="paid"?C.gBg:C.aBg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:11,fontWeight:800,color:m.status==="paid"?C.green:C.amber}}>{m.status==="paid"?"OK":"--"}</div>
@@ -1016,6 +1057,40 @@ const ArchProjectView = ({project: initialProject, canEdit = true, onProjectUpda
               </div>
             ))}
           </Card>
+          {showEditCuotas && <Modal title="Editar cuotas / hitos del contrato" onClose={()=>setShowEditCuotas(false)}>
+            <div style={{background:C.tag,borderRadius:9,padding:11,marginBottom:13,border:`1px solid ${C.border}`}}>
+              <p style={{fontSize:11,color:C.txt2,lineHeight:1.5,marginBottom:8}}><strong style={{color:C.b3}}>Tip:</strong> si tipeas el total contrato y haces enter, todas las cuotas se recalculan con sus % actuales.</p>
+              <label style={{fontSize:10,fontWeight:800,color:C.b3,textTransform:"uppercase",letterSpacing:".09em",display:"block",marginBottom:5}}>Total contrato (USD)</label>
+              <input type="number" defaultValue={cuotasForm.reduce((s,c)=>s + (Number(c.usd)||0), 0)} onBlur={e=>recalcFromTotal(e.target.value)} placeholder="Ej: 150000" style={{width:"100%",padding:"9px 11px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:14,fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:C.b3}}/>
+            </div>
+
+            <div style={{maxHeight:340,overflowY:"auto",marginBottom:13}}>
+              {cuotasForm.map((c,idx)=>(
+                <div key={idx} style={{display:"grid",gridTemplateColumns:"1fr 60px 90px 28px",gap:6,marginBottom:8,alignItems:"center"}}>
+                  <input value={c.name||""} onChange={e=>cuotaRowChange(idx,"name",e.target.value)} placeholder="Nombre cuota" style={{padding:"7px 9px",border:`1px solid ${C.border}`,borderRadius:6,fontSize:12,color:C.txt}}/>
+                  <input type="number" min={0} max={100} step={0.5} value={c.pct||0} onChange={e=>cuotaRowChange(idx,"pct",e.target.value)} title="%" style={{padding:"7px 9px",border:`1px solid ${C.border}`,borderRadius:6,fontSize:12,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}/>
+                  <input type="number" min={0} step={100} value={c.usd||0} onChange={e=>cuotaRowChange(idx,"usd",e.target.value)} title="USD" style={{padding:"7px 9px",border:`1px solid ${C.border}`,borderRadius:6,fontSize:12,fontFamily:"'JetBrains Mono',monospace",textAlign:"right",color:C.amber,fontWeight:700}}/>
+                  <button onClick={()=>cuotaRemoveRow(idx)} className="btn" style={{padding:"5px 0",border:"none",background:"transparent",color:C.red,fontSize:14,cursor:"pointer",fontWeight:700}} title="Quitar cuota">x</button>
+                </div>
+              ))}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 60px 90px 28px",gap:6,marginTop:4,fontSize:9,fontWeight:800,color:C.dim,textTransform:"uppercase",letterSpacing:".06em",paddingLeft:9}}>
+                <span></span><span style={{textAlign:"right"}}>%</span><span style={{textAlign:"right"}}>USD</span><span></span>
+              </div>
+            </div>
+
+            <button onClick={cuotaAddRow} className="btn" style={{width:"100%",padding:"8px",marginBottom:13,borderRadius:8,border:`1px dashed ${C.b2}`,background:C.tag,color:C.b2,fontSize:12,fontWeight:700,cursor:"pointer"}}>+ Agregar cuota</button>
+
+            <div style={{background:C.bg,borderRadius:8,padding:"8px 11px",marginBottom:13,fontSize:11,color:C.txt2}}>
+              <strong style={{color:C.b3}}>Total %:</strong> {cuotasForm.reduce((s,c)=>s + (Number(c.pct)||0), 0).toFixed(1)}% &nbsp;|&nbsp;
+              <strong style={{color:C.b3}}>Total USD:</strong> {fmt(cuotasForm.reduce((s,c)=>s + (Number(c.usd)||0), 0))}
+            </div>
+
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setShowEditCuotas(false)} className="btn" style={{flex:1,padding:"10px 12px",borderRadius:9,border:`1px solid ${C.border}`,background:C.card,color:C.txt2,fontSize:12,fontWeight:700,cursor:"pointer"}}>Cancelar</button>
+              <button onClick={confirmEditCuotas} disabled={cuotasSaving} className="btn" style={{flex:2,padding:"10px 12px",borderRadius:9,border:"none",background:C.b2,color:"#fff",fontSize:12,fontWeight:800,cursor:cuotasSaving?"wait":"pointer",opacity:cuotasSaving?0.6:1}}>{cuotasSaving?"Guardando...":"Guardar cuotas"}</button>
+            </div>
+          </Modal>}
+
           {payModal && <Modal title={`Marcar pagada: ${payModal.name}`} onClose={()=>setPayModal(null)}>
             <div style={{background:C.gBg,borderRadius:9,padding:11,marginBottom:11,border:`1px solid ${C.green}`}}>
               <p style={{fontSize:10,fontWeight:800,color:C.green,textTransform:"uppercase",marginBottom:3}}>Importe a registrar</p>
