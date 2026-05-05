@@ -1000,6 +1000,45 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
   }
 }
 
+
+@media screen and (max-width:600px){
+
+  /* FIX 1 — espacio blanco debajo de la foto del hero */
+  .hero-trust { margin-top:1rem !important; padding-top:1rem !important; }
+  .hero{ padding-bottom:20px !important; }
+
+  /* FIX 2 — indicador de carrusel: flecha a la derecha */
+  .test-grid,.pilares-grid,.dif-grid,.metricas-grid,.zonas-grid,.pf-grid{
+    position:relative;
+  }
+  .testimonios,.pilares,.dif-section,.metricas-sec,.zonas-sec,.pf-section{
+    position:relative;
+  }
+  .testimonios::after,.pilares::after,.dif-section::after,
+  .metricas-sec::after,.zonas-sec::after,.pf-section::after{
+    content:'';
+    position:absolute;
+    right:0;top:50%;
+    transform:translateY(-50%);
+    width:28px;height:60px;
+    background:linear-gradient(to right, transparent, rgba(0,0,0,.08));
+    pointer-events:none;
+    z-index:2;
+  }
+  /* Flecha visible tipo pill */
+  .scroll-hint{
+    display:flex !important;
+    align-items:center;
+    justify-content:flex-end;
+    padding:4px 16px 0;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.06em;
+    color:var(--b2,#3A6EA5);
+    opacity:.7;
+  }
+}
+
 /* ── FIN PMD MOBILE ── */
 
 
@@ -1161,6 +1200,7 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
         <p class="test-quote">El presupuesto inicial fue el presupuesto final. Ni un peso de diferencia.</p>
         <div class="test-author">
           <div class="test-name">Familia Rodríguez</div>
+<div class="scroll-hint" aria-hidden="true">deslizá ›</div>
           <div class="test-obra">Casa Maschwitz · 302 m² · 2023</div>
         </div>
       </div>
@@ -1193,6 +1233,7 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
     <div class="dif-grid">
       <div class="dif-item reveal">
         <div class="dif-num">01</div>
+<div class="scroll-hint" aria-hidden="true">deslizá ›</div>
         <div class="dif-title">Precio cerrado desde el día uno</div>
         <p class="dif-desc">Presupuestamos con costos reales de obras propias. Lo que se acuerda es lo que se paga. Sin sorpresas, sin ajustes por inflación.</p>
       </div>
@@ -1286,6 +1327,7 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
     <div class="metricas-grid">
       <div class="metrica">
         <div class="m-num">50+</div>
+<div class="scroll-hint" aria-hidden="true">deslizá ›</div>
         <div class="m-label">Obras completadas</div>
       </div>
       <div class="metrica">
@@ -1333,6 +1375,7 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
     <div class="zonas-grid">
       <div class="zona-card reveal">
         <div class="zona-name">Nordelta</div>
+<div class="scroll-hint" aria-hidden="true">deslizá ›</div>
         <div class="zona-subs">Isla · Bahía · Cabos · Las Glorietas</div>
         <span class="zona-tag">Full cobertura</span>
       </div>
@@ -1480,6 +1523,7 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
       <div class="pilar-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
       </div>
+<div class="scroll-hint" aria-hidden="true">deslizá ›</div>
       <div class="pilar-tag">PMD Arquitectura</div>
       <div class="pilar-title">Casas y obras <em>llave en mano</em></div>
       <p class="pilar-desc">Diseñamos, construimos y entregamos con precio cerrado. Steel framing o mampostería, según tu proyecto.</p>
