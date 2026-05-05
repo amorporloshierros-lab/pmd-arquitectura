@@ -1039,6 +1039,27 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
   }
 }
 
+
+@media screen and (max-width:600px){
+  /* Eliminar espacio blanco debajo de la foto del hero */
+  .hero-right{
+    min-height:unset !important;
+    height:auto !important;
+    padding:0 !important;
+    margin:0 !important;
+  }
+  .hero-right img{
+    display:block;
+    width:100%;
+    height:auto;
+    object-fit:cover;
+  }
+  .hero{
+    padding-bottom:24px !important;
+    row-gap:16px !important;
+  }
+}
+
 /* ── FIN PMD MOBILE ── */
 
 
