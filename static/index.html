@@ -1074,6 +1074,26 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
   }
 }
 
+
+@media screen and (max-width:600px){
+  /* Métricas — grid 2x2, NO carrusel */
+  .metricas-grid{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    flex-direction:unset !important;
+    overflow-x:unset !important;
+    scroll-snap-type:unset !important;
+    gap:1px !important;
+    padding-bottom:0 !important;
+  }
+  .metrica{
+    flex:unset !important;
+    max-width:unset !important;
+    width:100% !important;
+    scroll-snap-align:unset !important;
+  }
+}
+
 /* ── FIN PMD MOBILE ── */
 
 
