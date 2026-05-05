@@ -964,6 +964,16 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
 }
 /* ── FIN PMD MOBILE ── */
 
+
+.chat-tooltip{position:fixed;bottom:104px;right:20px;background:#1E3A5F;color:#fff;
+  padding:10px 16px;border-radius:18px 18px 4px 18px;font-size:13px;font-weight:600;
+  font-family:'DM Sans',sans-serif;white-space:nowrap;box-shadow:0 4px 20px rgba(30,58,95,.35);
+  z-index:9997;opacity:0;transform:translateY(8px) scale(.95);
+  transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;}
+.chat-tooltip.visible{opacity:1;transform:translateY(0) scale(1);}
+.chat-tooltip::after{content:'';position:absolute;bottom:-7px;right:18px;
+  border-left:7px solid transparent;border-top:7px solid #1E3A5F;}
+
 </style>
 </head>
 <body>
@@ -1527,6 +1537,8 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
   </div>
 </footer>
 
+
+<div class="chat-tooltip" id="chatTooltip">💬 Hablá con un asesor</div>
 <!-- CHAT FAB -->
 <button class="chat-fab" id="fab" onclick="openLucasChat()" aria-label="Hablá con un asesor">
   <span class="pulse"></span>
@@ -1924,5 +1936,26 @@ function submitPMDContact(e){
 })();
 </script>
 
+<script>
+(function(){
+  var msgs=['💬 Hablá con un asesor','🏠 ¿Cuánto cuesta tu casa?','📐 Consultá sin compromiso','⚡ Respuesta en minutos'];
+  var idx=0;
+  function show(){
+    var t=document.getElementById('chatTooltip');
+    if(!t) return;
+    t.textContent=msgs[idx%msgs.length]; idx++;
+    t.classList.add('visible');
+    setTimeout(function(){t.classList.remove('visible');},4000);
+  }
+  setTimeout(show,2000);
+  setInterval(show,45000);
+  document.addEventListener('click',function(e){
+    if(e.target.closest('#fab')||e.target.closest('.chat-fab')){
+      var t=document.getElementById('chatTooltip');
+      if(t) t.classList.remove('visible');
+    }
+  });
+})();
+</script>
 </body>
 </html>
