@@ -789,7 +789,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 }
 .intro-pmd{
   font-family:'Cormorant Garamond',serif;
-  font-size:clamp(60px,16vw,190px);
+  font-size:clamp(84px,14.5vw,190px);
   font-weight:700;
   letter-spacing:.025em;
   color:#F4F2EE;
@@ -1053,18 +1053,6 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
 }
 
 
-.intro-arq {
-  font-family: 'DM Sans', sans-serif;
-  font-size: clamp(16px, 3vw, 28px);
-  font-weight: 700;
-  letter-spacing: .18em;
-  text-transform: uppercase;
-  color: rgba(244,242,238,.7);
-  opacity: 0;
-  animation: introPmdIn .55s .5s cubic-bezier(.22,.61,.36,1) forwards,
-             introPmdOut .4s 1.95s cubic-bezier(.4,0,.6,1) forwards;
-  margin-top: 8px;
-}
 
 /* ══════════════════════════════════════════════════
    PMD MOBILE FIXES v2
@@ -1290,21 +1278,11 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
 }
 
 
-.intro-content {
-  text-align: center;
-  overflow: hidden;
-  width: 100%;
-  padding: 0 20px;
-}
 @media (max-width: 768px) {
   .intro-pmd {
     font-size: clamp(52px, 18vw, 120px) !important;
   }
-  .intro-arq {
-    font-size: clamp(13px, 4.5vw, 20px) !important;
-    letter-spacing: .14em !important;
   }
-}
 
 </style>
 </head>
@@ -1321,7 +1299,6 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
   <div class="intro-content">
     <div class="intro-placeholder" id="introPlaceholder"></div>
     <div class="intro-pmd">PMD</div>
-    <div class="intro-arq">arquitectura</div>
   </div>
 </div>
 <div class="intro-sq s1" id="introSq1" aria-hidden="true"></div>
