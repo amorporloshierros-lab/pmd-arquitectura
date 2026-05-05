@@ -962,6 +962,44 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
   .inv-cta-inner{flex-direction:column !important;gap:1.2rem !important}
   .inv-cta-btn{width:100% !important;justify-content:center !important}
 }
+
+@media screen and (max-width:600px){
+
+  /* NAV — todo visible, sin cortar */
+  .nav-inner{padding:0 12px;gap:6px;}
+  .brand-name{font-size:14px;}
+  .sqs .sq{width:7px !important;height:7px !important;}
+  .nav-btn-hogar{height:30px !important;padding:0 8px !important;font-size:11px !important;}
+  .nav-btn-hogar span:not(.dot){font-size:11px !important;}
+  .nav-cta{height:30px !important;padding:0 8px !important;font-size:11px !important;white-space:nowrap;}
+
+  /* CARRUSEL — indicador flecha */
+  .test-grid,.pilares-grid,.dif-grid,.metricas-grid,.zonas-grid,.pf-grid{
+    position:relative;
+  }
+}
+
+/* Indicador "deslizá" para carruseles en mobile */
+@media screen and (max-width:600px){
+  .testimonios .test-grid::after,
+  .pilares::after,
+  .dif-section .dif-grid::after,
+  .metricas .metricas-grid::after,
+  .zonas-sec .zonas-grid::after,
+  .pf-section .pf-grid::after{
+    content:'deslizá  ›';
+    display:block;
+    flex:0 0 auto;
+    align-self:center;
+    color:rgba(255,255,255,.35);
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.08em;
+    padding:0 8px;
+    white-space:nowrap;
+  }
+}
+
 /* ── FIN PMD MOBILE ── */
 
 
