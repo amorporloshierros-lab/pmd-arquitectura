@@ -1094,6 +1094,31 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
   }
 }
 
+
+@media screen and (max-width:600px){
+  /* scroll-hint — posicionado bottom-right dentro de la última card visible */
+  .pilares-grid .pilar:last-child::after,
+  .test-grid .test-card:last-child::after,
+  .dif-grid .dif-item:last-child::after,
+  .zonas-grid > *:last-child::after{
+    content:'deslizá →';
+    display:block;
+    text-align:right;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.06em;
+    margin-top:12px;
+    opacity:.5;
+  }
+  /* Asegurar que las cards NO se estiren verticalmente */
+  .pilares-grid .pilar,
+  .test-grid .test-card,
+  .dif-grid .dif-item,
+  .zonas-grid > *{
+    align-self:start !important;
+  }
+}
+
 /* ── FIN PMD MOBILE ── */
 
 
@@ -1273,7 +1298,6 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
         </div>
       </div>
     </div>
-<div class="scroll-hint" aria-hidden="true">deslizá →</div>
   </div>
 </section>
 
@@ -1302,7 +1326,6 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
         <p class="dif-desc">Creamos la plataforma que nos diferencia: cada viernes subimos fotos, videos, métricas de avance y reportes de obra. Entrás, ves tu proyecto desde donde estés y no hay nada escondido. Nació del compromiso de que nunca más un cliente sienta que construye a ciegas.</p>
       </div>
     </div>
-<div class="scroll-hint" aria-hidden="true">deslizá →</div>
   </div>
 </section>
 
@@ -1448,7 +1471,6 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
         <span class="zona-tag">Full cobertura</span>
       </div>
     </div>
-<div class="scroll-hint" aria-hidden="true">deslizá →</div>
   </div>
 </section>
 
@@ -1618,7 +1640,6 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
       <a href="javascript:void(0)" class="pilar-cta" onclick="openContactoCon('Automatización')">Consultá por un proyecto →</a>
     </div>
   </div>
-<div class="scroll-hint" aria-hidden="true">deslizá →</div>
 
   <p class="pilares-note">Hoy construimos en <strong>Nordelta, Tigre, San Isidro, Escobar y Capital Federal</strong>. La misma lógica de precio cerrado, comunicación semanal y llave en mano se aplica a las tres unidades de negocio.</p>
 </section>
