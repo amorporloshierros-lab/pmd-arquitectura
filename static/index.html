@@ -931,241 +931,38 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
   body.intro-active nav .brand .brand-name{opacity:1 !important}
 }
 
-
-
-/* ── HERO: texto + casa lado a lado ── */
-  .hero {
-    grid-template-columns: 1fr 1fr;
-    padding: 76px 16px 32px;
-    gap: 12px;
-    min-height: auto;
-    align-items: center;
+/* ── PMD MOBILE CARRUSELES — solo celular ≤600px ── */
+@media screen and (max-width:600px){
+  .test-grid,.pilares-grid,.dif-grid,.metricas-grid,.zonas-grid,.pf-grid{
+    display:flex !important;flex-direction:row !important;
+    overflow-x:auto !important;scroll-snap-type:x mandatory !important;
+    -webkit-overflow-scrolling:touch !important;
+    scrollbar-width:none !important;gap:12px !important;padding-bottom:16px !important;
   }
-  .hero-left { padding: 0; }
-  .hero-title { font-size: clamp(1.5rem, 6vw, 2.4rem); line-height: 1.1; margin-bottom: 1rem; }
-  .hero-sub { font-size: 12px; line-height: 1.5; }
-  .hero-right { min-height: 200px; }
-  .hero-actions { flex-direction: column; gap: 8px; }
-  .hero-actions a, .hero-actions button { font-size: 12px; padding: 10px 14px; }
+  .test-grid::-webkit-scrollbar,.pilares-grid::-webkit-scrollbar,
+  .dif-grid::-webkit-scrollbar,.metricas-grid::-webkit-scrollbar,
+  .zonas-grid::-webkit-scrollbar,.pf-grid::-webkit-scrollbar{display:none !important}
+  
+  .test-card{flex:0 0 85vw !important;max-width:85vw !important;scroll-snap-align:center !important;margin:0 6px !important;border-radius:10px !important}
+  .test-card:first-child{margin-left:7vw !important}
+  .pilar{flex:0 0 76vw !important;max-width:76vw !important;scroll-snap-align:start !important}
+  .dif-item{flex:0 0 78vw !important;max-width:78vw !important;scroll-snap-align:start !important;border-right:none !important}
+  .metrica{flex:0 0 42vw !important;max-width:42vw !important;scroll-snap-align:start !important}
+  .zonas-grid > *{flex:0 0 68vw !important;max-width:68vw !important;scroll-snap-align:start !important}
+  .pf-grid > *{flex:0 0 70vw !important;max-width:70vw !important;scroll-snap-align:start !important}
 
-  /* ── CARRUSEL BASE: todos los grids horizontales ── */
-  .test-grid,
-  .dif-grid,
-  .pf-grid,
-  .metricas-grid,
-  .zonas-grid,
-  .galeria-grid,
-  .pilares-grid {
-    display: flex !important;
-    flex-direction: row !important;
-    overflow-x: auto !important;
-    scroll-snap-type: x mandatory !important;
-    -webkit-overflow-scrolling: touch !important;
-    gap: 14px !important;
-    padding-bottom: 12px !important;
-    scrollbar-width: none !important;
-  }
-  .test-grid::-webkit-scrollbar,
-  .dif-grid::-webkit-scrollbar,
-  .pf-grid::-webkit-scrollbar,
-  .metricas-grid::-webkit-scrollbar,
-  .zonas-grid::-webkit-scrollbar,
-  .galeria-grid::-webkit-scrollbar,
-  .pilares-grid::-webkit-scrollbar { display: none !important; }
+  .galeria-grid{display:flex !important;flex-direction:column !important;gap:4px !important}
+  .gal-item{height:220px !important;min-height:unset !important}
+  .gal-item:first-child{height:260px !important;grid-row:auto !important}
 
-  /* Cards dentro de carruseles — ancho fijo para que se vean cortadas (hint de scroll) */
-  .test-grid > *,
-  .dif-grid > *,
-  .pf-grid > *,
-  .metricas-grid > *,
-  .zonas-grid > *,
-  .galeria-grid > *,
-  .pilares-grid > * {
-    flex: 0 0 80vw !important;
-    max-width: 80vw !important;
-    scroll-snap-align: start !important;
-    min-width: 0 !important;
-  }
-
-  /* Galería — cards más chicas para ver 1.2 en pantalla */
-  .galeria-grid > * { flex: 0 0 75vw !important; max-width: 75vw !important; height: 220px !important; }
-
-  /* Métricas — más chicas, 2 visibles */
-  .metricas-grid > * { flex: 0 0 44vw !important; max-width: 44vw !important; }
-
-  /* Presupuestador */
-  #presuIframe { width: 100% !important; height: 86vh !important; border-radius: 10px; }
-  .presupuestador-section { padding: 2.5rem 0 1.5rem; }
-
-  /* Contacto — vertical */
-  .contacto-grid { grid-template-columns: 1fr !important; gap: 2rem; }
-
-  /* Footer */
-  .footer-grid { grid-template-columns: 1fr !important; text-align: center; }
-  .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
-
-  /* CTA banner */
-  .inv-cta-inner { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
-  .inv-cta-btn { width: 100%; justify-content: center; }
-
-  /* Container padding */
-  .container { padding: 0 16px; }
-
-  /* Secciones */
-  .section-title { font-size: clamp(1.7rem, 7vw, 2.4rem); }
+  #presuIframe{width:100% !important;height:86vh !important}
+  .contacto-grid{grid-template-columns:1fr !important}
+  .footer-grid{grid-template-columns:1fr !important;text-align:center !important}
+  .footer-bottom{flex-direction:column !important;gap:10px !important}
+  .inv-cta-inner{flex-direction:column !important;gap:1.2rem !important}
+  .inv-cta-btn{width:100% !important;justify-content:center !important}
 }
-
-
-/* ── CHAT TOOLTIP BUBBLE ── */
-.chat-tooltip {
-  position: fixed;
-  bottom: 104px;
-  right: 20px;
-  background: #1E3A5F;
-  color: #fff;
-  padding: 10px 16px;
-  border-radius: 18px 18px 4px 18px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
-  white-space: nowrap;
-  box-shadow: 0 4px 20px rgba(30,58,95,.35);
-  z-index: 9997;
-  opacity: 0;
-  transform: translateY(8px) scale(0.95);
-  transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
-  pointer-events: none;
-}
-.chat-tooltip.visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-.chat-tooltip::after {
-  content: '';
-  position: absolute;
-  bottom: -7px;
-  right: 18px;
-  width: 0;
-  height: 0;
-  border-left: 7px solid transparent;
-  border-right: 0px solid transparent;
-  border-top: 7px solid #1E3A5F;
-}
-
-
-
-/* Primer card centrado con margen izquierdo */
-  .test-card:first-child { margin-left: 6vw !important; }
-
-  /* Indicador de scroll — flecha derecha */
-  .pilares { position: relative; }
-  .pilares::after {
-    content: 'deslizá →';
-    position: absolute;
-    bottom: 8px;
-    right: 20px;
-    font-size: 11px;
-    color: rgba(255,255,255,.4);
-    pointer-events: none;
-  }
-
-  /* ── OTROS CARRUSELES ── */
-  .dif-grid {
-    display: flex !important;
-    flex-direction: row !important;
-    overflow-x: auto !important;
-    scroll-snap-type: x mandatory !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    gap: 12px !important;
-    padding-bottom: 16px !important;
-  }
-  .dif-grid::-webkit-scrollbar { display: none !important; }
-  .dif-item {
-    flex: 0 0 80vw !important;
-    max-width: 80vw !important;
-    scroll-snap-align: start !important;
-    border-right: none !important;
-    border-bottom: 1px solid var(--border) !important;
-  }
-
-  .pf-grid {
-    display: flex !important;
-    flex-direction: row !important;
-    overflow-x: auto !important;
-    scroll-snap-type: x mandatory !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    gap: 12px !important;
-    padding-bottom: 16px !important;
-  }
-  .pf-grid::-webkit-scrollbar { display: none !important; }
-  .pf-grid > * {
-    flex: 0 0 72vw !important;
-    max-width: 72vw !important;
-    scroll-snap-align: start !important;
-  }
-
-  .metricas-grid {
-    display: flex !important;
-    flex-direction: row !important;
-    overflow-x: auto !important;
-    scroll-snap-type: x mandatory !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    gap: 12px !important;
-    padding-bottom: 16px !important;
-  }
-  .metricas-grid::-webkit-scrollbar { display: none !important; }
-  .metrica {
-    flex: 0 0 44vw !important;
-    max-width: 44vw !important;
-    scroll-snap-align: start !important;
-  }
-
-  .zonas-grid {
-    display: flex !important;
-    flex-direction: row !important;
-    overflow-x: auto !important;
-    scroll-snap-type: x mandatory !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    gap: 12px !important;
-    padding-bottom: 16px !important;
-  }
-  .zonas-grid::-webkit-scrollbar { display: none !important; }
-  .zonas-grid > * {
-    flex: 0 0 70vw !important;
-    max-width: 70vw !important;
-    scroll-snap-align: start !important;
-  }
-
-  /* ── PRESUPUESTADOR ── */
-  #presuIframe {
-    width: 100% !important;
-    height: 86vh !important;
-    border-radius: 10px !important;
-  }
-  .presupuestador-section { padding: 2.5rem 0 1.5rem !important; }
-
-  /* ── CONTACTO y FOOTER ── */
-  .contacto-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
-  .footer-grid { grid-template-columns: 1fr !important; text-align: center !important; }
-  .footer-bottom { flex-direction: column !important; gap: 10px !important; text-align: center !important; }
-  .inv-cta-inner { flex-direction: column !important; align-items: flex-start !important; gap: 1.2rem !important; }
-  .inv-cta-btn { width: 100% !important; justify-content: center !important; }
-
-  /* ── CONTAINER ── */
-  .container { padding: 0 16px !important; }
-  .section-title { font-size: clamp(1.7rem, 7vw, 2.4rem) !important; }
-}
-
-
-
-  }
-
-
-
+/* ── FIN PMD MOBILE ── */
 
 </style>
 </head>
@@ -1730,9 +1527,6 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
   </div>
 </footer>
 
-
-<!-- CHAT TOOLTIP -->
-<div class="chat-tooltip" id="chatTooltip">💬 Hablá con un asesor</div>
 <!-- CHAT FAB -->
 <button class="chat-fab" id="fab" onclick="openLucasChat()" aria-label="Hablá con un asesor">
   <span class="pulse"></span>
@@ -2127,49 +1921,6 @@ function submitPMDContact(e){
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -80px 0px' });
   items.forEach(el => io.observe(el));
-})();
-</script>
-
-
-<script>
-// Chat tooltip — aparece al cargar y cada 45 segundos
-(function() {
-  var messages = [
-    '💬 Hablá con un asesor',
-    '🏠 ¿Cuánto cuesta tu casa ideal?',
-    '📐 Consultá sin compromiso',
-    '⚡ Respuesta en minutos',
-  ];
-  var idx = 0;
-  var tooltip = null;
-  var chatOpen = false;
-
-  function showTooltip() {
-    if (chatOpen) return;
-    tooltip = document.getElementById('chatTooltip');
-    if (!tooltip) return;
-    tooltip.textContent = messages[idx % messages.length];
-    idx++;
-    tooltip.classList.add('visible');
-    setTimeout(function() {
-      tooltip.classList.remove('visible');
-    }, 4000);
-  }
-
-  // Primera vez a los 2 segundos de cargar
-  setTimeout(showTooltip, 2000);
-
-  // Luego cada 45 segundos
-  setInterval(showTooltip, 45000);
-
-  // Ocultar si abre el chat
-  document.addEventListener('click', function(e) {
-    if (e.target.closest('#fab') || e.target.closest('.chat-fab')) {
-      chatOpen = true;
-      var t = document.getElementById('chatTooltip');
-      if (t) t.classList.remove('visible');
-    }
-  });
 })();
 </script>
 
