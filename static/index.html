@@ -1100,32 +1100,37 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
 
 
 @media screen and (max-width:600px){
-  /* Indicador deslizá → en el contenedor del carrusel, no en las cards */
-  .pilares-grid,
-  .test-grid,
-  .dif-grid,
-  .zonas-grid{
+  
+
+
+@media screen and (max-width:600px){
+
+  /* FIX 1 — Mi Hogar: mostrar texto en mobile */
+  .nav-btn-hogar span:not(.dot){
+    display:inline !important;
+    font-size:11px !important;
+  }
+
+  /* FIX 2 — deslizá → azul, abajo derecha, dentro de la primera card */
+  .pilares-grid .pilar:first-child,
+  .test-grid .test-card:first-child,
+  .dif-grid .dif-item:first-child,
+  .zonas-grid > *:first-child{
     position:relative;
   }
-  .pilares-grid::after,
-  .test-grid::after,
-  .dif-grid::after,
-  .zonas-grid::after{
+  .pilares-grid .pilar:first-child::after,
+  .test-grid .test-card:first-child::after,
+  .dif-grid .dif-item:first-child::after,
+  .zonas-grid > *:first-child::after{
     content:'deslizá →';
-    position:sticky;
-    right:0;
-    flex:0 0 auto;
-    align-self:center;
-    padding:6px 10px;
+    position:absolute;
+    bottom:12px;
+    right:14px;
     font-size:11px;
     font-weight:700;
     letter-spacing:.06em;
-    color:var(--b1,#1E3A5F);
-    background:rgba(255,255,255,0.85);
-    border-radius:20px;
-    white-space:nowrap;
+    color:#3A6EA5;
     pointer-events:none;
-    margin-left:4px;
   }
 }
 
