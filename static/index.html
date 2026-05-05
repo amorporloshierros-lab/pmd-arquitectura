@@ -139,13 +139,9 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 .hero-right{position:relative;overflow:hidden;border-radius:var(--r2);box-shadow:0 30px 60px rgba(28,51,86,.2)}
 .hero-right img{width:100%;height:100%;object-fit:cover}
 @media(max-width:900px){
-  .hero{grid-template-columns:1fr;gap:24px;padding:78px 18px 32px;min-height:auto}
+  .hero{grid-template-columns:1fr;gap:40px;padding:60px 24px}
   .hero-left{padding:0}
-  .hero-title{font-size:clamp(2rem,9vw,3rem);line-height:1.08}
-  .hero-sub{font-size:13px}
-  .hero-right{min-height:240px;height:52vw;max-height:300px}
-  .hero-actions{flex-direction:column;gap:10px}
-  .hero-actions a,.hero-actions button{width:100%;justify-content:center}
+  .hero-right{min-height:400px}
 }
 
 /* ── TESTIMONIOS ── */
@@ -165,12 +161,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 .test-author{display:flex;flex-direction:column;gap:3px}
 .test-name{font-size:13px;font-weight:500;color:#fff}
 .test-obra{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em}
-@media(max-width:900px){
-  .test-grid{display:flex;flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0;background:transparent;padding-bottom:16px}
-  .test-grid::-webkit-scrollbar{display:none}
-  .test-card{flex:0 0 85vw;max-width:85vw;scroll-snap-align:center;margin:0 6px;border-radius:10px}
-  .test-card:first-child{margin-left:7vw}
-}
+@media(max-width:900px){.test-grid{grid-template-columns:1fr}}
 
 /* ── DIFERENCIADORES ── */
 .dif-section{padding:6rem 0;background:var(--white)}
@@ -189,9 +180,9 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 .dif-title{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:.6rem}
 .dif-desc{font-size:13px;color:var(--ink3);line-height:1.7}
 @media(max-width:900px){
-  .dif-grid{display:flex;flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:12px;padding-bottom:16px}
-  .dif-grid::-webkit-scrollbar{display:none}
-  .dif-item{flex:0 0 78vw;max-width:78vw;scroll-snap-align:start;border-right:none;border-bottom:none}
+  .dif-grid{grid-template-columns:1fr}
+  .dif-item{border-right:none;border-bottom:1px solid var(--border)}
+  .dif-item:last-child{border-bottom:none}
 }
 
 /* ── PORTFOLIO ── */
@@ -238,11 +229,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 .pj-tag{display:inline-block;font-size:9px;color:var(--b3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;font-weight:600}
 .pj-name{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--ink);margin-bottom:4px}
 .pj-desc{font-size:13px;color:var(--ink2);line-height:1.5}
-@media(max-width:900px){
-  .pf-grid{display:flex;flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:12px;padding-bottom:16px}
-  .pf-grid::-webkit-scrollbar{display:none}
-  .pf-grid > *{flex:0 0 70vw;max-width:70vw;scroll-snap-align:start}
-}
+@media(max-width:900px){.pf-grid{grid-template-columns:repeat(2,1fr)}}
 
 /* ── GALERÍA ── */
 .galeria{background:#1C1C1A;padding:5rem 0}
@@ -259,9 +246,8 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 .gal-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s var(--ease)}
 .gal-item:hover img{transform:scale(1.06)}
 @media(max-width:900px){
-  .galeria-grid{display:flex;flex-direction:column;gap:4px}
-  .gal-item{height:220px;min-height:unset}
-  .gal-item:first-child{height:260px;min-height:unset;grid-row:auto}
+  .galeria-grid{grid-template-columns:1fr}
+  .gal-item:first-child{grid-row:auto;height:300px}
 }
 
 /* ── PROCESO — TIMELINE CINEMÁTICA CON OLA ──
@@ -371,11 +357,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 .metrica{text-align:center}
 .m-num{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:500;line-height:1}
 .m-label{font-size:13px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.1em;margin-top:.5rem}
-@media(max-width:900px){
-  .metricas-grid{display:flex;flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:12px;padding-bottom:16px}
-  .metricas-grid::-webkit-scrollbar{display:none}
-  .metrica{flex:0 0 42vw;max-width:42vw;scroll-snap-align:start}
-}
+@media(max-width:900px){.metricas-grid{grid-template-columns:repeat(2,1fr)}}
 
 /* ── PRESUPUESTADOR ── */
 .presupuestador-section{padding:6rem 0 3rem;background:var(--bg)}
@@ -398,11 +380,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 .zona-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:#fff;margin-bottom:.5rem}
 .zona-subs{font-size:13px;color:rgba(255,255,255,.6);margin-bottom:1rem;line-height:1.5}
 .zona-tag{display:inline-block;font-size:10px;background:rgba(91,163,201,.15);color:var(--b1);padding:4px 12px;border-radius:12px;font-weight:600;letter-spacing:.08em}
-@media(max-width:900px){
-  .zonas-grid{display:flex;flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:12px;padding-bottom:16px}
-  .zonas-grid::-webkit-scrollbar{display:none}
-  .zonas-grid > *{flex:0 0 68vw;max-width:68vw;scroll-snap-align:start}
-}
+@media(max-width:900px){.zonas-grid{grid-template-columns:repeat(2,1fr)}}
 
 /* ── CONTACTO ── */
 .contacto-sec{padding:6rem 0;background:var(--white)}
@@ -774,9 +752,8 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 }
 .pilares-note strong{color:var(--ink);font-weight:500}
 @media(max-width:900px){
-  .pilares-grid{display:flex;flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:12px;padding:0 18px 20px;max-width:100%}
-  .pilares-grid::-webkit-scrollbar{display:none}
-  .pilar{flex:0 0 76vw;max-width:76vw;scroll-snap-align:start}
+  .pilares-grid{grid-template-columns:1fr;gap:1rem}
+  .pilares{padding:5rem 0}
 }
 
 /* ── INTRO CINEMÁTICA ──
