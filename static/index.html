@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=1200, initial-scale=0.33, maximum-scale=2.0, user-scalable=yes">
 <meta name="description" content="PMD Arquitectura — Especialistas en steel framing en Nordelta, Tigre, San Isidro y Escobar. Construcción, ampliación y proyectos llave en mano desde 2014.">
 <title>PMD Arquitectura — Construcción y Diseño · GBA Norte</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='10' width='7' height='12' fill='%235BA3C9'/%3E%3Crect x='13' y='10' width='7' height='12' fill='%233B6EA5'/%3E%3Crect x='22' y='10' width='7' height='12' fill='%232B4E7A'/%3E%3C/svg%3E">
@@ -931,108 +931,6 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
   body.intro-active nav .brand .brand-name{opacity:1 !important}
 }
 
-/* ══════════════════════════════════════════════════
-   MOBILE RESPONSIVE — PMD (max 480px)
-   ══════════════════════════════════════════════════ */
-@media (max-width: 480px) {
-
-  /* Hero */
-  .hero {
-    grid-template-columns: 1fr;
-    padding: 80px 20px 40px;
-    gap: 0;
-    min-height: auto;
-  }
-  .hero-left {
-    padding: 0;
-    text-align: left;
-  }
-  .hero-title {
-    font-size: clamp(2.4rem, 11vw, 3.8rem);
-    line-height: 1.05;
-    margin-bottom: 1.2rem;
-  }
-  .hero-sub {
-    font-size: 14px;
-    margin-bottom: 1.5rem;
-  }
-  .hero-right {
-    min-height: 260px;
-    margin-top: 24px;
-  }
-  .hero-actions {
-    flex-direction: column;
-    gap: 12px;
-  }
-  .hero-actions a, .hero-actions button {
-    width: 100%;
-    justify-content: center;
-  }
-
-  /* Nav */
-  .nav-links { display: none; }
-  .brand-name { font-size: 17px; }
-
-  /* Secciones generales */
-  .container { padding: 0 18px; }
-  section, .section { padding: 3.5rem 0; }
-  .section-title { font-size: clamp(1.8rem, 8vw, 2.6rem); }
-
-  /* Presupuestador iframe */
-  #presuIframe {
-    width: 100% !important;
-    height: 85vh !important;
-    min-height: 600px;
-    border-radius: 12px;
-  }
-  .presupuestador-section { padding: 3rem 0 2rem; }
-
-  /* Grids → 1 columna */
-  .pf-grid { grid-template-columns: 1fr !important; }
-  .metricas-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  .zonas-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  .footer-grid { grid-template-columns: 1fr !important; text-align: center; }
-
-  /* Testimonios */
-  .test-grid { grid-template-columns: 1fr !important; }
-
-  /* Diferenciadores */
-  .dif-grid { grid-template-columns: 1fr !important; }
-
-  /* Timeline */
-  .timeline-item { grid-template-columns: 50px 1fr; gap: 1rem; }
-  .tm-num { width: 42px; height: 42px; font-size: 1.8rem; }
-
-  /* Contacto */
-  .contacto-grid { grid-template-columns: 1fr !important; gap: 2rem; }
-
-  /* CTA banner */
-  .inv-cta-inner { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
-  .inv-cta-btn { width: 100%; justify-content: center; }
-
-  /* Galería */
-  .galeria-grid { grid-template-columns: 1fr !important; }
-  .gal-item:first-child { grid-row: auto; height: 260px; }
-
-  /* Métricas */
-  .metrica-num { font-size: clamp(2rem, 10vw, 3rem); }
-
-  /* Chat widget */
-  #lucas-chat-widget { right: 12px !important; bottom: 12px !important; }
-  #lucas-chat-bubble { width: 52px !important; height: 52px !important; }
-}
-
-@media (max-width: 600px) {
-  /* Hero ajustes intermedios */
-  .hero { padding: 76px 20px 36px; }
-  .hero-title { font-size: clamp(2.6rem, 10vw, 4rem); }
-
-  /* Iframe presupuestador */
-  #presuIframe {
-    width: 100% !important;
-    height: 88vh !important;
-  }
-}
 
 </style>
 </head>
