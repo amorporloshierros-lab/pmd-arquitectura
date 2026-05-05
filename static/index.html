@@ -933,12 +933,7 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
 
 
 
-/* ══════════════════════════════════════════════════
-   PMD MOBILE — Carruseles + Hero adaptado
-   ══════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-
-  /* ── HERO: texto + casa lado a lado ── */
+/* ── HERO: texto + casa lado a lado ── */
   .hero {
     grid-template-columns: 1fr 1fr;
     padding: 76px 16px 32px;
@@ -1057,6 +1052,243 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
   border-top: 7px solid #1E3A5F;
 }
 
+
+.intro-arq {
+  font-family: 'DM Sans', sans-serif;
+  font-size: clamp(16px, 3vw, 28px);
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(244,242,238,.7);
+  opacity: 0;
+  animation: introPmdIn .55s .5s cubic-bezier(.22,.61,.36,1) forwards,
+             introPmdOut .4s 1.95s cubic-bezier(.4,0,.6,1) forwards;
+  margin-top: 8px;
+}
+
+/* ══════════════════════════════════════════════════
+   PMD MOBILE FIXES v2
+   ══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── FIX 1: NAV — no cortar ── */
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    padding: 0 14px;
+    gap: 8px;
+  }
+  .brand { flex-shrink: 0; }
+  .brand-name { font-size: 15px; white-space: nowrap; }
+  .sqs .sq { width: 7px !important; height: 7px !important; }
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .nav-btn-hogar {
+    height: 30px !important;
+    padding: 0 10px !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+  }
+  .nav-btn-hogar span:not(.dot) { display: inline !important; font-size: 11px; }
+  .nav-cta {
+    height: 30px !important;
+    padding: 0 10px !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+  }
+
+  /* ── FIX 2: HERO — texto arriba, casa abajo grande ── */
+  .hero {
+    grid-template-columns: 1fr !important;
+    padding: 80px 18px 32px !important;
+    gap: 24px !important;
+    min-height: auto !important;
+  }
+  .hero-left { padding: 0 !important; }
+  .hero-title {
+    font-size: clamp(2.2rem, 9vw, 3.2rem) !important;
+    line-height: 1.08 !important;
+    margin-bottom: 1rem !important;
+  }
+  .hero-sub { font-size: 13px !important; }
+  .hero-right {
+    min-height: 260px !important;
+    height: 55vw !important;
+    max-height: 320px !important;
+    border-radius: 12px !important;
+  }
+  .hero-actions { flex-direction: column !important; gap: 10px !important; }
+  .hero-actions a, .hero-actions button { width: 100% !important; justify-content: center !important; }
+
+  /* ── FIX 3: TESTIMONIOS — primer card centrado, carrusel ── */
+  .test-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 0 !important;
+    background: transparent !important;
+    padding-bottom: 16px !important;
+  }
+  .test-grid::-webkit-scrollbar { display: none !important; }
+  .test-card {
+    flex: 0 0 88vw !important;
+    max-width: 88vw !important;
+    scroll-snap-align: center !important;
+    margin: 0 6px !important;
+    border-radius: 12px !important;
+  }
+  /* Primer card centrado con margen izquierdo */
+  .test-card:first-child { margin-left: 6vw !important; }
+
+  /* ── FIX 4: PILARES/POR QUÉ PMD — carrusel con indicador ── */
+  .pilares-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 12px !important;
+    padding: 0 18px 20px !important;
+  }
+  .pilares-grid::-webkit-scrollbar { display: none !important; }
+  .pilar {
+    flex: 0 0 78vw !important;
+    max-width: 78vw !important;
+    scroll-snap-align: start !important;
+  }
+  /* Indicador de scroll — flecha derecha */
+  .pilares { position: relative; }
+  .pilares::after {
+    content: 'deslizá →';
+    position: absolute;
+    bottom: 8px;
+    right: 20px;
+    font-size: 11px;
+    color: rgba(255,255,255,.4);
+    pointer-events: none;
+  }
+
+  /* ── FIX 5: GALERÍA — fotos verticales una abajo de la otra ── */
+  .galeria-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-x: unset !important;
+    gap: 4px !important;
+    padding-bottom: 0 !important;
+  }
+  .gal-item {
+    flex: none !important;
+    max-width: 100% !important;
+    height: 220px !important;
+    scroll-snap-align: unset !important;
+  }
+  .gal-item:first-child {
+    height: 260px !important;
+    grid-row: auto !important;
+    min-height: unset !important;
+  }
+
+  /* ── OTROS CARRUSELES ── */
+  .dif-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 12px !important;
+    padding-bottom: 16px !important;
+  }
+  .dif-grid::-webkit-scrollbar { display: none !important; }
+  .dif-item {
+    flex: 0 0 80vw !important;
+    max-width: 80vw !important;
+    scroll-snap-align: start !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+
+  .pf-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 12px !important;
+    padding-bottom: 16px !important;
+  }
+  .pf-grid::-webkit-scrollbar { display: none !important; }
+  .pf-grid > * {
+    flex: 0 0 72vw !important;
+    max-width: 72vw !important;
+    scroll-snap-align: start !important;
+  }
+
+  .metricas-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 12px !important;
+    padding-bottom: 16px !important;
+  }
+  .metricas-grid::-webkit-scrollbar { display: none !important; }
+  .metrica {
+    flex: 0 0 44vw !important;
+    max-width: 44vw !important;
+    scroll-snap-align: start !important;
+  }
+
+  .zonas-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 12px !important;
+    padding-bottom: 16px !important;
+  }
+  .zonas-grid::-webkit-scrollbar { display: none !important; }
+  .zonas-grid > * {
+    flex: 0 0 70vw !important;
+    max-width: 70vw !important;
+    scroll-snap-align: start !important;
+  }
+
+  /* ── PRESUPUESTADOR ── */
+  #presuIframe {
+    width: 100% !important;
+    height: 86vh !important;
+    border-radius: 10px !important;
+  }
+  .presupuestador-section { padding: 2.5rem 0 1.5rem !important; }
+
+  /* ── CONTACTO y FOOTER ── */
+  .contacto-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
+  .footer-grid { grid-template-columns: 1fr !important; text-align: center !important; }
+  .footer-bottom { flex-direction: column !important; gap: 10px !important; text-align: center !important; }
+  .inv-cta-inner { flex-direction: column !important; align-items: flex-start !important; gap: 1.2rem !important; }
+  .inv-cta-btn { width: 100% !important; justify-content: center !important; }
+
+  /* ── CONTAINER ── */
+  .container { padding: 0 16px !important; }
+  .section-title { font-size: clamp(1.7rem, 7vw, 2.4rem) !important; }
+}
+
 </style>
 </head>
 <body>
@@ -1072,6 +1304,7 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
   <div class="intro-content">
     <div class="intro-placeholder" id="introPlaceholder"></div>
     <div class="intro-pmd">PMD</div>
+    <div class="intro-arq">arquitectura</div>
   </div>
 </div>
 <div class="intro-sq s1" id="introSq1" aria-hidden="true"></div>
