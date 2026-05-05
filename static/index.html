@@ -1096,26 +1096,36 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
 
 
 @media screen and (max-width:600px){
-  /* scroll-hint — posicionado bottom-right dentro de la última card visible */
-  .pilares-grid .pilar:last-child::after,
-  .test-grid .test-card:last-child::after,
-  .dif-grid .dif-item:last-child::after,
-  .zonas-grid > *:last-child::after{
-    content:'deslizá →';
-    display:block;
-    text-align:right;
-    font-size:11px;
-    font-weight:600;
-    letter-spacing:.06em;
-    margin-top:12px;
-    opacity:.5;
+  
+
+
+@media screen and (max-width:600px){
+  /* Indicador deslizá → en el contenedor del carrusel, no en las cards */
+  .pilares-grid,
+  .test-grid,
+  .dif-grid,
+  .zonas-grid{
+    position:relative;
   }
-  /* Asegurar que las cards NO se estiren verticalmente */
-  .pilares-grid .pilar,
-  .test-grid .test-card,
-  .dif-grid .dif-item,
-  .zonas-grid > *{
-    align-self:start !important;
+  .pilares-grid::after,
+  .test-grid::after,
+  .dif-grid::after,
+  .zonas-grid::after{
+    content:'deslizá →';
+    position:sticky;
+    right:0;
+    flex:0 0 auto;
+    align-self:center;
+    padding:6px 10px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.06em;
+    color:var(--b1,#1E3A5F);
+    background:rgba(255,255,255,0.85);
+    border-radius:20px;
+    white-space:nowrap;
+    pointer-events:none;
+    margin-left:4px;
   }
 }
 
