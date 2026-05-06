@@ -345,6 +345,14 @@
   @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
   .success-box h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:30px;margin:0 0 8px}
   .success-box p{color:var(--muted);margin:0 0 22px}
+
+  /* MODO GUIADO — ocultar tabs 3,4,5 */
+  #wizard-view.mode-guiado .tab[data-step="3"],
+  #wizard-view.mode-guiado .tab[data-step="4"],
+  #wizard-view.mode-guiado .tab[data-step="5"]{
+    display:none !important;
+  }
+
 </style>
 <
 </head>
@@ -1151,16 +1159,17 @@ fetch('/api/precios')
   function enterWizard(mode){
     state.mode = mode;
     document.getElementById('mode-view').classList.add('hidden');
-    document.getElementById('wizard-view').classList.remove('hidden');
+    var wiz = document.getElementById('wizard-view');
+    wiz.classList.remove('hidden');
+    // Marcar el wizard con la clase del modo para que CSS oculte los tabs no usados
+    wiz.classList.remove('mode-guiado','mode-avanzado');
+    wiz.classList.add('mode-' + mode);
     goStep(1);
   }
   function goStep(n){
     if(n > state.currentStep && !validateStep(state.currentStep)) return;
 
     // FLOW CONDICIONAL por tipo de proyecto — solo al pasar del step 1 al 2.
-    // - Casa nueva      → wizard normal.
-    // - Reforma         → derivar al chat Lucas, no seguir con el wizard.
-    // - Edificio/Indust → vista especial de captura de contactos (step 99).
     if (state.currentStep === 1 && n === 2) {
       if (state.tipo === 'Reforma') {
         derivarAChat();
@@ -1170,7 +1179,15 @@ fetch('/api/precios')
         mostrarVistaEdificio();
         return;
       }
-      // Casa nueva → sigue normal
+    }
+
+    // MODO GUIADO (rápido) → saltea steps 3, 4, 5 (terminaciones, instalaciones, extras)
+    // Va directo de 2 (proyecto) → 6 (contacto) → 7 (presupuesto)
+    if (state.mode === 'guiado') {
+      if (n === 3 || n === 4 || n === 5) {
+        // Yendo hacia adelante saltea a 6, hacia atrás a 2
+        n = (n > state.currentStep) ? 6 : 2;
+      }
     }
 
     state.currentStep = n;
