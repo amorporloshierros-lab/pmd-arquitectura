@@ -1672,7 +1672,7 @@ fetch('/api/precios')
     if (pmdAmbientes.habServicio) total += 12;
     if (pmdAmbientes.lavadero) total += 7.5;
     total += pmdAmbientes.garage * 24;
-    if (pmdAmbientes.pileta) total += 16;
+    // Pileta NO suma metros, suma USD fijo en calcPresupuesto()
     
     // Multiplicadores por plantas realistas:
     // 1 planta: 100% (1.0×)
@@ -1844,7 +1844,12 @@ fetch('/api/precios')
     fixed += state.agua.f   || 0;
     fixed += state.electrica.f || 0;
     fixed += state.solar.f  || 0;
-    if (state.pileta) fixed += 15000; // Pileta USD 15,000
+    // Pileta: USD 15,000 en modo metros, USD 10,000 en modo ambientes
+    if (pmdModoActual === 'metros' && state.pileta) {
+      fixed += 15000;
+    } else if (pmdModoActual === 'ambientes' && pmdAmbientes.pileta) {
+      fixed += 10000;
+    }
     state.extras.forEach(x => fixed += (x.fixed || 0));
 
     // Baños: cantidad × extra por baño
