@@ -353,6 +353,11 @@
     display:none !important;
   }
 
+  /* Ocultar secciones avanzadas en modo guiado */
+  #wizard-view.mode-guiado .only-avanzado{
+    display:none !important;
+  }
+
   /* Toggle modo metros/ambientes */
   .pmd-toggle-modo{
     background:var(--pmd-blue-soft);border:1px solid var(--b2);
@@ -601,59 +606,62 @@
               </div>
             </div>
 
-            <div class="label">SISTEMA CONSTRUCTIVO</div>
-            <div class="opt-grid-3">
-              <div class="opt selected" data-group="sistema" data-value="Steel framing" data-modifier="1.00">
-                <div class="opt-title">Steel framing</div>
-                <div class="opt-sub">Perfiles galvanizados</div>
-                <div class="opt-hint">Sistema PMD</div>
+            <!-- Secciones solo para modo AVANZADO -->
+            <div class="only-avanzado">
+              <div class="label">SISTEMA CONSTRUCTIVO</div>
+              <div class="opt-grid-3">
+                <div class="opt selected" data-group="sistema" data-value="Steel framing" data-modifier="1.00">
+                  <div class="opt-title">Steel framing</div>
+                  <div class="opt-sub">Perfiles galvanizados</div>
+                  <div class="opt-hint">Sistema PMD</div>
+                </div>
+                <div class="opt" data-group="sistema" data-value="Mampostería" data-modifier="0.95">
+                  <div class="opt-title">Mampostería</div>
+                  <div class="opt-sub">Ladrillo + hormigón</div>
+                  <div class="opt-hint">-5% vs SF</div>
+                </div>
+                <div class="opt" data-group="sistema" data-value="Hormigón elaborado" data-modifier="1.08">
+                  <div class="opt-title">Hormigón elaborado</div>
+                  <div class="opt-sub">Estructura H°A°</div>
+                  <div class="opt-hint">+8% vs SF</div>
+                </div>
               </div>
-              <div class="opt" data-group="sistema" data-value="Mampostería" data-modifier="0.95">
-                <div class="opt-title">Mampostería</div>
-                <div class="opt-sub">Ladrillo + hormigón</div>
-                <div class="opt-hint">-5% vs SF</div>
-              </div>
-              <div class="opt" data-group="sistema" data-value="Hormigón elaborado" data-modifier="1.08">
-                <div class="opt-title">Hormigón elaborado</div>
-                <div class="opt-sub">Estructura H°A°</div>
-                <div class="opt-hint">+8% vs SF</div>
-              </div>
-            </div>
 
-            <div class="label">TIPO DE OBRA</div>
-            <div class="opt-grid-2">
-              <div class="opt selected" data-group="obra" data-value="Obra nueva">
-                <div class="opt-title">Obra nueva</div><div class="opt-sub">Desde cero</div>
+              <div class="label">TIPO DE OBRA</div>
+              <div class="opt-grid-2">
+                <div class="opt selected" data-group="obra" data-value="Obra nueva">
+                  <div class="opt-title">Obra nueva</div><div class="opt-sub">Desde cero</div>
+                </div>
+                <div class="opt" data-group="obra" data-value="Ampliación">
+                  <div class="opt-title">Ampliación</div><div class="opt-sub">Sobre lo existente</div>
+                </div>
               </div>
-              <div class="opt" data-group="obra" data-value="Ampliación">
-                <div class="opt-title">Ampliación</div><div class="opt-sub">Sobre lo existente</div>
-              </div>
-            </div>
 
-            <div class="label">TIPO DE SUELO</div>
-            <div class="opt-grid-2">
-              <div class="opt selected" data-group="suelo" data-value="Normal / tosca" data-extra="0">
-                <div class="opt-title">Normal / tosca</div>
-                <div class="opt-sub">Estándar</div>
-                <div class="opt-hint">Sin sobrecosto</div>
+              <div class="label">TIPO DE SUELO</div>
+              <div class="opt-grid-2">
+                <div class="opt selected" data-group="suelo" data-value="Normal / tosca" data-extra="0">
+                  <div class="opt-title">Normal / tosca</div>
+                  <div class="opt-sub">Estándar</div>
+                  <div class="opt-hint">Sin sobrecosto</div>
+                </div>
+                <div class="opt" data-group="suelo" data-value="Relleno" data-extra="15">
+                  <div class="opt-title">Relleno</div>
+                  <div class="opt-sub">Tierra vegetal</div>
+                  <div class="opt-hint">+USD 15/m²</div>
+                </div>
               </div>
-              <div class="opt" data-group="suelo" data-value="Relleno" data-extra="15">
-                <div class="opt-title">Relleno</div>
-                <div class="opt-sub">Tierra vegetal</div>
-                <div class="opt-hint">+USD 15/m²</div>
-              </div>
-            </div>
 
-            <div class="label">ETAPA DEL PROYECTO</div>
-            <div class="opt-grid-3">
-              <div class="opt" data-group="etapa" data-value="Tengo terreno">
-                <div class="opt-title">Tengo terreno</div><div class="opt-sub">Listo para arrancar</div>
-              </div>
-              <div class="opt" data-group="etapa" data-value="No tengo terreno">
-                <div class="opt-title">No tengo terreno</div><div class="opt-sub">Estoy buscando</div>
-              </div>
-              <div class="opt" data-group="etapa" data-value="Quiero casa y terreno">
-                <div class="opt-title">Quiero casa y terreno</div><div class="opt-sub">Paquete integral</div>
+              <div class="label">ETAPA DEL PROYECTO</div>
+              <div class="opt-grid-3">
+                <div class="opt" data-group="etapa" data-value="Tengo terreno">
+                  <div class="opt-title">Tengo terreno</div><div class="opt-sub">Listo para arrancar</div>
+                </div>
+                <div class="opt" data-group="etapa" data-value="No tengo terreno">
+                  <div class="opt-title">No tengo terreno</div><div class="opt-sub">Estoy buscando</div>
+                </div>
+                <div class="opt" data-group="etapa" data-value="Quiero casa y terreno">
+                  <div class="opt-title">Quiero casa y terreno</div><div class="opt-sub">Paquete integral</div>
+                </div>
               </div>
             </div>
 
