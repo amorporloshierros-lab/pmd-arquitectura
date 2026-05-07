@@ -1501,8 +1501,16 @@ fetch('/api/precios')
 
   function pmdActualizarMetrosTotales() {
     if (pmdModoActual === 'metros') {
-      state.cubiertos = pmdMetrosBasePorPlanta.cubiertos * state.plantas;
-      state.semi = pmdMetrosBasePorPlanta.semi * state.plantas;
+      // Multiplicadores por plantas realistas:
+      // 1 planta: 100% (1.0×)
+      // 2 plantas: PB (100%) + PA (60%) = 160% (1.6×)
+      // 3 plantas: PB (100%) + PA1 (60%) + PA2 (45%) = 205% (2.05×)
+      let multiplicador = 1.0;
+      if (state.plantas === 2) multiplicador = 1.6;
+      if (state.plantas === 3) multiplicador = 2.05;
+      
+      state.cubiertos = Math.round(pmdMetrosBasePorPlanta.cubiertos * multiplicador);
+      state.semi = Math.round(pmdMetrosBasePorPlanta.semi * multiplicador);
     }
     updateSidebar();
   }
@@ -1567,12 +1575,15 @@ fetch('/api/precios')
     total += pmdAmbientes.garage * 24;
     if (pmdAmbientes.pileta) total += 16;
     
-    // Multiplicar por número de plantas
-    if (pmdAmbientes.plantas > 1) {
-      total *= pmdAmbientes.plantas;
-    }
+    // Multiplicadores por plantas realistas:
+    // 1 planta: 100% (1.0×)
+    // 2 plantas: PB (100%) + PA (60%) = 160% (1.6×)
+    // 3 plantas: PB (100%) + PA1 (60%) + PA2 (45%) = 205% (2.05×)
+    let multiplicador = 1.0;
+    if (pmdAmbientes.plantas === 2) multiplicador = 1.6;
+    if (pmdAmbientes.plantas === 3) multiplicador = 2.05;
     
-    total = Math.round(total);
+    total = Math.round(total * multiplicador);
     document.getElementById('pmdMetrosCalc').textContent = total;
     
     // Actualizar state con los metros calculados
