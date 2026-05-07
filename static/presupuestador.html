@@ -593,11 +593,23 @@
               </div>
 
               <div class="label">AMBIENTES ADICIONALES</div>
-              <div class="opt-grid-2">
-                <div class="opt selected" data-group="cocina-amb" data-value="si"><div class="opt-title">Cocina</div></div>
-                <div class="opt" data-group="lavadero" data-value="si"><div class="opt-title">Lavadero</div></div>
-                <div class="opt" data-group="hab-servicio" data-value="si"><div class="opt-title">Hab. servicio</div></div>
-                <div class="opt" data-group="pileta-amb" data-value="si"><div class="opt-title">Pileta</div></div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:4px;cursor:pointer;transition:all .2s">
+                  <input type="checkbox" id="chk-cocina-amb" checked style="width:18px;height:18px">
+                  <span style="font-size:14px;font-weight:500">Cocina</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:4px;cursor:pointer;transition:all .2s">
+                  <input type="checkbox" id="chk-lavadero" style="width:18px;height:18px">
+                  <span style="font-size:14px;font-weight:500">Lavadero</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:4px;cursor:pointer;transition:all .2s">
+                  <input type="checkbox" id="chk-hab-servicio" style="width:18px;height:18px">
+                  <span style="font-size:14px;font-weight:500">Hab. servicio</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:4px;cursor:pointer;transition:all .2s">
+                  <input type="checkbox" id="chk-pileta-amb" style="width:18px;height:18px">
+                  <span style="font-size:14px;font-weight:500">Pileta</span>
+                </label>
               </div>
 
               <div style="background:var(--pmd-blue-soft);border:1px solid var(--b2);border-radius:4px;padding:12px 16px;margin:16px 0;display:flex;align-items:center;justify-content:space-between">
@@ -1310,7 +1322,7 @@ fetch('/api/precios')
       t.classList.toggle('done', ts<n);
     });
     if(n===7) calcPresupuesto();
-    try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(_){}
+    // Removed: window.scrollTo - mantener foco en presupuestador
     setTimeout(reportHeight, 60);
   }
 
@@ -1447,31 +1459,6 @@ fetch('/api/precios')
         pmdAmbientes.garage = Number(val);
         pmdCalcularMetrosAmbientes();
       }
-      // PMD: Ambientes adicionales (toggles)
-      else if(group==='cocina-amb'){
-        opt.classList.toggle('selected');
-        pmdAmbientes.cocina = opt.classList.contains('selected');
-        pmdCalcularMetrosAmbientes();
-        return; // No hacer el updateSidebar normal
-      }
-      else if(group==='lavadero'){
-        opt.classList.toggle('selected');
-        pmdAmbientes.lavadero = opt.classList.contains('selected');
-        pmdCalcularMetrosAmbientes();
-        return;
-      }
-      else if(group==='hab-servicio'){
-        opt.classList.toggle('selected');
-        pmdAmbientes.habServicio = opt.classList.contains('selected');
-        pmdCalcularMetrosAmbientes();
-        return;
-      }
-      else if(group==='pileta-amb'){
-        opt.classList.toggle('selected');
-        pmdAmbientes.pileta = opt.classList.contains('selected');
-        pmdCalcularMetrosAmbientes();
-        return;
-      }
       updateSidebar();
     });
   });
@@ -1568,6 +1555,24 @@ fetch('/api/precios')
     
     pmdCalcularMetrosAmbientes();
     updateSidebar();
+  });
+
+  // Checkboxes de ambientes adicionales
+  document.getElementById('chk-cocina-amb').addEventListener('change', e => {
+    pmdAmbientes.cocina = e.target.checked;
+    pmdCalcularMetrosAmbientes();
+  });
+  document.getElementById('chk-lavadero').addEventListener('change', e => {
+    pmdAmbientes.lavadero = e.target.checked;
+    pmdCalcularMetrosAmbientes();
+  });
+  document.getElementById('chk-hab-servicio').addEventListener('change', e => {
+    pmdAmbientes.habServicio = e.target.checked;
+    pmdCalcularMetrosAmbientes();
+  });
+  document.getElementById('chk-pileta-amb').addEventListener('change', e => {
+    pmdAmbientes.pileta = e.target.checked;
+    pmdCalcularMetrosAmbientes();
   });
 
   // Función para calcular metros desde ambientes
