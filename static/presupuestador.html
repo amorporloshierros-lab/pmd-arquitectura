@@ -252,7 +252,15 @@
     transition:border-color .2s,background .2s,transform .2s,box-shadow .2s;
   }
   .opt:hover{border-color:var(--pmd-blue);transform:translateY(-1px);box-shadow:0 4px 12px -6px rgba(30,58,95,.25)}
-  .opt.selected{border-color:var(--pmd-blue);background:var(--pmd-blue-soft)}
+  .opt.selected{
+    border-color:var(--pmd-blue);
+    background:var(--pmd-blue);
+    color:#fff;
+    box-shadow:0 4px 12px -4px rgba(30,58,95,.35);
+    transform:translateY(-1px);
+  }
+  .opt.selected .opt-title{color:#fff}
+  .opt.selected .opt-sub{color:rgba(255,255,255,.85)}
   .opt .opt-top{display:flex;align-items:flex-start;gap:10px}
   .opt .opt-icon{
     width:26px;height:26px;display:flex;align-items:center;justify-content:center;
@@ -622,6 +630,10 @@
 
               <div class="label">AMBIENTES ADICIONALES</div>
               <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:4px;cursor:pointer;transition:all .2s">
+                  <input type="checkbox" id="chk-living" style="width:14px;height:14px">
+                  <span style="font-size:13px;font-weight:500">Living</span>
+                </label>
                 <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:4px;cursor:pointer;transition:all .2s">
                   <input type="checkbox" id="chk-cocina-amb" checked style="width:14px;height:14px">
                   <span style="font-size:13px;font-weight:500">Cocina</span>
@@ -1544,6 +1556,7 @@ fetch('/api/precios')
     habitaciones: 3,
     banos: 1,
     garage: 0,
+    living: false,
     cocina: true,
     lavadero: false,
     habServicio: false,
@@ -1614,6 +1627,10 @@ fetch('/api/precios')
   });
 
   // Checkboxes de ambientes adicionales
+  document.getElementById('chk-living').addEventListener('change', e => {
+    pmdAmbientes.living = e.target.checked;
+    pmdCalcularMetrosAmbientes();
+  });
   document.getElementById('chk-cocina-amb').addEventListener('change', e => {
     pmdAmbientes.cocina = e.target.checked;
     pmdCalcularMetrosAmbientes();
@@ -1644,6 +1661,7 @@ fetch('/api/precios')
     let total = 0;
     total += pmdAmbientes.habitaciones * 18.4; // 16m² + 15%
     total += pmdAmbientes.banos * 6.9; // 6m² + 15%
+    if (pmdAmbientes.living) total += 70; // 60-80m² promedio
     if (pmdAmbientes.cocina) total += 16;
     if (pmdAmbientes.habServicio) total += 12;
     if (pmdAmbientes.lavadero) total += 7.5;
