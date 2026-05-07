@@ -353,6 +353,26 @@
     display:none !important;
   }
 
+  /* Toggle modo metros/ambientes */
+  .pmd-toggle-modo{
+    background:var(--pmd-blue-soft);border:1px solid var(--b2);
+    border-radius:6px;padding:14px 18px;margin:20px 0 24px;
+    display:flex;align-items:center;gap:12px;cursor:pointer;
+    transition:all .2s;
+  }
+  .pmd-toggle-modo:hover{
+    background:var(--b2);color:#fff;border-color:var(--b2);
+  }
+  .pmd-toggle-modo svg{
+    width:20px;height:20px;flex-shrink:0;
+    stroke:currentColor;fill:none;stroke-width:2;
+  }
+  .pmd-toggle-modo span{
+    font-size:14px;font-weight:600;color:var(--pmd-blue);
+    transition:color .2s;
+  }
+  .pmd-toggle-modo:hover span{color:#fff}
+
 </style>
 <
 </head>
@@ -478,25 +498,107 @@
           <div class="card">
             <div class="card-head"><h2>Datos del proyecto</h2><p>Superficie, sistema y tipología.</p></div>
 
-            <div class="label">M² CUBIERTOS</div>
-            <div class="slider-wrap">
-              <div class="row-flex"><span></span><span class="val" id="v-cub">120 <span class="unit">m²</span></span></div>
-              <input type="range" id="f-cubiertos" min="20" max="600" step="5" value="120">
-              <div class="slider-range"><span>20 m²</span><span>600 m²</span></div>
+            <!-- Toggle modo metros/ambientes -->
+            <div class="pmd-toggle-modo" id="pmdToggleModo">
+              <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+              </svg>
+              <span id="pmdToggleLabel">¿No sabés cuántos m²? Empezá por acá</span>
             </div>
 
-            <div class="label">M² SEMICUBIERTOS</div>
-            <div class="slider-wrap">
-              <div class="row-flex"><span></span><span class="val" id="v-semi">0 <span class="unit">m²</span></span></div>
-              <input type="range" id="f-semi" min="0" max="200" step="5" value="0">
-              <div class="slider-range"><span>0</span><span>200 m²</span></div>
+            <!-- MODO A: Con metros -->
+            <div id="pmdModoMetros">
+              <div class="label">M² CUBIERTOS</div>
+              <div class="slider-wrap">
+                <div class="row-flex">
+                  <span></span>
+                  <input type="number" id="in-cubiertos" min="40" max="600" value="120" 
+                         style="width:90px;padding:6px 10px;border:1px solid var(--line);border-radius:4px;font-size:18px;font-weight:600;text-align:center">
+                  <span class="unit" style="margin-left:6px">m²</span>
+                </div>
+                <input type="range" id="f-cubiertos" min="20" max="600" step="5" value="120">
+                <div class="slider-range"><span>20 m²</span><span>600 m²</span></div>
+              </div>
+
+              <div class="label">M² SEMICUBIERTOS</div>
+              <div class="slider-wrap">
+                <div class="row-flex">
+                  <span></span>
+                  <input type="number" id="in-semi" min="0" max="200" value="0"
+                         style="width:90px;padding:6px 10px;border:1px solid var(--line);border-radius:4px;font-size:18px;font-weight:600;text-align:center">
+                  <span class="unit" style="margin-left:6px">m²</span>
+                </div>
+                <input type="range" id="f-semi" min="0" max="200" step="5" value="0">
+                <div class="slider-range"><span>0</span><span>200 m²</span></div>
+              </div>
+
+              <div class="label">PLANTAS</div>
+              <div class="opt-grid-3">
+                <div class="opt selected" data-group="plantas-metros" data-value="1">
+                  <div class="opt-title">1 planta</div>
+                </div>
+                <div class="opt" data-group="plantas-metros" data-value="2">
+                  <div class="opt-title">2 plantas</div>
+                </div>
+                <div class="opt" data-group="plantas-metros" data-value="3">
+                  <div class="opt-title">3 plantas</div>
+                </div>
+              </div>
             </div>
 
-            <div class="label">PLANTAS</div>
-            <div class="slider-wrap">
-              <div class="row-flex"><span></span><span class="val" id="v-plantas">1 <span class="unit">planta</span></span></div>
-              <input type="range" id="f-plantas" min="1" max="4" step="1" value="1">
-              <div class="slider-range"><span>1</span><span>4</span></div>
+            <!-- MODO B: Sin metros (ambientes) -->
+            <div id="pmdModoAmbientes" class="hidden">
+              <div class="label">PLANTAS</div>
+              <div class="opt-grid-3">
+                <div class="opt selected" data-group="plantas-ambientes" data-value="1">
+                  <div class="opt-title">1 planta</div>
+                </div>
+                <div class="opt" data-group="plantas-ambientes" data-value="2">
+                  <div class="opt-title">2 plantas</div>
+                </div>
+                <div class="opt" data-group="plantas-ambientes" data-value="3">
+                  <div class="opt-title">3 plantas</div>
+                </div>
+              </div>
+
+              <div class="label">HABITACIONES</div>
+              <div class="opt-grid" style="grid-template-columns:repeat(5,1fr)">
+                <div class="opt" data-group="habitaciones" data-value="1"><div class="opt-title">1</div></div>
+                <div class="opt" data-group="habitaciones" data-value="2"><div class="opt-title">2</div></div>
+                <div class="opt selected" data-group="habitaciones" data-value="3"><div class="opt-title">3</div></div>
+                <div class="opt" data-group="habitaciones" data-value="4"><div class="opt-title">4</div></div>
+                <div class="opt" data-group="habitaciones" data-value="5"><div class="opt-title">5</div></div>
+              </div>
+
+              <div class="label">BAÑOS</div>
+              <div class="opt-grid" style="grid-template-columns:repeat(5,1fr)">
+                <div class="opt selected" data-group="banos-ambientes" data-value="1"><div class="opt-title">1</div></div>
+                <div class="opt" data-group="banos-ambientes" data-value="2"><div class="opt-title">2</div></div>
+                <div class="opt" data-group="banos-ambientes" data-value="3"><div class="opt-title">3</div></div>
+                <div class="opt" data-group="banos-ambientes" data-value="4"><div class="opt-title">4</div></div>
+                <div class="opt" data-group="banos-ambientes" data-value="5"><div class="opt-title">5</div></div>
+              </div>
+
+              <div class="label">GARAGE CUBIERTO</div>
+              <div class="opt-grid-3">
+                <div class="opt selected" data-group="garage" data-value="0"><div class="opt-title">No</div></div>
+                <div class="opt" data-group="garage" data-value="1"><div class="opt-title">1 auto</div></div>
+                <div class="opt" data-group="garage" data-value="2"><div class="opt-title">2 autos</div></div>
+              </div>
+
+              <div class="label">AMBIENTES ADICIONALES</div>
+              <div class="opt-grid-2">
+                <div class="opt selected" data-group="cocina-amb" data-value="si"><div class="opt-title">Cocina</div></div>
+                <div class="opt" data-group="lavadero" data-value="si"><div class="opt-title">Lavadero</div></div>
+                <div class="opt" data-group="hab-servicio" data-value="si"><div class="opt-title">Hab. servicio</div></div>
+                <div class="opt" data-group="pileta-amb" data-value="si"><div class="opt-title">Pileta</div></div>
+              </div>
+
+              <div style="background:var(--pmd-blue-soft);border:1px solid var(--b2);border-radius:4px;padding:12px 16px;margin:16px 0;display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:12px;font-weight:600;color:var(--muted)">M² CALCULADOS AUTOMÁTICAMENTE</span>
+                <span style="font-size:20px;font-weight:700;color:var(--pmd-blue)"><span id="pmdMetrosCalc">92</span> m²</span>
+              </div>
             </div>
 
             <div class="label">SISTEMA CONSTRUCTIVO</div>
@@ -1306,17 +1408,61 @@ fetch('/api/precios')
       else if(group==='solar') state.solar = {v:val, f:fixed};
       else if(group==='cubierta'){
         state.cubierta = {v:val};
-        // La cubierta se carga al costo por m² cubierto (aprox 1:1)
         state.cubierta_m2 = roof || 0;
       }
       else if(group==='revestimiento'){
         state.revestimiento = {v:val};
-        // La fachada se aproxima como 60% de la superficie cubierta
         state.revest_fach = (fach || 0) * 0.6;
       }
       else if(group==='banos'){
         state.banos = {v:val};
         state.banos_extra = perBano || 0;
+      }
+      // PMD: Nuevos grupos
+      else if(group==='plantas-metros'){
+        state.plantas = Number(val);
+        pmdActualizarMetrosTotales();
+      }
+      else if(group==='plantas-ambientes'){
+        pmdAmbientes.plantas = Number(val);
+        pmdCalcularMetrosAmbientes();
+      }
+      else if(group==='habitaciones'){
+        pmdAmbientes.habitaciones = Number(val);
+        pmdCalcularMetrosAmbientes();
+      }
+      else if(group==='banos-ambientes'){
+        pmdAmbientes.banos = Number(val);
+        pmdCalcularMetrosAmbientes();
+      }
+      else if(group==='garage'){
+        pmdAmbientes.garage = Number(val);
+        pmdCalcularMetrosAmbientes();
+      }
+      // PMD: Ambientes adicionales (toggles)
+      else if(group==='cocina-amb'){
+        opt.classList.toggle('selected');
+        pmdAmbientes.cocina = opt.classList.contains('selected');
+        pmdCalcularMetrosAmbientes();
+        return; // No hacer el updateSidebar normal
+      }
+      else if(group==='lavadero'){
+        opt.classList.toggle('selected');
+        pmdAmbientes.lavadero = opt.classList.contains('selected');
+        pmdCalcularMetrosAmbientes();
+        return;
+      }
+      else if(group==='hab-servicio'){
+        opt.classList.toggle('selected');
+        pmdAmbientes.habServicio = opt.classList.contains('selected');
+        pmdCalcularMetrosAmbientes();
+        return;
+      }
+      else if(group==='pileta-amb'){
+        opt.classList.toggle('selected');
+        pmdAmbientes.pileta = opt.classList.contains('selected');
+        pmdCalcularMetrosAmbientes();
+        return;
       }
       updateSidebar();
     });
@@ -1339,20 +1485,104 @@ fetch('/api/precios')
   const vCub = document.getElementById('v-cub');
   const vSemi = document.getElementById('v-semi');
   const vPlantas = document.getElementById('v-plantas');
+  // PMD: Estado modo ambientes
+  let pmdModoActual = 'metros'; // 'metros' | 'ambientes'
+  let pmdMetrosBasePorPlanta = { cubiertos: 120, semi: 0 }; // Metros que ingresa el usuario POR PLANTA
+  let pmdAmbientes = {
+    plantas: 1,
+    habitaciones: 3,
+    banos: 1,
+    garage: 0,
+    cocina: true,
+    lavadero: false,
+    habServicio: false,
+    pileta: false
+  };
+
+  function pmdActualizarMetrosTotales() {
+    if (pmdModoActual === 'metros') {
+      state.cubiertos = pmdMetrosBasePorPlanta.cubiertos * state.plantas;
+      state.semi = pmdMetrosBasePorPlanta.semi * state.plantas;
+    }
+    updateSidebar();
+  }
+
+  // Slider cubiertos → state + input
   document.getElementById('f-cubiertos').addEventListener('input', e=>{
-    state.cubiertos = +e.target.value;
-    vCub.innerHTML = `${state.cubiertos} <span class="unit">m²</span>`;
-    updateSidebar();
+    pmdMetrosBasePorPlanta.cubiertos = +e.target.value;
+    document.getElementById('in-cubiertos').value = pmdMetrosBasePorPlanta.cubiertos;
+    pmdActualizarMetrosTotales();
   });
+
+  // Input cubiertos → state + slider
+  document.getElementById('in-cubiertos').addEventListener('input', e=>{
+    pmdMetrosBasePorPlanta.cubiertos = +e.target.value;
+    document.getElementById('f-cubiertos').value = pmdMetrosBasePorPlanta.cubiertos;
+    pmdActualizarMetrosTotales();
+  });
+
+  // Slider semi → state + input
   document.getElementById('f-semi').addEventListener('input', e=>{
-    state.semi = +e.target.value;
-    vSemi.innerHTML = `${state.semi} <span class="unit">m²</span>`;
+    pmdMetrosBasePorPlanta.semi = +e.target.value;
+    document.getElementById('in-semi').value = pmdMetrosBasePorPlanta.semi;
+    pmdActualizarMetrosTotales();
+  });
+
+  // Input semi → state + slider
+  document.getElementById('in-semi').addEventListener('input', e=>{
+    pmdMetrosBasePorPlanta.semi = +e.target.value;
+    document.getElementById('f-semi').value = pmdMetrosBasePorPlanta.semi;
+    pmdActualizarMetrosTotales();
+  });
+
+  // Toggle modo metros/ambientes
+  document.getElementById('pmdToggleModo').addEventListener('click', ()=>{
+    pmdModoActual = pmdModoActual === 'metros' ? 'ambientes' : 'metros';
+    document.getElementById('pmdModoMetros').classList.toggle('hidden');
+    document.getElementById('pmdModoAmbientes').classList.toggle('hidden');
+    document.getElementById('pmdToggleLabel').textContent = 
+      pmdModoActual === 'metros' ? '¿No sabés cuántos m²? Empezá por acá' : 'Volver a ingresar m² manualmente';
+    
+    // Reset plantas al cambiar modo
+    if (pmdModoActual === 'ambientes') {
+      pmdAmbientes.plantas = 1;
+    } else {
+      state.plantas = 1;
+    }
+    
+    pmdCalcularMetrosAmbientes();
     updateSidebar();
   });
-  document.getElementById('f-plantas').addEventListener('input', e=>{
-    state.plantas = +e.target.value;
-    vPlantas.innerHTML = `${state.plantas} <span class="unit">${state.plantas>1?'plantas':'planta'}</span>`;
-  });
+
+  // Función para calcular metros desde ambientes
+  function pmdCalcularMetrosAmbientes(){
+    if (pmdModoActual !== 'ambientes') return;
+    
+    let total = 0;
+    total += pmdAmbientes.habitaciones * 18.4; // 16m² + 15%
+    total += pmdAmbientes.banos * 6.9; // 6m² + 15%
+    if (pmdAmbientes.cocina) total += 16;
+    if (pmdAmbientes.habServicio) total += 12;
+    if (pmdAmbientes.lavadero) total += 7.5;
+    total += pmdAmbientes.garage * 24;
+    if (pmdAmbientes.pileta) total += 16;
+    
+    // Multiplicar por número de plantas
+    if (pmdAmbientes.plantas > 1) {
+      total *= pmdAmbientes.plantas;
+    }
+    
+    total = Math.round(total);
+    document.getElementById('pmdMetrosCalc').textContent = total;
+    
+    // Actualizar state con los metros calculados
+    state.cubiertos = total;
+    state.semi = 0;
+    state.plantas = pmdAmbientes.plantas;
+    
+    return total;
+  }
+
   // Slider baños (si existe en el paso 3)
   const fBanos = document.getElementById('f-banos');
   if (fBanos){
