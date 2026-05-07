@@ -7,7 +7,8 @@
 <title>PMD Arquitectura — Construcción y Diseño · GBA Norte</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='10' width='7' height='12' fill='%235BA3C9'/%3E%3Crect x='13' y='10' width='7' height='12' fill='%233B6EA5'/%3E%3Crect x='22' y='10' width='7' height='12' fill='%232B4E7A'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
 :root{
   --b1:#5BA3C9;--b2:#3B6EA5;--b3:#2B4E7A;--b4:#1C3356;
@@ -72,7 +73,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 .brand{display:flex;align-items:center;gap:16px;perspective:600px;flex-shrink:0}
 .brand .sqs{gap:5px}
 .brand .sq{width:10px;height:10px;border-radius:2px}
-.brand-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;letter-spacing:.02em;color:var(--ink);white-space:nowrap;line-height:1}
+.brand-name{font-family:'Inter',sans-serif;font-size:26px;font-weight:700;letter-spacing:-.01em;color:var(--ink);white-space:nowrap;line-height:1}
 .nav.scrolled .brand-name{font-size:22px}
 .nav-links{display:flex;align-items:center;gap:2rem;margin-left:auto;margin-right:1.5rem}
 .nav-links a{font-size:13.5px;color:var(--ink2);transition:color .2s;position:relative}
@@ -134,7 +135,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 .btn-ghost:hover{background:var(--bg2);border-color:var(--ink4)}
 .hero-trust{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border);display:flex;gap:2.5rem}
 .ht-item{display:flex;flex-direction:column;gap:3px}
-.ht-num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:500;color:var(--ink);line-height:1}
+.ht-num{font-family:'Inter',sans-serif;font-size:2rem;font-weight:700;color:var(--ink);line-height:1}
 .ht-label{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em}
 .hero-right{position:relative;overflow:hidden;border-radius:var(--r2);box-shadow:0 30px 60px rgba(28,51,86,.2)}
 .hero-right img{width:100%;height:100%;object-fit:cover}
@@ -166,7 +167,7 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 /* ── DIFERENCIADORES ── */
 .dif-section{padding:6rem 0;background:var(--white)}
 .dif-header{text-align:center;margin-bottom:4rem}
-.section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3rem);font-weight:500;color:var(--ink);line-height:1.15;margin-bottom:.8rem}
+.section-title{font-family:'Inter',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:700;color:var(--ink);line-height:1.15;margin-bottom:.8rem}
 .section-sub{font-size:15px;color:var(--ink3);max-width:480px;margin:0 auto;line-height:1.7}
 .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--b2);display:flex;align-items:center;gap:10px;margin-bottom:.8rem}
 .eyebrow::before{content:'';width:22px;height:1px;background:var(--b2)}
