@@ -539,50 +539,78 @@
               </div>
 
               <div class="label">PLANTAS</div>
-              <div class="opt-grid-3">
-                <div class="opt selected" data-group="plantas-metros" data-value="1">
-                  <div class="opt-title">1 planta</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <div class="opt selected" data-group="plantas-metros" data-value="1" style="flex:0 0 auto;min-width:70px;padding:10px 14px">
+                  <div class="opt-title" style="font-size:13px">1 planta</div>
                 </div>
-                <div class="opt" data-group="plantas-metros" data-value="2">
-                  <div class="opt-title">2 plantas</div>
+                <div class="opt" data-group="plantas-metros" data-value="2" style="flex:0 0 auto;min-width:70px;padding:10px 14px">
+                  <div class="opt-title" style="font-size:13px">2 plantas</div>
                 </div>
-                <div class="opt" data-group="plantas-metros" data-value="3">
-                  <div class="opt-title">3 plantas</div>
+                <div class="opt" data-group="plantas-metros" data-value="3" style="flex:0 0 auto;min-width:70px;padding:10px 14px">
+                  <div class="opt-title" style="font-size:13px">3 plantas</div>
                 </div>
+              </div>
+
+              <div class="label">CALIDAD</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div class="opt" data-group="calidad-metros" data-value="confort" data-precio="1100">
+                  <div class="opt-title">Confort</div>
+                  <div class="opt-sub">USD 1000-1200/m²</div>
+                </div>
+                <div class="opt selected" data-group="calidad-metros" data-value="premium" data-precio="1400">
+                  <div class="opt-title">Premium</div>
+                  <div class="opt-sub">USD 1200-1600/m²</div>
+                </div>
+                <div class="opt" data-group="calidad-metros" data-value="alta_gama" data-precio="2250">
+                  <div class="opt-title">Alta Gama</div>
+                  <div class="opt-sub">USD 2000-2500/m²</div>
+                </div>
+                <div class="opt" data-group="calidad-metros" data-value="lujo" data-precio="3800">
+                  <div class="opt-title">Lujo</div>
+                  <div class="opt-sub">USD 2600-5000/m²</div>
+                </div>
+              </div>
+
+              <div class="label">EXTRAS</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:4px;cursor:pointer">
+                  <input type="checkbox" id="chk-pileta-metros" style="width:14px;height:14px">
+                  <span style="font-size:13px;font-weight:500">Pileta</span>
+                </label>
               </div>
             </div>
 
             <!-- MODO B: Sin metros (ambientes) -->
             <div id="pmdModoAmbientes" class="hidden">
               <div class="label">PLANTAS</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <div class="opt selected" data-group="plantas-ambientes" data-value="1" style="flex:0 0 auto;min-width:80px">
-                  <div class="opt-title">1 planta</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <div class="opt selected" data-group="plantas-ambientes" data-value="1" style="flex:0 0 auto;min-width:70px;padding:10px 14px">
+                  <div class="opt-title" style="font-size:13px">1 planta</div>
                 </div>
-                <div class="opt" data-group="plantas-ambientes" data-value="2" style="flex:0 0 auto;min-width:80px">
-                  <div class="opt-title">2 plantas</div>
+                <div class="opt" data-group="plantas-ambientes" data-value="2" style="flex:0 0 auto;min-width:70px;padding:10px 14px">
+                  <div class="opt-title" style="font-size:13px">2 plantas</div>
                 </div>
-                <div class="opt" data-group="plantas-ambientes" data-value="3" style="flex:0 0 auto;min-width:80px">
-                  <div class="opt-title">3 plantas</div>
+                <div class="opt" data-group="plantas-ambientes" data-value="3" style="flex:0 0 auto;min-width:70px;padding:10px 14px">
+                  <div class="opt-title" style="font-size:13px">3 plantas</div>
                 </div>
               </div>
 
               <div class="label">HABITACIONES</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <div class="opt" data-group="habitaciones" data-value="1" style="flex:0 0 auto;min-width:50px"><div class="opt-title">1</div></div>
-                <div class="opt" data-group="habitaciones" data-value="2" style="flex:0 0 auto;min-width:50px"><div class="opt-title">2</div></div>
-                <div class="opt selected" data-group="habitaciones" data-value="3" style="flex:0 0 auto;min-width:50px"><div class="opt-title">3</div></div>
-                <div class="opt" data-group="habitaciones" data-value="4" style="flex:0 0 auto;min-width:50px"><div class="opt-title">4</div></div>
-                <div class="opt" data-group="habitaciones" data-value="5" style="flex:0 0 auto;min-width:50px"><div class="opt-title">5</div></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <div class="opt" data-group="habitaciones" data-value="1" style="flex:0 0 auto;min-width:42px;padding:10px"><div class="opt-title" style="font-size:13px">1</div></div>
+                <div class="opt" data-group="habitaciones" data-value="2" style="flex:0 0 auto;min-width:42px;padding:10px"><div class="opt-title" style="font-size:13px">2</div></div>
+                <div class="opt selected" data-group="habitaciones" data-value="3" style="flex:0 0 auto;min-width:42px;padding:10px"><div class="opt-title" style="font-size:13px">3</div></div>
+                <div class="opt" data-group="habitaciones" data-value="4" style="flex:0 0 auto;min-width:42px;padding:10px"><div class="opt-title" style="font-size:13px">4</div></div>
+                <div class="opt" data-group="habitaciones" data-value="5" style="flex:0 0 auto;min-width:42px;padding:10px"><div class="opt-title" style="font-size:13px">5</div></div>
               </div>
 
               <div class="label">BAÑOS</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <div class="opt selected" data-group="banos-ambientes" data-value="1" style="flex:0 0 auto;min-width:50px"><div class="opt-title">1</div></div>
-                <div class="opt" data-group="banos-ambientes" data-value="2" style="flex:0 0 auto;min-width:50px"><div class="opt-title">2</div></div>
-                <div class="opt" data-group="banos-ambientes" data-value="3" style="flex:0 0 auto;min-width:50px"><div class="opt-title">3</div></div>
-                <div class="opt" data-group="banos-ambientes" data-value="4" style="flex:0 0 auto;min-width:50px"><div class="opt-title">4</div></div>
-                <div class="opt" data-group="banos-ambientes" data-value="5" style="flex:0 0 auto;min-width:50px"><div class="opt-title">5</div></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <div class="opt selected" data-group="banos-ambientes" data-value="1" style="flex:0 0 auto;min-width:42px;padding:10px"><div class="opt-title" style="font-size:13px">1</div></div>
+                <div class="opt" data-group="banos-ambientes" data-value="2" style="flex:0 0 auto;min-width:42px;padding:10px"><div class="opt-title" style="font-size:13px">2</div></div>
+                <div class="opt" data-group="banos-ambientes" data-value="3" style="flex:0 0 auto;min-width:42px;padding:10px"><div class="opt-title" style="font-size:13px">3</div></div>
+                <div class="opt" data-group="banos-ambientes" data-value="4" style="flex:0 0 auto;min-width:42px;padding:10px"><div class="opt-title" style="font-size:13px">4</div></div>
+                <div class="opt" data-group="banos-ambientes" data-value="5" style="flex:0 0 auto;min-width:42px;padding:10px"><div class="opt-title" style="font-size:13px">5</div></div>
               </div>
 
               <div class="label">GARAGE CUBIERTO</div>
@@ -1459,6 +1487,10 @@ fetch('/api/precios')
         pmdAmbientes.garage = Number(val);
         pmdCalcularMetrosAmbientes();
       }
+      // Calidad en modo metros
+      else if(group==='calidad-metros'){
+        state.precioBase = Number(opt.dataset.precio);
+      }
       updateSidebar();
     });
   });
@@ -1573,6 +1605,12 @@ fetch('/api/precios')
   document.getElementById('chk-pileta-amb').addEventListener('change', e => {
     pmdAmbientes.pileta = e.target.checked;
     pmdCalcularMetrosAmbientes();
+  });
+
+  // Checkbox pileta en modo metros
+  document.getElementById('chk-pileta-metros').addEventListener('change', e => {
+    state.pileta = e.target.checked;
+    updateSidebar();
   });
 
   // Función para calcular metros desde ambientes
@@ -1752,12 +1790,13 @@ fetch('/api/precios')
     const baseAjustado = (base * sistemaMod * plantasMod) + extraM2;
     const subtotalM2 = baseAjustado * sup;
 
-    // Extras fijos: cocina, agua caliente, eléctrica, solar, agua, extras toggle
+    // Extras fijos: cocina, agua caliente, eléctrica, solar, agua, extras toggle, pileta
     let fixed = 0;
     fixed += state.cocina.f || 0;
     fixed += state.agua.f   || 0;
     fixed += state.electrica.f || 0;
     fixed += state.solar.f  || 0;
+    if (state.pileta) fixed += 15000; // Pileta USD 15,000
     state.extras.forEach(x => fixed += (x.fixed || 0));
 
     // Baños: cantidad × extra por baño
