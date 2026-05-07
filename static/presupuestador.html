@@ -640,6 +640,26 @@
                 </label>
               </div>
 
+              <div class="label">CALIDAD</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div class="opt" data-group="calidad-ambientes" data-value="confort" data-precio="1100">
+                  <div class="opt-title">Confort</div>
+                  <div class="opt-sub">USD 1000-1200/m²</div>
+                </div>
+                <div class="opt selected" data-group="calidad-ambientes" data-value="premium" data-precio="1400">
+                  <div class="opt-title">Premium</div>
+                  <div class="opt-sub">USD 1200-1600/m²</div>
+                </div>
+                <div class="opt" data-group="calidad-ambientes" data-value="alta_gama" data-precio="2250">
+                  <div class="opt-title">Alta Gama</div>
+                  <div class="opt-sub">USD 2000-2500/m²</div>
+                </div>
+                <div class="opt" data-group="calidad-ambientes" data-value="lujo" data-precio="3800">
+                  <div class="opt-title">Lujo</div>
+                  <div class="opt-sub">USD 2600-5000/m²</div>
+                </div>
+              </div>
+
               <div style="background:var(--pmd-blue-soft);border:1px solid var(--b2);border-radius:4px;padding:12px 16px;margin:16px 0;display:flex;align-items:center;justify-content:space-between">
                 <span style="font-size:12px;font-weight:600;color:var(--muted)">M² CALCULADOS AUTOMÁTICAMENTE</span>
                 <span style="font-size:20px;font-weight:700;color:var(--pmd-blue)"><span id="pmdMetrosCalc">92</span> m²</span>
@@ -1489,6 +1509,10 @@ fetch('/api/precios')
       }
       // Calidad en modo metros
       else if(group==='calidad-metros'){
+        state.precioBase = Number(opt.dataset.precio);
+      }
+      // Calidad en modo ambientes
+      else if(group==='calidad-ambientes'){
         state.precioBase = Number(opt.dataset.precio);
       }
       updateSidebar();
