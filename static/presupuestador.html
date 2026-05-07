@@ -513,11 +513,11 @@
               <div class="slider-wrap">
                 <div class="row-flex">
                   <span></span>
-                  <input type="number" id="in-cubiertos" min="40" max="600" value="120" 
+                  <input type="number" id="in-cubiertos" min="40" max="600" value="0" 
                          style="width:90px;padding:6px 10px;border:1px solid var(--line);border-radius:4px;font-size:18px;font-weight:600;text-align:center">
                   <span class="unit" style="margin-left:6px">m²</span>
                 </div>
-                <input type="range" id="f-cubiertos" min="20" max="600" step="5" value="120">
+                <input type="range" id="f-cubiertos" min="20" max="600" step="5" value="0">
                 <div class="slider-range"><span>20 m²</span><span>600 m²</span></div>
               </div>
 
@@ -1197,7 +1197,7 @@ fetch('/api/precios')
   const state = {
     mode:null,
     nombre:"", tipo:"", urgencia:"",
-    cubiertos:120, semi:0, plantas:1,
+    cubiertos:0, semi:0, plantas:1,
     sistema:{v:"Steel framing", m:1.0},
     obra:"Obra nueva",
     suelo:{v:"Normal / tosca", e:0},
@@ -1487,7 +1487,7 @@ fetch('/api/precios')
   const vPlantas = document.getElementById('v-plantas');
   // PMD: Estado modo ambientes
   let pmdModoActual = 'metros'; // 'metros' | 'ambientes'
-  let pmdMetrosBasePorPlanta = { cubiertos: 120, semi: 0 }; // Metros que ingresa el usuario POR PLANTA
+  let pmdMetrosBasePorPlanta = { cubiertos: 0, semi: 0 }; // Metros que ingresa el usuario POR PLANTA
   let pmdAmbientes = {
     plantas: 1,
     habitaciones: 3,
