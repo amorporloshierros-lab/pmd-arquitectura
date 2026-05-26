@@ -372,6 +372,11 @@
     display:none !important;
   }
 
+  /* Ocultar secciones de modo guiado en modo avanzado */
+  #wizard-view.mode-avanzado .only-guiado{
+    display:none !important;
+  }
+
   /* Toggle modo metros/ambientes */
   .pmd-toggle-modo{
     background:var(--pmd-blue-soft);border:1px solid var(--b2);
@@ -517,8 +522,8 @@
           <div class="card">
             <div class="card-head"><h2>Datos del proyecto</h2><p>Superficie, sistema y tipología.</p></div>
 
-            <!-- Toggle modo metros/ambientes -->
-            <div class="pmd-toggle-modo" id="pmdToggleModo">
+            <!-- Toggle modo metros/ambientes (solo en modo guiado/rápido) -->
+            <div class="pmd-toggle-modo only-guiado" id="pmdToggleModo">
               <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2">
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
@@ -565,23 +570,26 @@
                 </div>
               </div>
 
-              <div class="label">CALIDAD</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <div class="opt" data-group="calidad-metros" data-value="confort" data-precio="1100">
-                  <div class="opt-title">Confort</div>
-                  <div class="opt-sub">USD 1000-1200/m²</div>
-                </div>
-                <div class="opt selected" data-group="calidad-metros" data-value="premium" data-precio="1400">
-                  <div class="opt-title">Premium</div>
-                  <div class="opt-sub">USD 1200-1600/m²</div>
-                </div>
-                <div class="opt" data-group="calidad-metros" data-value="alta_gama" data-precio="2250">
-                  <div class="opt-title">Alta Gama</div>
-                  <div class="opt-sub">USD 2000-2500/m²</div>
-                </div>
-                <div class="opt" data-group="calidad-metros" data-value="lujo" data-precio="3800">
-                  <div class="opt-title">Lujo</div>
-                  <div class="opt-sub">USD 2600-5000/m²</div>
+              <!-- Calidades (solo en modo guiado/rápido) -->
+              <div class="only-guiado">
+                <div class="label">CALIDAD</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <div class="opt" data-group="calidad-metros" data-value="confort" data-precio="1100">
+                    <div class="opt-title">Confort</div>
+                    <div class="opt-sub">USD 1000-1200/m²</div>
+                  </div>
+                  <div class="opt selected" data-group="calidad-metros" data-value="premium" data-precio="1400">
+                    <div class="opt-title">Premium</div>
+                    <div class="opt-sub">USD 1200-1600/m²</div>
+                  </div>
+                  <div class="opt" data-group="calidad-metros" data-value="alta_gama" data-precio="2250">
+                    <div class="opt-title">Alta Gama</div>
+                    <div class="opt-sub">USD 2000-2500/m²</div>
+                  </div>
+                  <div class="opt" data-group="calidad-metros" data-value="lujo" data-precio="3800">
+                    <div class="opt-title">Lujo</div>
+                    <div class="opt-sub">USD 2600-5000/m²</div>
+                  </div>
                 </div>
               </div>
 
@@ -658,23 +666,26 @@
                 </label>
               </div>
 
-              <div class="label">CALIDAD</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <div class="opt" data-group="calidad-ambientes" data-value="confort" data-precio="1100">
-                  <div class="opt-title">Confort</div>
-                  <div class="opt-sub">USD 1000-1200/m²</div>
-                </div>
-                <div class="opt selected" data-group="calidad-ambientes" data-value="premium" data-precio="1400">
-                  <div class="opt-title">Premium</div>
-                  <div class="opt-sub">USD 1200-1600/m²</div>
-                </div>
-                <div class="opt" data-group="calidad-ambientes" data-value="alta_gama" data-precio="2250">
-                  <div class="opt-title">Alta Gama</div>
-                  <div class="opt-sub">USD 2000-2500/m²</div>
-                </div>
-                <div class="opt" data-group="calidad-ambientes" data-value="lujo" data-precio="3800">
-                  <div class="opt-title">Lujo</div>
-                  <div class="opt-sub">USD 2600-5000/m²</div>
+              <!-- Calidades (solo en modo guiado/rápido) -->
+              <div class="only-guiado">
+                <div class="label">CALIDAD</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <div class="opt" data-group="calidad-ambientes" data-value="confort" data-precio="1100">
+                    <div class="opt-title">Confort</div>
+                    <div class="opt-sub">USD 1000-1200/m²</div>
+                  </div>
+                  <div class="opt selected" data-group="calidad-ambientes" data-value="premium" data-precio="1400">
+                    <div class="opt-title">Premium</div>
+                    <div class="opt-sub">USD 1200-1600/m²</div>
+                  </div>
+                  <div class="opt" data-group="calidad-ambientes" data-value="alta_gama" data-precio="2250">
+                    <div class="opt-title">Alta Gama</div>
+                    <div class="opt-sub">USD 2000-2500/m²</div>
+                  </div>
+                  <div class="opt" data-group="calidad-ambientes" data-value="lujo" data-precio="3800">
+                    <div class="opt-title">Lujo</div>
+                    <div class="opt-sub">USD 2600-5000/m²</div>
+                  </div>
                 </div>
               </div>
 
