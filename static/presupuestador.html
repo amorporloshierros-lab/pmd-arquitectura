@@ -1372,7 +1372,8 @@ fetch('/api/precios')
       t.classList.toggle('done', ts<n);
     });
     if(n===7) calcPresupuesto();
-    // Removed: window.scrollTo - mantener foco en presupuestador
+    // Avisar al padre para que mantenga el foco en el presupuestador
+    try { window.parent.postMessage({type:'presu-scroll-top'}, '*'); } catch(_){}
     setTimeout(reportHeight, 60);
   }
 
