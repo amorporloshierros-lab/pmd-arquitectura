@@ -243,9 +243,10 @@ nav.scrolled{border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(28,51,
 .galeria-head .section-title{color:#fff}
 .galeria-head .section-title em{color:var(--b1)}
 .galeria-head .section-sub{color:rgba(255,255,255,.55)}
-.galeria-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:1px;background:rgba(0,0,0,.5);padding:1px}
+.galeria-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:1px;background:rgba(0,0,0,.5);padding:1px}
 .gal-item{background:#2a2a2a;overflow:hidden;height:300px}
-.gal-item:first-child{grid-row:span 2;height:auto;min-height:612px}
+.gal-item:first-child{grid-row:span 2;height:auto;min-height:602px}
+.gal-item:nth-child(2){grid-column:span 2}
 .gal-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s var(--ease)}
 .gal-item:hover img{transform:scale(1.06)}
 @media(max-width:900px){
@@ -1357,10 +1358,18 @@ body:not(.intro-active) nav .brand .brand-name{opacity:1;transition:opacity .35s
     </div>
   </div>
   <div class="galeria-grid">
-    <div class="gal-item reveal-image" style="transition-delay:0s"><img src="/static/pmd-obra1.jpg" alt="Casa moderna de día · PMD"></div>
-    <div class="gal-item reveal-image" style="transition-delay:.12s"><img src="/static/pmd-obra2.jpg" alt="Cabaña black steel · PMD"></div>
-    <div class="gal-item reveal-image" style="transition-delay:.24s"><img src="/static/pmd-obra3.jpg" alt="Interior industrial · PMD"></div>
-    <div class="gal-item reveal-image" style="transition-delay:.36s"><img src="/static/pmd-obra4.jpg" alt="Casa con galería · PMD"></div>
+    <div class="gal-item reveal-image" style="transition-delay:0s"><img src="/static/obras/obra-exterior-pileta.jpg" alt="Exterior con pileta · PMD"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.08s"><img src="/static/obras/obra-comedor-cocina.jpg" alt="Comedor y cocina · PMD"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.16s"><img src="/static/obras/obra-exterior-blanca.jpg" alt="Exterior minimalista · PMD"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.24s"><img src="/static/obras/obra-living-chimenea.jpg" alt="Living con chimenea · PMD"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.32s"><img src="/static/obras/obra-exterior-madera.jpg" alt="Exterior madera y gris · PMD"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.40s"><img src="/static/obras/obra-dormitorio.jpg" alt="Dormitorio principal · PMD"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.48s"><img src="/static/obras/obra-exterior-atardecer.jpg" alt="Exterior al atardecer · PMD"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.56s"><img src="/static/obras/obra-interior-cocina.jpg" alt="Interior cocina · PMD"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.64s"><img src="/static/obras/obra-exterior-noche.jpg" alt="Exterior de noche · PMD"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.72s"><img src="/static/obras/obra-interior-living.jpg" alt="Living comedor · PMD"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.80s"><img src="/static/obras/obra-exterior-dark.jpg" alt="Casa dark modern · PMD"></div>
+    <div class="gal-item reveal-image" style="transition-delay:.88s"><img src="/static/obras/obra-suite.jpg" alt="Suite · PMD"></div>
   </div>
 </section>
 
