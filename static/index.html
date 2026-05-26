@@ -1960,6 +1960,15 @@ window.addEventListener('message', (e) => {
       iframe.style.height = Math.max(e.data.height, 400) + 'px';
     }
   }
+
+  if (e.data.type === 'presu-scroll-top'){
+    const iframe = document.getElementById('presuIframe');
+    if (iframe){
+      const rect = iframe.getBoundingClientRect();
+      const top = rect.top + window.scrollY - 80; // 80px margen para el header
+      window.scrollTo({top: top, behavior: 'smooth'});
+    }
+  }
 });
 
 // TIMELINE PROCESO — "ola" que activa cada paso secuencialmente al scrollear
