@@ -563,7 +563,13 @@ function openModal(idx){
   const l = ALL_LEADS[idx];
   if (!l) return;
   document.getElementById('modal-title').textContent = l.nombre || 'Detalle del lead';
+
+  // Extras como string legible
+  const extrasStr = Array.isArray(l.extras) ? l.extras.join(', ') : (l.extras || '');
+
   const rows = [
+    // CONTACTO
+    ['── CONTACTO ──', ''],
     ['Origen', formatOrigen(l.origen)],
     ['Cuándo', formatDate(l.timestamp)],
     ['Nombre', l.nombre],
@@ -571,15 +577,44 @@ function openModal(idx){
     ['Email', l.email],
     ['Zona', l.zona],
     ['Urgencia', l.urgencia],
-    ['Tipo proyecto', l.tipo_proyecto],
-    ['Superficie', l.superficie_m2 ? l.superficie_m2 + ' m²' : ''],
+    ['Comentarios', l.comentarios],
+    // PROYECTO
+    ['── PROYECTO ──', ''],
+    ['Tipo de obra', l.tipo_proyecto || l.tipo],
+    ['M² cubiertos', l.superficie_m2 ? l.superficie_m2 + ' m²' : (l.cubiertos_m2 ? l.cubiertos_m2 + ' m²' : '')],
+    ['M² semicubiertos', l.semicubiertos_m2 ? l.semicubiertos_m2 + ' m²' : ''],
+    ['Plantas', l.plantas],
+    ['Sistema constructivo', l.sistema],
+    ['Tipo obra', l.obra],
+    ['Suelo', l.suelo],
+    ['Etapa', l.etapa],
+    ['Modo', l.modo],
+    // TERMINACIONES
+    ['── TERMINACIONES ──', ''],
     ['Línea de calidad', l.nivel],
-    ['Presupuesto USD', formatRange(l.total_min_usd, l.total_max_usd)],
+    ['Pisos', l.pisos],
+    ['Aberturas', l.aberturas],
+    ['Cocina', l.cocina],
+    ['Climatización', l.clima],
+    ['Agua caliente', l.agua],
+    ['Instalación eléctrica', l.electrica],
+    ['Solar/Paneles', l.solar],
+    ['Cubierta', l.cubierta],
+    ['Revestimiento exterior', l.revestimiento],
+    ['Baños', l.banos],
+    ['Cantidad de baños', l.banos_cantidad],
+    ['Extras adicionales', extrasStr],
+    // PRESUPUESTO
+    ['── PRESUPUESTO ──', ''],
+    ['Rango estimado USD', formatRange(l.total_min_usd, l.total_max_usd)],
+    ['Ajuste PMD', l.ajuste_pmd_pct ? l.ajuste_pmd_pct + '%' : ''],
     ['Mensaje', l.mensaje],
   ];
   document.getElementById('modal-body').innerHTML = rows
-    .filter(([_,v]) => v)
-    .map(([k,v]) => `<dt>${k}</dt><dd>${escape(v)}</dd>`)
+    .filter(([k,v]) => v !== '' && v != null)
+    .map(([k,v]) => k.startsWith('──')
+      ? `<dt style="grid-column:1/-1;font-size:11px;font-weight:700;color:#3A6EA5;letter-spacing:.08em;padding:10px 0 2px;border-top:1px solid #EEE;margin-top:4px">${k}</dt>`
+      : `<dt>${k}</dt><dd>${escape(String(v))}</dd>`)
     .join('');
   document.getElementById('modal').classList.add('open');
 }
