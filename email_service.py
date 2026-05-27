@@ -137,3 +137,118 @@ def send_password_reset(*, to_email: str, name: str, reset_token: str) -> bool:
              f"Restablecela con este link (expira en 24hs):\n\n{reset_url}\n\n"
              "Si no pediste este reset, ignora este email.\n\n- Equipo PMD")
     return _send(to_email=to_email, subject=subject, html=html, plain=plain)
+
+
+def _fila(label: str, valor) -> str:
+    """Genera una fila de la tabla del presupuesto."""
+    if not valor:
+        return ""
+    return (
+        f"<tr>"
+        f"<td style='padding:8px 12px;font-size:13px;color:#5C6A7A;border-bottom:1px solid #EEE;width:40%'>{label}</td>"
+        f"<td style='padding:8px 12px;font-size:13px;color:#1E2A3A;font-weight:600;border-bottom:1px solid #EEE'>{valor}</td>"
+        f"</tr>"
+    )
+
+
+def _seccion(titulo: str, filas: str) -> str:
+    """Genera una sección con título y tabla de filas."""
+    if not filas:
+        return ""
+    return (
+        f"<p style='font-size:13px;font-weight:700;color:#1E3A5F;letter-spacing:.06em;text-transform:uppercase;"
+        f"margin:24px 0 8px;padding-bottom:6px;border-bottom:2px solid #3A6EA5'>{titulo}</p>"
+        f"<table width='100%' cellspacing='0' cellpadding='0' style='border:1px solid #EEE;border-radius:8px;overflow:hidden;margin-bottom:8px'>"
+        f"{filas}</table>"
+    )
+
+
+def send_lead_presupuesto(*, lead: dict, to_email: str) -> bool:
+    """Envía email completo con TODO el proyecto del presupuestador a PMD."""
+    nombre = lead.get("nombre") or "Sin nombre"
+    from_label = f"Nuevo presupuesto — {nombre}"
+
+    # ---- CONTACTO ----
+    filas_contacto = (
+        _fila("Nombre", nombre) +
+        _fila("Email", lead.get("email")) +
+        _fila("WhatsApp", lead.get("whatsapp")) +
+        _fila("Zona", lead.get("zona")) +
+        _fila("Urgencia", lead.get("urgencia")) +
+        _fila("Comentarios", lead.get("comentarios"))
+    )
+
+    # ---- PROYECTO ----
+    filas_proyecto = (
+        _fila("Tipo de obra", lead.get("tipo")) +
+        _fila("M² cubiertos", f"{lead.get('cubiertos_m2')} m²" if lead.get("cubiertos_m2") else "") +
+        _fila("M² semicubiertos", f"{lead.get('semicubiertos_m2')} m²" if lead.get("semicubiertos_m2") else "") +
+        _fila("Plantas", lead.get("plantas")) +
+        _fila("Sistema constructivo", lead.get("sistema")) +
+        _fila("Tipo de obra", lead.get("obra")) +
+        _fila("Tipo de suelo", lead.get("suelo")) +
+        _fila("Etapa", lead.get("etapa")) +
+        _fila("Modo presupuestador", lead.get("modo"))
+    )
+
+    # ---- TERMINACIONES ----
+    extras_list = lead.get("extras", [])
+    extras_str = ", ".join(extras_list) if isinstance(extras_list, list) else str(extras_list or "")
+    filas_term = (
+        _fila("Nivel/Calidad", lead.get("nivel")) +
+        _fila("Pisos interiores", lead.get("pisos")) +
+        _fila("Aberturas", lead.get("aberturas")) +
+        _fila("Cocina", lead.get("cocina")) +
+        _fila("Climatización", lead.get("clima")) +
+        _fila("Agua caliente", lead.get("agua")) +
+        _fila("Instalación eléctrica", lead.get("electrica")) +
+        _fila("Solar/Paneles", lead.get("solar")) +
+        _fila("Cubierta", lead.get("cubierta")) +
+        _fila("Revestimiento exterior", lead.get("revestimiento")) +
+        _fila("Baños", lead.get("banos")) +
+        _fila("Cantidad baños", lead.get("banos_cantidad")) +
+        _fila("Extras adicionales", extras_str)
+    )
+
+    # ---- PRESUPUESTO ----
+    total_min = lead.get("total_min_usd") or lead.get("presupuesto_min_usd") or 0
+    total_max = lead.get("total_max_usd") or lead.get("presupuesto_max_usd") or 0
+    from locale import format_string
+    try:
+        min_fmt = f"USD {int(total_min):,}".replace(",", ".")
+        max_fmt = f"USD {int(total_max):,}".replace(",", ".")
+    except Exception:
+        min_fmt = str(total_min)
+        max_fmt = str(total_max)
+
+    filas_presu = (
+        _fila("Rango estimado", f"{min_fmt} – {max_fmt}") +
+        _fila("Ajuste PMD", f"{lead.get('ajuste_pmd_pct', 13)}%") +
+        _fila("Fecha", lead.get("timestamp", ""))
+    )
+
+    body = (
+        f"<p style='font-size:16px;font-weight:700;color:#1E2A3A;margin:0 0 6px'>Nuevo presupuesto completado</p>"
+        f"<p style='font-size:14px;color:#5C6A7A;margin:0 0 24px'>Un cliente completó el wizard del presupuestador PMD.</p>"
+        + _seccion("Datos de contacto", filas_contacto)
+        + _seccion("Proyecto", filas_proyecto)
+        + _seccion("Terminaciones y equipamiento", filas_term)
+        + _seccion("Presupuesto estimado", filas_presu)
+        + "<p style='font-size:12px;color:#94A0AE;margin:24px 0 0;border-top:1px solid #E2DED8;padding-top:16px'>"
+          "Este lead fue generado automáticamente desde el presupuestador web de PMD Arquitectura.</p>"
+    )
+
+    subject = f"[PMD] Nuevo presupuesto — {nombre} · {min_fmt}–{max_fmt}"
+    html = _BASE_TEMPLATE.format(title=subject, body=body)
+    plain = (
+        f"NUEVO PRESUPUESTO PMD\n{'='*40}\n"
+        f"Nombre: {nombre}\n"
+        f"Email: {lead.get('email')}\nWhatsApp: {lead.get('whatsapp')}\n"
+        f"Zona: {lead.get('zona')}\n\n"
+        f"PROYECTO\n{'-'*20}\n"
+        f"Tipo: {lead.get('tipo')}\nM²: {lead.get('cubiertos_m2')}\n"
+        f"Sistema: {lead.get('sistema')}\nNivel: {lead.get('nivel')}\n\n"
+        f"PRESUPUESTO ESTIMADO\n{'-'*20}\n"
+        f"Rango: {min_fmt} – {max_fmt}\n"
+    )
+    return _send(to_email=to_email, subject=subject, html=html, plain=plain)
