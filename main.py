@@ -331,6 +331,13 @@ async def lead_presupuesto(payload: dict):
         payload.get("nombre"), payload.get("email"), payload.get("whatsapp"),
         payload.get("total_min_usd"), payload.get("total_max_usd"),
     )
+    # Enviar email completo con todo el proyecto a PMD
+    recipient = getattr(config, "LEAD_RECIPIENT", None) or os.getenv("LEAD_RECIPIENT_EMAIL", "info@pmdarquitectura.com")
+    await asyncio.to_thread(
+        email_service.send_lead_presupuesto,
+        lead=payload,
+        to_email=recipient,
+    )
     return {"ok": ok, "total_leads": count_leads()}
 
 
