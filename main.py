@@ -65,6 +65,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Redirect www → sin www
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import RedirectResponse as _Redirect
+
+class WWWRedirectMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        host = request.headers.get("host", "")
+        if host.startswith("www."):
+            url = str(request.url).replace(f"://{host}", f"://{host[4:]}", 1)
+            return _Redirect(url, status_code=301)
+        return await call_next(request)
+
+app.add_middleware(WWWRedirectMiddleware)
+
 # Servir estáticos (widget HTML)
 if config.STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(config.STATIC_DIR)), name="static")
